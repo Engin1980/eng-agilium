@@ -7,7 +7,8 @@ public class Project
   public string Description { get; set; } = string.Empty;
   public int OwnerId { get; set; }
   public AppUser Owner { get; set; } = null!;
-  public ICollection<Membership> Roles { get; set; } = [];
+  public ICollection<Role> Roles { get; set; } = [];
+  public ICollection<Membership> Memberships { get; set; } = [];
   public ProjectStatus Status { get; set; }
   public ICollection<WorkflowState> WorkflowStates { get; set; } = [];
 }

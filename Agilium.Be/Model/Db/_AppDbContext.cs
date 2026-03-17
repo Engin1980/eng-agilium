@@ -36,7 +36,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Title).IsRequired().HasMaxLength(256);
       entity.Property(e => e.Description).HasMaxLength(2000);
-      entity.HasOne<AppUser>().WithMany().HasForeignKey(e => e.OwnerId).OnDelete(DeleteBehavior.Restrict);
+      entity
+        .HasOne(e => e.Owner)
+        .WithMany(u => u.OwnedProjects)
+        .HasForeignKey(e => e.OwnerId)
+        .OnDelete(DeleteBehavior.Restrict);
       entity
         .HasMany(e => e.Roles)
         .WithOne(r => r.Project)
@@ -49,7 +53,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.HasKey(e => e.Id);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Title).IsRequired().HasMaxLength(128);
-      entity.HasOne(e => e.Project).WithMany().HasForeignKey(e => e.ProjectId).OnDelete(DeleteBehavior.Restrict);
+      entity
+        .HasOne(e => e.Project)
+        .WithMany(p => p.Roles)
+        .HasForeignKey(e => e.ProjectId)
+        .OnDelete(DeleteBehavior.Restrict);
     });
 
     modelBuilder.Entity<Membership>(entity =>
@@ -59,10 +67,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Role).IsRequired().HasMaxLength(128);
       entity
         .HasOne(e => e.Project)
-        .WithMany(p => p.Roles)
+        .WithMany(p => p.Memberships)
         .HasForeignKey(e => e.ProjectId)
         .OnDelete(DeleteBehavior.Restrict);
-      entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+      entity
+        .HasOne(e => e.User)
+        .WithMany(u => u.Memberships)
+        .HasForeignKey(e => e.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
     });
 
     modelBuilder.Entity<Item>(entity =>
