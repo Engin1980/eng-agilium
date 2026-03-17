@@ -3,3 +3,4 @@ appsettings.Production.json
 bin/
 obj/
 .vscode/
+.logs/
