@@ -24,7 +24,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
     {
       Title = command.Title,
       Description = command.Description,
-      Status = ProjectStatus.Active,
+      State = ProjectState.Active,
     };
 
     using (var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken))

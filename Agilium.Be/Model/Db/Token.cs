@@ -12,6 +12,6 @@ public class Token
 
 public enum TokenType
 {
-  PasswordReset = 0,
-  Refresh = 1,
+  PasswordReset = 1,
+  Refresh = 2,
 }

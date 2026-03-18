@@ -14,13 +14,13 @@ public class TemplateItem
 
 public enum TemplateItemType
 {
-  InlineText,
-  NextlineText,
-  NextlineTextArea,
-  InlineInt,
-  NextlineInt,
-  InlineDouble,
-  NExtlineDouble,
-  Comments,
-  Untemplated
+  InlineText = 1,
+  NextlineText = 2,
+  NextlineTextArea = 3,
+  InlineInt = 4,
+  NextlineInt = 5,
+  InlineDouble = 6,
+  NNextlineDouble = 7,
+  Comments = 8,
+  Untemplated = 9,
 }

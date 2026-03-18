@@ -23,9 +23,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, Memb
       query = query.Where(p => p.Memberships.Any(m => m.UserId == mId));
 
     var projects = await query
-      .OrderBy(p => p.Status)
+      .OrderBy(p => p.State)
       .ThenBy(p => p.Title)
-      .Select(p => new ProjectResult(p.Id, p.Title, p.Description, (int)p.Status, p.Memberships.Count))
+      .Select(p => new ProjectResult(p.Id, p.Title, p.Description, (int)p.State, p.Memberships.Count))
       .ToListAsync(cancellationToken);
 
     return new Result(projects);

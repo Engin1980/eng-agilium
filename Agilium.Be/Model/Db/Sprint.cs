@@ -15,7 +15,7 @@ public class Sprint
 
 public enum SprintState
 {
-  Planned = 0,
-  Active = 1,
-  Completed = 2,
+  Planned = 1,
+  Active = 2,
+  Completed = 3,
 }

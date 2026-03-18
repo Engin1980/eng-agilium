@@ -7,12 +7,12 @@ public class Project
   public string Description { get; set; } = string.Empty;
   public ICollection<Role> Roles { get; set; } = [];
   public ICollection<Membership> Memberships { get; set; } = [];
-  public ProjectStatus Status { get; set; }
+  public ProjectState State { get; set; }
   public ICollection<WorkflowState> WorkflowStates { get; set; } = [];
   public ICollection<Template> Templates { get; set; } = [];
 }
 
-public enum ProjectStatus
+public enum ProjectState
 {
   Active = 1,
   Inactive = 2,

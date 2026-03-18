@@ -8,4 +8,3 @@ public class Template
   public ItemType Type { get; set; }
   public ICollection<TemplateColumn> TemplateColumns { get; set; } = [];
 }
-

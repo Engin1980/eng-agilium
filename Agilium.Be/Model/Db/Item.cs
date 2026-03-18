@@ -17,9 +17,9 @@ public class Item
 
 public enum ItemType
 {
-  Task = 0,
-  Bug = 1,
-  UserStory = 2,
-  Feature = 3,
-  Epic = 4,
+  Task = 1,
+  Bug = 2,
+  UserStory = 3,
+  Feature = 4,
+  Epic = 5,
 }
