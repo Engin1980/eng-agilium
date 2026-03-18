@@ -6,7 +6,7 @@ public class Item
   public int ProjectId { get; set; }
   public string Title { get; set; } = string.Empty;
 
-  public XItemType Type { get; set; }
+  public ItemType Type { get; set; }
 
   public int? ParentId { get; set; }
   public Item? Parent { get; set; }
@@ -15,7 +15,7 @@ public class Item
   public AppUser? Assignee { get; set; }
 }
 
-public enum XItemType
+public enum ItemType
 {
   Task = 0,
   Bug = 1,
