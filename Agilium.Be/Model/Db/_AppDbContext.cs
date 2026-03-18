@@ -66,7 +66,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
       entity.HasKey(e => e.Id);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.Role).IsRequired().HasMaxLength(128);
+      entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
       entity
         .HasOne(e => e.Project)
         .WithMany(p => p.Memberships)

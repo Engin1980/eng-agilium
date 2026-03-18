@@ -8,5 +8,5 @@ public class Membership
   public int UserId { get; set; }
   public AppUser User { get; set; } = null!;
   public int RoleId { get; set; }
-  public string Role { get; set; } = string.Empty;
+  public Role Role { get; set; } = null!;
 }

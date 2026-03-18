@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eng.Agilium.Be.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260318161408_Initial_DB_Structure")]
+    [Migration("20260318163756_Initial_DB_Structure")]
     partial class Initial_DB_Structure
     {
         /// <inheritdoc />
@@ -120,11 +120,6 @@ namespace Eng.Agilium.Be.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
@@ -134,6 +129,8 @@ namespace Eng.Agilium.Be.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("UserId");
 
@@ -446,6 +443,12 @@ namespace Eng.Agilium.Be.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Eng.Agilium.Be.Model.Db.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Eng.Agilium.Be.Model.Db.AppUser", "User")
                         .WithMany("Memberships")
                         .HasForeignKey("UserId")
@@ -453,6 +456,8 @@ namespace Eng.Agilium.Be.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
+
+                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });

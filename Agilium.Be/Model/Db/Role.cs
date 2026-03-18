@@ -39,7 +39,7 @@ public interface IRoleAssignment
       CanManageProject = permissions[1] == '1',
       CanViewMembers = permissions[2] == '1',
       CanManageMembers = permissions[3] == '1',
-      CanManageSprints = permissions[4] == '1'
+      CanManageSprints = permissions[4] == '1',
     };
   }
 }
@@ -52,9 +52,7 @@ public class RoleAsignment : IRoleAssignment
   public bool CanViewMembers { get; set; }
   public bool CanManageMembers { get; set; }
   public bool CanManageSprints { get; set; }
-
 }
-
 
 public class Role : IRoleAssignment
 {
@@ -69,4 +67,3 @@ public class Role : IRoleAssignment
   public bool CanManageMembers { get; set; }
   public bool CanManageSprints { get; set; }
 }
-
