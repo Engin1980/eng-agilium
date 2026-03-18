@@ -3,8 +3,12 @@
   "WorkspaceRootPath": "D:\\repos\\eng-agilium\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|d:\\repos\\eng-agilium\\agilium.be\\model\\db\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|solutionrelative:agilium.be\\model\\db\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|d:\\repos\\eng-agilium\\agilium.be\\model\\db\\_appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|solutionrelative:agilium.be\\model\\db\\_appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|d:\\repos\\eng-agilium\\agilium.be\\features\\projects\\create.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|solutionrelative:agilium.be\\features\\projects\\create.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|d:\\repos\\eng-agilium\\agilium.be\\model\\db\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -13,10 +17,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|d:\\repos\\eng-agilium\\agilium.be\\model\\db\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|solutionrelative:agilium.be\\model\\db\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|d:\\repos\\eng-agilium\\agilium.be\\model\\db\\_appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3FD357D9-91F4-7C05-ED73-A9C8018513C1}|Agilium.Be\\Agilium.Be.csproj|solutionrelative:agilium.be\\model\\db\\_appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -39,53 +39,53 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Role.cs",
-              "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\Role.cs",
-              "RelativeDocumentMoniker": "Agilium.Be\\Model\\Db\\Role.cs",
-              "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\Role.cs",
-              "RelativeToolTip": "Agilium.Be\\Model\\Db\\Role.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-18T15:10:41.503Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AppUser.cs",
-              "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\AppUser.cs",
-              "RelativeDocumentMoniker": "Agilium.Be\\Model\\Db\\AppUser.cs",
-              "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\AppUser.cs",
-              "RelativeToolTip": "Agilium.Be\\Model\\Db\\AppUser.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-18T15:06:53.67Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Project.cs",
-              "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\Project.cs",
-              "RelativeDocumentMoniker": "Agilium.Be\\Model\\Db\\Project.cs",
-              "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\Project.cs",
-              "RelativeToolTip": "Agilium.Be\\Model\\Db\\Project.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-18T15:05:12.8Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
               "Title": "_AppDbContext.cs",
               "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\_AppDbContext.cs",
               "RelativeDocumentMoniker": "Agilium.Be\\Model\\Db\\_AppDbContext.cs",
               "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\_AppDbContext.cs",
               "RelativeToolTip": "Agilium.Be\\Model\\Db\\_AppDbContext.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAASwCwAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAJwAAAAAAAAAAAASwLMAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-18T14:59:13.832Z",
+              "WhenOpened": "2026-03-18T16:05:26.674Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Project.cs",
+              "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\Project.cs",
+              "RelativeDocumentMoniker": "Agilium.Be\\Model\\Db\\Project.cs",
+              "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\Project.cs",
+              "RelativeToolTip": "Agilium.Be\\Model\\Db\\Project.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T16:00:40.24Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Create.cs",
+              "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Features\\Projects\\Create.cs",
+              "RelativeDocumentMoniker": "Agilium.Be\\Features\\Projects\\Create.cs",
+              "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Features\\Projects\\Create.cs",
+              "RelativeToolTip": "Agilium.Be\\Features\\Projects\\Create.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T15:43:53.333Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AppUser.cs",
+              "DocumentMoniker": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\AppUser.cs",
+              "RelativeDocumentMoniker": "Agilium.Be\\Model\\Db\\AppUser.cs",
+              "ToolTip": "D:\\repos\\eng-agilium\\Agilium.Be\\Model\\Db\\AppUser.cs",
+              "RelativeToolTip": "Agilium.Be\\Model\\Db\\AppUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T15:41:51.952Z",
               "EditorCaption": ""
             }
           ]
