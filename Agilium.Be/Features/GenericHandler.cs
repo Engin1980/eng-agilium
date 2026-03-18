@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using Eng.Agilium.Be.Model.Db;
 
 namespace Eng.Agilium.Be.Features;
 
-public record LoggedUser(int AppUserId, string Email, string RoleName);
+public record LoggedUser(int AppUserId, string Email, bool IsSuperAdmin, IRoleAssignment[] RoleAssignments);
 
 public interface IHandler
 {

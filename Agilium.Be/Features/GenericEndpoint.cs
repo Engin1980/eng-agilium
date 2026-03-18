@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Eng.Agilium.Be.Exceptions;
+using Eng.Agilium.Be.Model.Db;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eng.Agilium.Be.Features;
@@ -81,22 +82,22 @@ public abstract class GenericEndpoint<TCommand, TParameters, THandler> : IEndpoi
     ValidateObject(command, typeof(TCommand), ValidatedObject.Command);
     ValidateObject(parameters, typeof(TParameters), ValidatedObject.Parameters);
     SetUpLoggedUser(httpContext, handler);
-    ValidateRequiredRoles();
+    //ValidateRequiredRoles();
     var result = ProcessRequestAsync(command, parameters, httpContext, handler, cancellationToken);
     return result;
   }
 
-  private void ValidateRequiredRoles()
-  {
-    if (RequiredRoles.Length > 0)
-    {
-      if (LoggedUser == null)
-        throw new AuthorizationFailedException();
+  // private void ValidateRequiredRoles()
+  // {
+  //   if (RequiredRoles.Length > 0)
+  //   {
+  //     if (LoggedUser == null)
+  //       throw new AuthorizationFailedException();
 
-      if (!RequiredRoles.Any(q => q == LoggedUser.RoleName))
-        throw new AuthorizationFailedException();
-    }
-  }
+  //     if (!RequiredRoles.Any(q => q == LoggedUser.RoleName))
+  //       throw new AuthorizationFailedException();
+  //   }
+  // }
 
   private static void ValidateObject(object? obj, Type objType, ValidatedObject objectType)
   {
@@ -129,18 +130,23 @@ public abstract class GenericEndpoint<TCommand, TParameters, THandler> : IEndpoi
 
   private void SetUpLoggedUser(HttpContext httpContext, THandler handler)
   {
-    //TODO move to EndpointTokenUtils to let it is at the same place?
     var user = httpContext.User;
     if (user.Identity is not null && user.Identity.IsAuthenticated)
     {
       var idClaim = user.FindFirst("sub")?.Value;
       var email = user.FindFirst("email")?.Value ?? "";
-      var roleNames = user.FindFirst("role")?.Value ?? "";
+      var roleNames = user.FindAll("role").Select(c => c.Value).ToArray();
+      bool isSuperAdmin = roleNames.Contains("SuperAdmin");
+
+      var roleAssignments = roleNames
+        .Where(q => q.StartsWith('P'))
+        .Select(q => IRoleAssignment.FromRoleString(q))
+        .ToArray();
 
       if (!int.TryParse(idClaim, out var appUserId))
         appUserId = 0;
 
-      LoggedUser = new LoggedUser(appUserId, email, roleNames);
+      LoggedUser = new LoggedUser(appUserId, email, isSuperAdmin, roleAssignments);
       handler.SetUpLoggedUser(this.LoggedUser);
     }
   }
@@ -222,13 +228,7 @@ public enum BaseRoute
   Health = 0,
   Admins = 1,
   Auth = 2,
-  Competences = 3,
-  Students = 4,
-  Exams = 5,
-  Stations = 6,
-  Domains = 7,
-  CriterionGrades = 8,
-  DomainGrades = 9,
+  Projects = 3,
 }
 
 public static class BaseRouteExtensions
@@ -242,13 +242,7 @@ public static class BaseRouteExtensions
       BaseRoute.Health => $"{rootRoute}/health",
       BaseRoute.Admins => $"{rootRoute}/admins",
       BaseRoute.Auth => $"{rootRoute}/auth",
-      BaseRoute.Competences => $"{rootRoute}/competences",
-      BaseRoute.Students => $"{rootRoute}/students",
-      BaseRoute.Exams => $"{rootRoute}/exams",
-      BaseRoute.Stations => $"{rootRoute}/stations",
-      BaseRoute.Domains => $"{rootRoute}/domains",
-      BaseRoute.CriterionGrades => $"{rootRoute}/criterion-grades",
-      BaseRoute.DomainGrades => $"{rootRoute}/domain-grades",
+      BaseRoute.Projects => $"{rootRoute}/projects",
       _ => throw new ArgumentOutOfRangeException(nameof(baseRoute), baseRoute, null),
     };
   }
