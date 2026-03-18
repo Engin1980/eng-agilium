@@ -144,7 +144,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Type).IsRequired();
       entity
         .HasOne(e => e.Project)
-        .WithMany()
+        .WithMany(e => e.Templates)
         .HasForeignKey(e => e.ProjectId)
         .OnDelete(DeleteBehavior.Restrict);
       entity
@@ -177,7 +177,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Title).IsRequired().HasMaxLength(256);
       entity.Property(e => e.OrderIndex).IsRequired();
-      entity.Property(e => e.ColumnIndex).IsRequired();
       entity.Property(e => e.Type).IsRequired();
       entity.Property(e => e.ValidatingRegex).HasMaxLength(1024);
       entity

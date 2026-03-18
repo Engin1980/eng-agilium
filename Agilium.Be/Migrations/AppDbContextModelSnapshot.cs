@@ -320,9 +320,6 @@ namespace Eng.Agilium.Be.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ColumnIndex")
-                        .HasColumnType("int");
-
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -509,7 +506,7 @@ namespace Eng.Agilium.Be.Migrations
             modelBuilder.Entity("Eng.Agilium.Be.Model.Db.Template", b =>
                 {
                     b.HasOne("Eng.Agilium.Be.Model.Db.Project", "Project")
-                        .WithMany()
+                        .WithMany("Templates")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -573,6 +570,8 @@ namespace Eng.Agilium.Be.Migrations
                     b.Navigation("Memberships");
 
                     b.Navigation("Roles");
+
+                    b.Navigation("Templates");
 
                     b.Navigation("WorkflowStates");
                 });

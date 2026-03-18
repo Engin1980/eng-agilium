@@ -10,7 +10,6 @@ public class TemplateItem
   public string Title { get; set; } = string.Empty;
   public TemplateItemType Type { get; set; }
   public string? ValidatingRegex { get; set; }
-  public int ColumnIndex { get; set; }
 }
 
 public enum TemplateItemType

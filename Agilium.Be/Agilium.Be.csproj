@@ -25,4 +25,8 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Health\" />
+  </ItemGroup>
 </Project>

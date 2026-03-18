@@ -9,6 +9,7 @@ public class Project
   public ICollection<Membership> Memberships { get; set; } = [];
   public ProjectStatus Status { get; set; }
   public ICollection<WorkflowState> WorkflowStates { get; set; } = [];
+  public ICollection<Template> Templates { get; set; } = [];
 }
 
 public enum ProjectStatus
