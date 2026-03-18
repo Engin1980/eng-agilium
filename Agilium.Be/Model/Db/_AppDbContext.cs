@@ -19,6 +19,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
+    modelBuilder.UseCollation("Czech_CI_AS");
+
     modelBuilder.Entity<AppUser>(entity =>
     {
       entity.HasKey(e => e.Id);
@@ -31,6 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         .WithOne(t => t.AppUser)
         .HasForeignKey(t => t.AppUserId)
         .OnDelete(DeleteBehavior.Restrict);
+      entity.HasIndex(e => e.Email).IsUnique();
     });
 
     modelBuilder.Entity<Project>(entity =>
@@ -40,15 +43,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Title).IsRequired().HasMaxLength(256);
       entity.Property(e => e.Description).HasMaxLength(2000);
       entity
-        .HasOne(e => e.Owner)
-        .WithMany(u => u.OwnedProjects)
-        .HasForeignKey(e => e.OwnerId)
-        .OnDelete(DeleteBehavior.Restrict);
-      entity
         .HasMany(e => e.Roles)
         .WithOne(r => r.Project)
         .HasForeignKey(r => r.ProjectId)
         .OnDelete(DeleteBehavior.Restrict);
+      entity.HasIndex(e => e.Title).IsUnique();
     });
 
     modelBuilder.Entity<Role>(entity =>

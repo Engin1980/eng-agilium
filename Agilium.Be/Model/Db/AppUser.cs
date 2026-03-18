@@ -12,6 +12,5 @@ public class AppUser
   public int FailedLoginAttemptsCount { get; set; }
   public DateTime? LastSuccessfulLogin { get; set; }
   public ICollection<Token> Tokens { get; set; } = [];
-  public ICollection<Project> OwnedProjects { get; set; } = [];
   public ICollection<Membership> Memberships { get; set; } = [];
 }

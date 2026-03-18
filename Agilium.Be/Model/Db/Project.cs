@@ -5,8 +5,6 @@ public class Project
   public int Id { get; set; }
   public string Title { get; set; } = string.Empty;
   public string Description { get; set; } = string.Empty;
-  public int OwnerId { get; set; }
-  public AppUser Owner { get; set; } = null!;
   public ICollection<Role> Roles { get; set; } = [];
   public ICollection<Membership> Memberships { get; set; } = [];
   public ProjectStatus Status { get; set; }
@@ -15,6 +13,6 @@ public class Project
 
 public enum ProjectStatus
 {
-  Active,
-  Inactive,
+  Active = 1,
+  Inactive = 2,
 }

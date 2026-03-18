@@ -3,6 +3,7 @@
 public class TemplateItem
 {
   public int Id { get; set; }
+  public string Key { get; set; } = string.Empty;
   public int OrderIndex { get; set; }
   public int TemplateColumnId { get; set; }
   public TemplateColumn TemplateColumn { get; set; } = null!;
@@ -21,5 +22,6 @@ public enum TemplateItemType
   NextlineInt,
   InlineDouble,
   NExtlineDouble,
-  Comments
+  Comments,
+  Untemplated
 }

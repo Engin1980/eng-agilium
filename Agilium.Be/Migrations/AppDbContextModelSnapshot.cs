@@ -17,6 +17,7 @@ namespace Eng.Agilium.Be.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .UseCollation("Czech_CI_AS")
                 .HasAnnotation("ProductVersion", "8.0.25")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -62,6 +63,9 @@ namespace Eng.Agilium.Be.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("AppUsers");
                 });
@@ -146,9 +150,6 @@ namespace Eng.Agilium.Be.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -159,7 +160,8 @@ namespace Eng.Agilium.Be.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("Projects");
                 });
@@ -321,6 +323,10 @@ namespace Eng.Agilium.Be.Migrations
                     b.Property<int>("ColumnIndex")
                         .HasColumnType("int");
 
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("OrderIndex")
                         .HasColumnType("int");
 
@@ -451,17 +457,6 @@ namespace Eng.Agilium.Be.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Eng.Agilium.Be.Model.Db.Project", b =>
-                {
-                    b.HasOne("Eng.Agilium.Be.Model.Db.AppUser", "Owner")
-                        .WithMany("OwnedProjects")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("Eng.Agilium.Be.Model.Db.Role", b =>
                 {
                     b.HasOne("Eng.Agilium.Be.Model.Db.Project", "Project")
@@ -569,8 +564,6 @@ namespace Eng.Agilium.Be.Migrations
             modelBuilder.Entity("Eng.Agilium.Be.Model.Db.AppUser", b =>
                 {
                     b.Navigation("Memberships");
-
-                    b.Navigation("OwnedProjects");
 
                     b.Navigation("Tokens");
                 });
