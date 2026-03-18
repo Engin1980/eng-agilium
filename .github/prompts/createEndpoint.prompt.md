@@ -37,7 +37,7 @@ Each endpoint must consist of the following components (in this order):
 
     - For **database**:
       - Use async database calls where appropriate.
-      - If database access is required, inject `AppDbContext` via the primary constructor as:
+      - If database access is required, inject `AppDbContext` via the **primary constructor** as:
     `AppDbContext dbContext`
       - If you need to get an entity from db by it ID and the entity is not found, return `EntityNotFoundException`, like
     `throw new EntityNotFoundException(typeof(Exam), parameters.Id);`
