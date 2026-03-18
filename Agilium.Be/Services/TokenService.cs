@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +15,11 @@ public class TokenService(AppDbContext dbContext, AppSettingsService appSettings
   {
     string tokenHash = CalculateHash(tokenValue);
     var token =
-      (
-        await dbContext.Tokens.FirstOrDefaultAsync(t => t.Value == tokenHash && t.Type == tokenType)
-        ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenNotFound, null)
-      ) ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenNotFound, null);
+      await dbContext
+        .Tokens.Include(q => q.AppUser)
+          .ThenInclude(q => q.Memberships)
+        .FirstOrDefaultAsync(t => t.Value == tokenHash && t.Type == tokenType)
+      ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenNotFound, null);
     if (token.Expiration < DateTime.UtcNow)
       throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenExpired, token?.AppUser);
     if (deleteExistingToken)

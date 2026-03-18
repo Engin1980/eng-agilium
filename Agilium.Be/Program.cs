@@ -103,11 +103,11 @@ class BuildInitializer(WebApplicationBuilder builder)
 
     // app services
     builder.Services.AddSingleton<AppSettingsService>();
-    // builder.Services.AddTransient<TurnstileService>();
+    builder.Services.AddTransient<TurnstileService>();
     // builder.Services.AddTransient<SmtpService>();
     // builder.Services.AddTransient<SmartEmailService>();
 
-    // builder.Services.AddTransient<TokenService>();
+    builder.Services.AddTransient<TokenService>();
   }
 
   private void ConfigureHandlersAndEndpoints()

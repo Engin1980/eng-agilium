@@ -12,13 +12,14 @@ public class Utils
     string? email,
     string? name,
     string? surname,
-    string role,
+    string[] roles,
     string keyString,
     string issuer,
     int expirationMinutes
   )
   {
-    List<Claim> claims = [new Claim("sub", id.ToString()), new Claim("role", role)];
+    List<Claim> claims = [new Claim("sub", id.ToString())];
+    roles.ToList().ForEach(role => claims.Add(new Claim("role", role)));
     if (email != null)
       claims.Add(new Claim("email", email));
     if (name != null)
