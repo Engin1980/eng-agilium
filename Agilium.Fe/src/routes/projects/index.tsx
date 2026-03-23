@@ -1,4 +1,3 @@
-import React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/projects/")({
@@ -49,11 +48,25 @@ function RouteComponent() {
         }}
       >
         <h1 style={{ margin: 0 }}>Projects</h1>
-        <div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input
             placeholder="Search projects..."
             style={{ padding: 8, minWidth: 220 }}
           />
+          <button
+            onClick={() => console.log('Create project')}
+            style={{
+              padding: '8px 12px',
+              background: '#2563eb',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Nový projekt
+          </button>
         </div>
       </header>
 
