@@ -1,5 +1,7 @@
 version: '3.9'
 
+name: eng-aqilium
+
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
