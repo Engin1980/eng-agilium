@@ -9,6 +9,19 @@ alespoň minimálního BE/FE není story reálně použitelná. Podrobný techni
 
 Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimplementovat.
 
+## Story -1 — Lokální infrastruktura (DB kontejner)
+
+Úplně první krok, ještě před jakýmkoliv kódem — bez běžící DB se nedá spustit ani `dotnet run`
+(`Program.cs` volá `db.Database.Migrate()` při startu), natož testovat další story.
+
+- [x] `Agilium.Db\docker-compose.yml` — SQL Server 2022 kontejner (`eng-agilium-db`), port `1433`,
+      heslo z `DB_PASSWORD`, perzistentní volume `eng_agilium_mssql_data`.
+- [x] `Agilium.Db\.env` — lokální proměnné (heslo DB) pro `docker compose up`.
+- [x] `Agilium.Db\.env.example` — demo verze `.env` s placeholder heslem, sloužící jako vzor pro
+      ostatní vývojáře.
+- [x] `Agilium.Db\.gitignore` — obsahuje `.env`, takže se reálné heslo negituje (ověřeno —
+      `.env` není v `git ls-files`, `.env.example`/`docker-compose.yml`/`.gitignore` ano).
+
 ## Story 0 — Úklid modelu před dalším rozvojem
 
 Menší, ale průřezové změny, na kterých staví defaultní data zakládaná v dalších storách (projekt při

@@ -8,6 +8,14 @@ implementaci upravit, jde hlavně o to mít jasný, postupně odškrtávatelný 
 
 Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimplementovat.
 
+## Lokální infrastruktura (DB kontejner)
+
+- [x] `Agilium.Db\docker-compose.yml` — SQL Server 2022 kontejner (`eng-agilium-db`), port `1433`,
+      heslo z `DB_PASSWORD`, perzistentní volume `eng_agilium_mssql_data`.
+- [x] `Agilium.Db\.env` — lokální proměnné (heslo DB) pro `docker compose up`.
+- [x] `Agilium.Db\.env.example` — demo verze `.env` s placeholder heslem pro ostatní vývojáře.
+- [x] `Agilium.Db\.gitignore` — ignoruje `.env` (ověřeno v `git ls-files`).
+
 ## Backend — databáze / model
 
 - [x] DB schéma a entity: `AppUser`, `Project`, `Role`, `Membership`, `Item`, `Sprint`, `SprintItem`,
