@@ -2,3 +2,5 @@
 .vs/eng-agilium/CopilotIndices/
 .vs/eng-agilium/FileContentIndex/
 .vs/eng-agilium/copilot-chat
+
+.env

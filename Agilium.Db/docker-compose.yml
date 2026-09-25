@@ -1,6 +1,4 @@
-version: '3.9'
-
-name: eng-aqilium
+name: eng-agilium
 
 services:
   sqlserver:

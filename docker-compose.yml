@@ -1,0 +1,43 @@
+name: eng-agilium
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: eng-agilium-db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    ports:
+      - "${DB_PORT:-1433}:1433"
+    volumes:
+      - eng_agilium_mssql_data:/var/opt/mssql
+    restart: unless-stopped
+
+  be:
+    build:
+      context: ./Agilium.Be
+      dockerfile: Dockerfile
+    container_name: eng-agilium-be
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=eng-agilium-db;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
+    ports:
+      - "${BE_PORT:-5049}:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  fe:
+    build:
+      context: ./Agilium.Fe
+      dockerfile: Dockerfile
+    container_name: eng-agilium-fe
+    ports:
+      - "${FE_PORT:-5173}:5173"
+    depends_on:
+      - be
+    restart: unless-stopped
+
+volumes:
+  eng_agilium_mssql_data:
