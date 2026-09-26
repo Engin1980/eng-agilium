@@ -209,7 +209,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
     {
       Project = project,
       UserId = LoggedUser.AppUserId,
-      RoleId = project.Roles.First(r => r.Title == "Owner").Id,
+      Role = project.Roles.First(r => r.Title == "Owner"),
     };
     project.Memberships.Add(mi);
   }
