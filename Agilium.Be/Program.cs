@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Eng.Agilium.Be;
 using Eng.Agilium.Be.Features;
+using Eng.Agilium.Be.Features.Templates;
 using Eng.Agilium.Be.Model.Db;
 using Eng.Agilium.Be.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -287,6 +288,28 @@ class AppInitializer(WebApplication app, AppSettings appSettings)
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    SeedGlobalTemplates(db);
     db.SaveChanges();
+  }
+
+  /// <summary>
+  /// Ensures exactly one global (ProjectId == null) default template exists per ItemType - idempotent,
+  /// so it's safe to run on every startup. New projects copy from these (see Projects.Create).
+  /// </summary>
+  private static void SeedGlobalTemplates(AppDbContext db)
+  {
+    var existingTypes = db.Templates.Where(t => t.ProjectId == null).Select(t => t.Type).ToHashSet();
+
+    foreach (var type in Enum.GetValues<ItemType>())
+    {
+      if (existingTypes.Contains(type))
+        continue;
+
+      var template = new Template { ProjectId = null, Type = type, ColumnCount = DefaultTemplates.DefaultColumnCount };
+      foreach (var field in DefaultTemplates.BuildFieldsFor(type))
+        template.TemplateItems.Add(field);
+
+      db.Templates.Add(template);
+    }
   }
 }

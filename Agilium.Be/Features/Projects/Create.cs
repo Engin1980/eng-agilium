@@ -1,6 +1,8 @@
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Exceptions.Validation;
+using Eng.Agilium.Be.Features.Templates;
 using Eng.Agilium.Be.Model.Db;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eng.Agilium.Be.Features.Projects.Create;
 
@@ -34,7 +36,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
         dbContext.Projects.Add(project);
         AddProjectRoles(project);
         AddOwnerMembership(project);
-        AddDefaultTemplates(project);
+        await AddDefaultTemplatesAsync(project, cancellationToken);
         AddDefaultWorkflowStates(project);
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -82,120 +84,48 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
     );
   }
 
-  private void AddDefaultTemplates(Project project)
+  /// <summary>
+  /// Gives the new project its own copy of each ItemType's global default template (see
+  /// description.md: "při vytvoření projektu se udělá lokální kopie šablon"). Falls back to the
+  /// hardcoded field layout if a global template is somehow missing (it's seeded by AppInitializer).
+  /// </summary>
+  private async Task AddDefaultTemplatesAsync(Project project, CancellationToken cancellationToken)
   {
-    var taskTypes = new[] { ItemType.Task, ItemType.Bug };
+    var globalTemplates = await dbContext
+      .Templates.AsNoTracking()
+      .Include(t => t.TemplateItems)
+      .Where(t => t.ProjectId == null)
+      .ToListAsync(cancellationToken);
 
-    foreach (var type in taskTypes)
+    foreach (var type in Enum.GetValues<ItemType>())
     {
-      Template template = new() { Project = project, Type = type };
-      var left = new TemplateColumn() { Template = template, WidthWeight = 3 };
-      var right = new TemplateColumn() { Template = template, WidthWeight = 1 };
+      var global = globalTemplates.FirstOrDefault(t => t.Type == type);
+      var sourceFields = global?.TemplateItems ?? DefaultTemplates.BuildFieldsFor(type);
 
-      left.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "description",
-          Title = "Description",
-          Type = TemplateItemType.NextlineTextArea,
-        }
-      );
-      left.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 2,
-          Key = "comments",
-          Title = "Comments",
-          Type = TemplateItemType.Comments,
-        }
-      );
+      var template = new Template
+      {
+        Project = project,
+        Type = type,
+        ColumnCount = global?.ColumnCount ?? DefaultTemplates.DefaultColumnCount,
+      };
 
-      right.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "priority",
-          Title = "Priority",
-          Type = TemplateItemType.InlineInt,
-        }
-      );
-      right.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "complexity",
-          Title = "Complexity",
-          Type = TemplateItemType.InlineInt,
-        }
-      );
-      right.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "time-expected",
-          Title = "Time Expected (h)",
-          Type = TemplateItemType.InlineDouble,
-        }
-      );
-      right.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "time-spent",
-          Title = "Time Spent (h)",
-          Type = TemplateItemType.InlineDouble,
-        }
-      );
-
-      project.Templates.Add(template);
-    }
-
-    var highTypes = new[] { ItemType.UserStory, ItemType.Feature };
-
-    foreach (var type in highTypes)
-    {
-      Template template = new() { Project = project, Type = type };
-      var left = new TemplateColumn() { Template = template, WidthWeight = 3 };
-      var right = new TemplateColumn() { Template = template, WidthWeight = 1 };
-
-      left.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "description",
-          Title = "Description",
-          Type = TemplateItemType.NextlineTextArea,
-        }
-      );
-      left.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 2,
-          Key = "comments",
-          Title = "Comments",
-          Type = TemplateItemType.Comments,
-        }
-      );
-
-      right.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "priority",
-          Title = "Priority",
-          Type = TemplateItemType.InlineInt,
-        }
-      );
-      right.TemplateItems.Add(
-        new TemplateItem()
-        {
-          OrderIndex = 1,
-          Key = "complexity",
-          Title = "Complexity",
-          Type = TemplateItemType.InlineInt,
-        }
-      );
+      foreach (var field in sourceFields)
+      {
+        template.TemplateItems.Add(
+          new TemplateItem
+          {
+            Key = field.Key,
+            Title = field.Title,
+            Type = field.Type,
+            ValidatingRegex = field.ValidatingRegex,
+            OrderIndex = field.OrderIndex,
+            ColumnStart = field.ColumnStart,
+            ColumnSpan = field.ColumnSpan,
+            RowStart = field.RowStart,
+            RowSpan = field.RowSpan,
+          }
+        );
+      }
 
       project.Templates.Add(template);
     }

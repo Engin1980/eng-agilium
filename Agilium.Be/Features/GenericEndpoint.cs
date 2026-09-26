@@ -230,6 +230,7 @@ public enum BaseRoute
   Auth = 2,
   Projects = 3,
   Items = 4,
+  Templates = 5,
 }
 
 public static class BaseRouteExtensions
@@ -245,6 +246,7 @@ public static class BaseRouteExtensions
       BaseRoute.Auth => $"{rootRoute}/auth",
       BaseRoute.Projects => $"{rootRoute}/projects",
       BaseRoute.Items => $"{rootRoute}/items",
+      BaseRoute.Templates => $"{rootRoute}/templates",
       _ => throw new ArgumentOutOfRangeException(nameof(baseRoute), baseRoute, null),
     };
   }
