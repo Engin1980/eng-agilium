@@ -182,11 +182,16 @@ naslepo.
 
 - [x] BE: přihlášení, refresh, odhlášení (`Features\Auth\Login.cs`/`Refresh.cs`/`Logout.cs`).
 - [x] BE: vytvoření uživatele (`Features\AppUsers\Create.cs`) — zkontrolovat umístění pod `BaseRoute.Auth`.
+- [x] BE: self-service registrace — `Features\AppUsers\Create.cs` (`POST /api/v1/auth/users`) nevyžaduje
+      autentizaci a od Story 1 přijímá heslo (viz bonus nález tamtéž), takže funkčně už je to veřejná
+      registrace; reset hesla a aktivace/deaktivace účtu zůstávají otevřené (čeká na upřesnění zadání).
 - [ ] BE: dopracovat `ValidateRequiredRoles` (`Features\GenericEndpoint.cs`) a osadit endpointy nad
       projektovými daty reálnými požadavky na oprávnění (`CanViewProject`, `CanManageProject`,
       `CanViewMembers`, `CanManageMembers`, `CanManageSprints`).
-- [ ] BE: self-service registrace, reset hesla, aktivace/deaktivace účtu — čeká na upřesnění zadání.
-- [ ] FE: přihlašovací obrazovka a napojení na JWT autentizaci.
+- [x] FE: přihlašovací obrazovka (`src\routes\login.tsx`, ze Story 1) a nová registrační obrazovka
+      (`src\routes\register.tsx`) nad stejným `POST /auth/users` — po úspěšné registraci se uživatel
+      rovnou přihlásí a je přesměrován na `/projects`; `/login` a `/register` na sebe teď vzájemně
+      odkazují.
 
 ## Story 7 — Podpůrné věci (napříč, bez pevného pořadí)
 

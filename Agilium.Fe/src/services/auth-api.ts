@@ -20,6 +20,19 @@ export function login(email: string, password: string): Promise<string> {
   });
 }
 
+export function register(
+  email: string,
+  name: string,
+  surname: string,
+  password: string,
+): Promise<{ id: number }> {
+  return apiRequest<{ id: number }>("/auth/users", {
+    method: "POST",
+    skipAuth: true,
+    body: { email, name, surname, password },
+  });
+}
+
 export function refresh(): Promise<string> {
   return apiRequest<string>("/auth/refresh", { method: "POST", skipAuth: true });
 }
