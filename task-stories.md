@@ -52,16 +52,32 @@ Základní vstupní bod do aplikace — bez projektu nejde dělat nic dalšího.
 - [x] BE: změna stavu projektu Active/Inactive (`Features\Projects\UpdateStatus.cs`) + číselník stavů
       (`Features\Projects\StateOptions.cs`).
 - [x] BE: výpis projektů, volitelně podle člena (`Features\Projects\List.cs`).
-- [ ] BE: smazání projektu — potvrdit se zadavatelem, jestli je vůbec potřeba (`UpdateStatus.cs` už řeší
-      deaktivaci); pokud ano, `DELETE /api/v1/projects/{id}`, promyslet kaskádové smazání navázaných dat.
-- [ ] FE: `services` vrstva — HTTP klient (fetch wrapper, JWT/refresh) + TanStack Query hooky. Toto je
-      **předpoklad pro všechno další na FE**, dává smysl ho udělat hned na začátku této story, ne až
-      později.
-- [ ] FE: napojení seznamu projektů (`routes\projects\index.tsx`) na `GET /api/v1/projects` místo
-      mock dat.
-- [ ] FE: napojení dialogu založení projektu (`handleCreate`) na `POST /api/v1/projects`.
-- [ ] FE: routa detailu projektu (`routes\projects\$id\index.tsx`) — zatím jen scaffold, zobrazení
-      základních údajů projektu.
+- [ ] BE: smazání projektu — konzultováno se zadavatelem, zatím se nedělá (`UpdateStatus.cs` řeší
+      deaktivaci, to pro teď stačí); necháno jako otevřený bod do budoucna.
+- [x] BE bonus nález: `AddOwnerMembership` (`Features\Projects\Create.cs`) nastavovala `RoleId` na
+      `.Id` role, která v tu chvíli ještě nebyla uložená do DB (tedy `0`) → `POST /api/v1/projects`
+      vždy spadl na FK violaci. Opraveno nastavením navigation property `Role` místo `RoleId`.
+- [x] BE bonus nález: `Features\AppUsers\Create.cs` nepřijímal heslo (`PasswordHash` se natvrdo
+      nastavovalo na `string.Empty`), takže se takto vytvořeným uživatelem nedalo nikdy přihlásit.
+      Doplněn `Password` do `Command` (min. 8 znaků, `XRegex`), hashování přes `BCrypt.Net.BCrypt.HashPassword`,
+      e-mail normalizován na lowercase stejně jako v `Login.cs`.
+- [x] FE: `services` vrstva — `src\services\http-client.ts` (fetch wrapper s `credentials:'include'`,
+      Authorization header z access tokenu v paměti, tiché obnovení session přes `/auth/refresh` při
+      401 a jeden retry), `src\services\auth-api.ts`, `src\services\projects-api.ts` a
+      `src\services\projects-queries.ts` (TanStack Query hooky `useProjects`/`useProject`/`useCreateProject`).
+- [x] FE: `src\contexts\auth-context.tsx` — `AuthProvider`/`useAuth`; access token se drží jen v paměti
+      (ne v `localStorage`, kvůli XSS), session po refreshi stránky se obnovuje tiše přes httpOnly
+      `refreshToken` cookie (`SameSite=Strict`). Zapojeno v `main.tsx` spolu s `QueryClientProvider`.
+- [x] FE: minimální přihlašovací stránka (`src\routes\login.tsx`) — nutný předpoklad pro založení
+      projektu, protože zakladatel musí být `LoggedUser` (viz `AddOwnerMembership`); Story 6
+      (kompletní auth/autorizace) zůstává neimplementovaná.
+- [x] FE: napojení seznamu projektů (`routes\projects\index.tsx`) na `GET /api/v1/projects` místo
+      mock dat; routa je chráněná přesměrováním na `/login`, pokud uživatel není přihlášený.
+- [x] FE: napojení dialogu založení projektu (`handleCreate`) na `POST /api/v1/projects` přes
+      `useCreateProject` (vč. zobrazení chyby z API a invalidace seznamu po úspěchu).
+- [x] FE: routa detailu projektu (`routes\projects\$id\index.tsx`) — zobrazuje název, stav a popis
+      projektu (načteno přes `useProject`, zatím bez samostatného BE `GET /projects/{id}` endpointu —
+      ten nebyl v `tasks.md` požadován, detail se dohledává z existujícího seznamu).
 
 ## Story 2 — Uživatel v projektu buduje strom Feature → User-story → Task/Bug
 

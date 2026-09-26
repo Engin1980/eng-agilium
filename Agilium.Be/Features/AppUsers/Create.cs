@@ -1,9 +1,15 @@
 ﻿using Eng.Agilium.Be.Exceptions;
+using Eng.Agilium.Be.Exceptions.Validation;
 using Eng.Agilium.Be.Model.Db;
 
 namespace Eng.Agilium.Be.Features.AppUsers;
 
-public record Command(string Email, string Name, string Surname);
+public record Command(
+  [property: XEmailValidation] string Email,
+  string Name,
+  string Surname,
+  [property: XRegex(".{8,}", false, XValidationErrorKey.INVALID_PASSWORD_FORMAT)] string Password
+);
 
 public class Handler : GenericHandler<Command, EmptyParameters, IdResult>
 {
@@ -17,15 +23,17 @@ public class Handler : GenericHandler<Command, EmptyParameters, IdResult>
     CancellationToken cancellationToken
   )
   {
-    if (dbContext.AppUsers.Any(u => u.Email == command.Email))
-      throw new EntityAlreadyExistsException(typeof(AppUser), command.Email);
+    var email = command.Email.Trim().ToLowerInvariant();
+
+    if (dbContext.AppUsers.Any(u => u.Email == email))
+      throw new EntityAlreadyExistsException(typeof(AppUser), email);
 
     var user = new AppUser
     {
-      Email = command.Email,
+      Email = email,
       Name = command.Name,
       Surname = command.Surname,
-      PasswordHash = string.Empty,
+      PasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Password),
       IsActive = true,
     };
 
