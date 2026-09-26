@@ -1,0 +1,27 @@
+meta {
+  name: 6. Move Task Under User Story
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/projects/items/{{taskId}}/parent
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "parentId": {{userStoryId}}
+  }
+}
+
+docs {
+  Moves the orphan task out of the generic "Bez user-story" bucket into the real user story.
+  Try parentId: {{featureId}} instead to see the hierarchy-type check reject it
+  ("A Task cannot have a parent of type Feature").
+}

@@ -1,0 +1,27 @@
+meta {
+  name: 5. Update Title
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/projects/items/{{userStoryId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno User Story (renamed)",
+    "type": 3
+  }
+}
+
+docs {
+  Try this against a generic item's id (from "List Tree") instead - it should fail with
+  "Generic container items cannot be renamed or retyped".
+}

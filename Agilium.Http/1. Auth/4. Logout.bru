@@ -1,0 +1,23 @@
+meta {
+  name: 4. Logout
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": ""
+  }
+}
+
+docs {
+  Clears the refresh-token cookie. Note: Logout.cs currently revokes the token from the request body
+  rather than the cookie, so the body value here doesn't actually matter for revocation - only the
+  cookie-clearing side effect is exercised by the FE.
+}

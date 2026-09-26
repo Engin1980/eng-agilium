@@ -1,0 +1,25 @@
+meta {
+  name: 1. Create User
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{email}}",
+    "name": "Bruno",
+    "surname": "Tester",
+    "password": "{{password}}"
+  }
+}
+
+docs {
+  Creates a login-capable app user. Fails with ENTITY_ALREADY_EXISTS (409-ish 400) if the email is
+  already taken - that's expected on repeated runs, just move on to Login.
+}

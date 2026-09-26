@@ -1,0 +1,22 @@
+meta {
+  name: 3. Refresh
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh
+  body: none
+  auth: none
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("accessToken", res.body);
+  }
+}
+
+docs {
+  Mints a new access token from the refresh-token cookie set by Login. Run this to simulate what the
+  FE does silently on page reload / on a 401.
+}

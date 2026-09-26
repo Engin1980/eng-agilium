@@ -1,0 +1,30 @@
+meta {
+  name: 2. Create User Story
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/projects/items
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno User Story",
+    "type": 3,
+    "projectId": {{projectId}},
+    "parentId": {{featureId}}
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("userStoryId", res.body.id);
+  }
+}

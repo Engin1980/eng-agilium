@@ -1,0 +1,32 @@
+meta {
+  name: 2. Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login/admin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "rememberMe": true,
+    "turnstileToken": ""
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("accessToken", res.body);
+  }
+}
+
+docs {
+  Sets the httpOnly refresh-token cookie (Bruno's cookie jar carries it to later requests
+  automatically) and stores the access token in the {{accessToken}} collection variable, used by
+  every other request's Authorization header.
+}

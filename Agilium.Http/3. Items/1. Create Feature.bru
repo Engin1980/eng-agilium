@@ -1,0 +1,35 @@
+meta {
+  name: 1. Create Feature
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/projects/items
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno Feature",
+    "type": 4,
+    "projectId": {{projectId}},
+    "parentId": null
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("featureId", res.body.id);
+  }
+}
+
+docs {
+  ItemType: 1 = Task, 2 = Bug, 3 = UserStory, 4 = Feature (see GET /items/type-options).
+  A Feature always has parentId: null - it can never be nested.
+}

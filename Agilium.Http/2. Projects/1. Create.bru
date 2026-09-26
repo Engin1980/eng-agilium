@@ -1,0 +1,38 @@
+meta {
+  name: 1. Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/projects
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno Demo Project {{runtimeTitleSuffix}}",
+    "description": "Created from the Bruno collection"
+  }
+}
+
+script:pre-request {
+  bru.setVar("runtimeTitleSuffix", Date.now());
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("projectId", res.body.id);
+  }
+}
+
+docs {
+  Requires a valid {{accessToken}} (run Auth/Login first) - project creation makes the caller the
+  Owner via LoggedUser. Title includes a timestamp because Project.Title is unique, so the request
+  stays repeatable across runs.
+}

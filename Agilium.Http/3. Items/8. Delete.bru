@@ -1,0 +1,21 @@
+meta {
+  name: 8. Delete
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/projects/items/{{userStoryId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  Deletes the user story and cascades to its remaining children (and their SprintItem rows).
+  Deleting a generic item (id from "List Tree") should fail with
+  "Generic container items cannot be deleted".
+}

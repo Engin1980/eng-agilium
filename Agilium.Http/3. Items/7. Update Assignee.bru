@@ -1,0 +1,26 @@
+meta {
+  name: 7. Update Assignee
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/projects/items/{{taskId}}/assignee
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "assigneeId": null
+  }
+}
+
+docs {
+  Set assigneeId to a real AppUser id that is also a member of {{projectId}} (e.g. the id returned by
+  Auth/Create User once they've been added via AssignMember) - a non-member is rejected.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: 3. Update State
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/projects/{{projectId}}/state
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "status": 2
+  }
+}
+
+docs {
+  Status 1 = Active, 2 = Inactive (see GET /projects/state-options).
+}

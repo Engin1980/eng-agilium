@@ -1,0 +1,36 @@
+meta {
+  name: 3. Create Orphan Task
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/projects/items
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno Orphan Task",
+    "type": 1,
+    "projectId": {{projectId}},
+    "parentId": null
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("taskId", res.body.id);
+  }
+}
+
+docs {
+  parentId is null on purpose: this exercises the lazy generic-user-story/generic-feature creation
+  from description.md - run "List Tree" afterwards to see the "Bez feature" / "Bez user-story"
+  containers appear.
+}
