@@ -122,20 +122,46 @@ Navazuje na Story 2 — jakmile existují položky, potřebují editovatelný de
 nejnáročnější story na model (CSS grid) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd.
 u položek.
 
-- [ ] DB: přepracovat `TemplateColumn`/`TemplateItem` z pevných sloupců (`WidthWeight`) na CSS grid
-      pozicování (`grid-column`/`grid-row` obdoba) — viz `description.md`.
-- [ ] DB: nová entita pro hodnoty polí položky (např. `ItemFieldValue`: `ItemId`, `TemplateItemId`,
-      `Value`) — v `Item` zatím není žádné úložiště pro reálná data zadaná přes šablonu.
-- [ ] BE: CRUD nad projektově specifickou šablonou pro daný `ItemType`
-      (`Features\Templates\Get.cs`/`Update.cs`).
-- [ ] BE: CRUD nad univerzální (výchozí) šablonou nezávislou na projektu — dnes `Template.ProjectId` je
-      povinné, takže není jasné, kde "globální" výchozí šablona žije; potřeba nejdřív rozhodnout návrh.
-- [ ] BE: čtení/uložení hodnot polí položky dle šablony
-      (`Features\Items\GetFieldValues.cs`/`SetFieldValues.cs`), vč. validace podle
-      `TemplateItem.ValidatingRegex`/`TemplateItemType`.
-- [ ] FE: komponenta pro dynamické vykreslení formuláře detailu položky podle šablony
-      (`src\components\specific\item-detail-form.tsx`).
-- [ ] FE: editor šablony (přidání/úprava/smazání/přesun polí v gridu), globální i projektová varianta.
+- [x] DB: přepracovat `TemplateColumn`/`TemplateItem` z pevných sloupců (`WidthWeight`) na CSS grid
+      pozicování — `TemplateColumn` odstraněn, `TemplateItem` má `ColumnStart`/`ColumnSpan`/`RowStart`/
+      `RowSpan` (1-based, obdoba `grid-column`/`grid-row`) a `Template` má `ColumnCount`
+      (migrace `Story3_TemplateGridAndFieldValues`).
+- [x] DB: nová entita pro hodnoty polí položky — `ItemFieldValue` (`ItemId`, `TemplateItemId`, `Value`),
+      unikátní index `(ItemId, TemplateItemId)`.
+- [x] Rozhodnutí návrhu pro univerzální šablonu: `Template.ProjectId` je nyní nullable —
+      `ProjectId IS NULL` označuje jedinou globální výchozí šablonu daného `ItemType` (filtrovaný
+      unikátní index), vedle stávajícího unikátního `(ProjectId, Type)` pro projektové šablony.
+      `AppInitializer` tyto 4 globální šablony idempotentně zakládá při startu
+      (`Features\Templates\DefaultTemplates.cs`); úprava globální šablony **nemá** zpětný vliv na už
+      založené projekty (ty mají svou vlastní zkopírovanou šablonu).
+- [x] BE: CRUD nad projektově specifickou šablonou pro daný `ItemType`
+      (`Features\Templates\Get.cs`/`Update.cs`, `GET`/`PUT /api/v1/projects/{id}/templates/{itemType}`).
+- [x] BE: CRUD nad univerzální (výchozí) šablonou (`Features\Templates\GetGlobal.cs`/`UpdateGlobal.cs`,
+      `GET`/`PUT /api/v1/templates/{itemType}`, nová `BaseRoute.Templates`); validace gridu (duplicitní
+      klíče, meze sloupce/řádku, platný typ pole) sdílená mezi oběma variantami přes
+      `TemplateGridValidation.ApplyReplaceAsync`.
+- [x] BE: čtení/uložení hodnot polí položky dle šablony
+      (`Features\Items\GetFieldValues.cs`/`SetFieldValues.cs`, `GET`/`PUT
+      /api/v1/projects/items/{id}/fields`) — validace podle `TemplateItem.ValidatingRegex`/
+      `TemplateItemType` (celá/desetinná čísla vč. normalizace desetinné čárky, checkbox, zákaz hodnoty
+      u `LabelOnly`), kontrola že `TemplateItemId` patří k šabloně daného itemu (jinak by šlo zapisovat
+      do polí cizího projektu/typu). `Comments` se zatím ukládá jako prostý text (bez samostatného
+      vlákna komentářů — čeká na budoucí story).
+- [x] Návazné opravy nutné kvůli `ItemFieldValue` (`DeleteBehavior.Restrict`, žádný FK cascade v tomto
+      projektu): `Items\Delete.cs` teď maže i `ItemFieldValue` záznamy celého mazaného podstromu;
+      `Items\Update.cs` dovoluje změnu typu položky jen Task↔Bug (jediná záměna, která nerozbije
+      hierarchii ze Story 2) a při ní smaže staré hodnoty polí (patřily k jiné šabloně).
+- [x] BE bonus nález: `AddDefaultTemplates` (`Features\Projects\Create.cs`) sestavovala
+      `TemplateColumn`/`TemplateItem` objekty, které nikdy nebyly součástí sledovaného grafu (nepřidané
+      do `Template.TemplateColumns`), takže se přes všech 24 řádků `Templates` v dev DB nikdy neuložil
+      ani jeden `TemplateColumn`/`TemplateItem`. Přepsáno na kopírování z globální šablony (viz výše).
+- [x] FE: komponenta pro dynamické vykreslení formuláře detailu položky podle šablony
+      (`src\components\specific\item-detail-form.tsx`), napojena na novou routu
+      `routes\projects\$id\items\$itemId\index.tsx` (odkaz z názvu položky ve stromu ze Story 2).
+- [x] FE: editor šablony (`src\components\specific\template-fields-editor.tsx`) — přidání/úprava/
+      smazání/přesun polí v gridu (číselné vstupy pro pozici + živý náhled rozložení), obě varianty:
+      projektová (`routes\projects\$id\templates\index.tsx`, odkaz z detailu projektu) i globální
+      (`routes\templates\index.tsx`, odkaz ze seznamu projektů).
 
 ## Story 4 — Uživatel plánuje a řídí práci přes sprinty a kanban
 

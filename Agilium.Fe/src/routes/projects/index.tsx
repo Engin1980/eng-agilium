@@ -71,20 +71,25 @@ function ProjectsList() {
           }}
         >
           <h1 style={{ margin: 0 }}>Projects</h1>
-          <button
-            onClick={() => setCreateProjectDialogVisible(true)}
-            style={{
-              padding: "8px 12px",
-              background: "#2563eb",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-          >
-            Nový projekt
-          </button>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Link to="/templates" className="text-sm text-blue-600 hover:underline">
+              Globální šablony
+            </Link>
+            <button
+              onClick={() => setCreateProjectDialogVisible(true)}
+              style={{
+                padding: "8px 12px",
+                background: "#2563eb",
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              Nový projekt
+            </button>
+          </div>
         </header>
 
         {isLoading && <p className="text-gray-500">Načítání projektů…</p>}

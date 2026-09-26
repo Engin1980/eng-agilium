@@ -29,7 +29,7 @@ export function configureHttpClient(
 }
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   body?: unknown;
   /** Skips attaching the Authorization header (login/refresh calls). */
   skipAuth?: boolean;

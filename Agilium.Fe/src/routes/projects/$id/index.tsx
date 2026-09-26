@@ -58,6 +58,13 @@ function ProjectDetail() {
           <main className="mt-4 space-y-2">
             <p className="text-gray-700">{project.description}</p>
             <p className="text-sm text-gray-500">{project.memberCount} členů</p>
+            <Link
+              to="/projects/$id/templates"
+              params={{ id }}
+              className="inline-block text-sm text-blue-600 hover:underline"
+            >
+              Upravit šablony položek →
+            </Link>
           </main>
 
           <div className="mt-6">

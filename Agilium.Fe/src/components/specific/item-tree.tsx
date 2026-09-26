@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { ItemType } from "../../services/items-api";
 import type { ItemNode } from "../../services/items-api";
 import {
@@ -165,7 +166,13 @@ function ItemNodeView({
             </button>
           </>
         ) : (
-          <span className="font-medium">{node.title}</span>
+          <Link
+            to="/projects/$id/items/$itemId"
+            params={{ id: String(projectId), itemId: String(node.id) }}
+            className="font-medium text-blue-700 hover:underline"
+          >
+            {node.title}
+          </Link>
         )}
 
         {node.isGeneric && (

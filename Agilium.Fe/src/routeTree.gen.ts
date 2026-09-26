@@ -12,8 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsIdIndexRouteImport } from './routes/projects/$id/index'
+import { Route as ProjectsIdTemplatesIndexRouteImport } from './routes/projects/$id/templates/index'
+import { Route as ProjectsIdItemsItemIdIndexRouteImport } from './routes/projects/$id/items/$itemId/index'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -30,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TemplatesIndexRoute = TemplatesIndexRouteImport.update({
+  id: '/templates/',
+  path: '/templates/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
@@ -40,20 +48,38 @@ const ProjectsIdIndexRoute = ProjectsIdIndexRouteImport.update({
   path: '/projects/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsIdTemplatesIndexRoute =
+  ProjectsIdTemplatesIndexRouteImport.update({
+    id: '/projects/$id/templates/',
+    path: '/projects/$id/templates/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectsIdItemsItemIdIndexRoute =
+  ProjectsIdItemsItemIdIndexRouteImport.update({
+    id: '/projects/$id/items/$itemId/',
+    path: '/projects/$id/items/$itemId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/templates/': typeof TemplatesIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
+  '/projects/$id/templates/': typeof ProjectsIdTemplatesIndexRoute
+  '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects': typeof ProjectsIndexRoute
+  '/templates': typeof TemplatesIndexRoute
   '/projects/$id': typeof ProjectsIdIndexRoute
+  '/projects/$id/templates': typeof ProjectsIdTemplatesIndexRoute
+  '/projects/$id/items/$itemId': typeof ProjectsIdItemsItemIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,20 +87,42 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/templates/': typeof TemplatesIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
+  '/projects/$id/templates/': typeof ProjectsIdTemplatesIndexRoute
+  '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/projects/' | '/projects/$id/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/projects/'
+    | '/templates/'
+    | '/projects/$id/'
+    | '/projects/$id/templates/'
+    | '/projects/$id/items/$itemId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/projects' | '/projects/$id'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/projects'
+    | '/templates'
+    | '/projects/$id'
+    | '/projects/$id/templates'
+    | '/projects/$id/items/$itemId'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/register'
     | '/projects/'
+    | '/templates/'
     | '/projects/$id/'
+    | '/projects/$id/templates/'
+    | '/projects/$id/items/$itemId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -82,7 +130,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  TemplatesIndexRoute: typeof TemplatesIndexRoute
   ProjectsIdIndexRoute: typeof ProjectsIdIndexRoute
+  ProjectsIdTemplatesIndexRoute: typeof ProjectsIdTemplatesIndexRoute
+  ProjectsIdItemsItemIdIndexRoute: typeof ProjectsIdItemsItemIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -108,6 +159,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/templates/': {
+      id: '/templates/'
+      path: '/templates'
+      fullPath: '/templates/'
+      preLoaderRoute: typeof TemplatesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/': {
       id: '/projects/'
       path: '/projects'
@@ -122,6 +180,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$id/templates/': {
+      id: '/projects/$id/templates/'
+      path: '/projects/$id/templates'
+      fullPath: '/projects/$id/templates/'
+      preLoaderRoute: typeof ProjectsIdTemplatesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$id/items/$itemId/': {
+      id: '/projects/$id/items/$itemId/'
+      path: '/projects/$id/items/$itemId'
+      fullPath: '/projects/$id/items/$itemId/'
+      preLoaderRoute: typeof ProjectsIdItemsItemIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -130,7 +202,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  TemplatesIndexRoute: TemplatesIndexRoute,
   ProjectsIdIndexRoute: ProjectsIdIndexRoute,
+  ProjectsIdTemplatesIndexRoute: ProjectsIdTemplatesIndexRoute,
+  ProjectsIdItemsItemIdIndexRoute: ProjectsIdItemsItemIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
