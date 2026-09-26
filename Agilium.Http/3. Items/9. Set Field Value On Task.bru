@@ -1,0 +1,32 @@
+meta {
+  name: 9. Set Field Value On Task
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/projects/items/{{taskId}}/fields
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "values": [
+      { "templateItemId": {{taskDescriptionFieldId}}, "value": "Set from Bruno" }
+    ]
+  }
+}
+
+docs {
+  taskDescriptionFieldId is captured by the previous request ("8. Get Field Values"). The next request
+  ("10. Delete", which cascades onto this task) exercises the ItemFieldValue cleanup on cascading item
+  delete.
+
+  Try a templateItemId that belongs to a different template (e.g. the Feature template's id from
+  "Templates/1. Get Global") to see it rejected with "... does not belong to this item's template".
+}

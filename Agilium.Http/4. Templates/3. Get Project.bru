@@ -1,0 +1,24 @@
+meta {
+  name: 3. Get Project
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/projects/{{projectId}}/templates/1
+  body: none
+  auth: none
+}
+
+script:post-response {
+  if (res.status === 200) {
+    for (const field of res.body.items) {
+      bru.setVar(`taskField_${field.key}`, field.id);
+    }
+  }
+}
+
+docs {
+  ItemType 1 = Task. Captures each field's id (taskField_description etc.) - used by
+  "4. Update Project" and by Items/9. Set Field Value On Task.
+}

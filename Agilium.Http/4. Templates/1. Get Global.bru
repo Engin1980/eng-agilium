@@ -1,0 +1,24 @@
+meta {
+  name: 1. Get Global
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/templates/4
+  body: none
+  auth: none
+}
+
+script:post-response {
+  if (res.status === 200) {
+    for (const field of res.body.items) {
+      bru.setVar(`globalFeatureField_${field.key}`, field.id);
+    }
+  }
+}
+
+docs {
+  ItemType 4 = Feature (see Items/11. Type Options). Global templates are seeded once at BE startup
+  for every ItemType (1-4), so this should always return something without any setup.
+}

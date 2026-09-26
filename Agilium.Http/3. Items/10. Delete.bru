@@ -1,0 +1,22 @@
+meta {
+  name: 10. Delete
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/projects/items/{{userStoryId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  Deletes the user story and cascades to its remaining children (the task moved under it in step 6,
+  which by now also has a field value set in step 9) - also removing their SprintItem and
+  ItemFieldValue rows. Deleting a generic item (id from "List Tree") should fail with
+  "Generic container items cannot be deleted".
+}

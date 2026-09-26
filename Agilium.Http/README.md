@@ -14,6 +14,13 @@ environment (`environments/Local.bru`) to match (default assumes the `docker-com
   refresh, logout.
 - `Projects/` — create/list a project, toggle its Active/Inactive state.
 - `Items/` — the Story 2 feature/user-story/task/bug tree: create with and without an explicit parent
-  (the latter exercises lazy generic-container creation), list the tree, rename, reparent, assign, and
-  delete (with cascade) - several requests' `docs` blocks call out the validation errors worth trying
-  on purpose (renaming/deleting a generic item, invalid parent/child type combinations, etc).
+  (the latter exercises lazy generic-container creation), list the tree, rename, reparent, assign,
+  read/write template field values (Story 3), and delete (with cascade, incl. field values) - several
+  requests' `docs` blocks call out the validation errors worth trying on purpose (renaming/deleting a
+  generic item, invalid parent/child type combinations, a field value that doesn't belong to the
+  item's template, etc).
+- `Templates/` — Story 3's CSS-grid template CRUD, both the global default template
+  (`GET`/`PUT /api/v1/templates/{itemType}`) and a project's own copy
+  (`GET`/`PUT /api/v1/projects/{id}/templates/{itemType}`) - editing the global template doesn't
+  retroactively change any project's copy. `docs` blocks call out the grid-bounds and duplicate-key
+  validation worth trying on purpose.

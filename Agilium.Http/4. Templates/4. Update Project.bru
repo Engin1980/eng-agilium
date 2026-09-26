@@ -1,0 +1,38 @@
+meta {
+  name: 4. Update Project
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/projects/{{projectId}}/templates/1
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "columnCount": 4,
+    "items": [
+      { "id": {{taskField_description}}, "key": "description", "title": "Description", "type": 3, "validatingRegex": null, "orderIndex": 1, "columnStart": 1, "columnSpan": 3, "rowStart": 1, "rowSpan": 1 },
+      { "id": {{taskField_comments}}, "key": "comments", "title": "Comments", "type": 8, "validatingRegex": null, "orderIndex": 2, "columnStart": 1, "columnSpan": 3, "rowStart": 2, "rowSpan": 1 },
+      { "id": {{taskField_priority}}, "key": "priority", "title": "Priority", "type": 4, "validatingRegex": null, "orderIndex": 3, "columnStart": 4, "columnSpan": 1, "rowStart": 1, "rowSpan": 1 },
+      { "id": null, "key": "blocked", "title": "Blocked?", "type": 10, "validatingRegex": null, "orderIndex": 5, "columnStart": 4, "columnSpan": 1, "rowStart": 3, "rowSpan": 1 }
+    ]
+  }
+}
+
+docs {
+  Run "3. Get Project" first. This replaces the Task template of {{projectId}}: keeps
+  description/comments/priority, adds a new "blocked" Checkbox field, and - because "complexity" and
+  "time-expected"/"time-spent" are left out - deletes those fields (and, if Items/9 already ran, their
+  now-orphaned ItemFieldValue rows).
+
+  Try setting columnStart: 10 on a field with columnCount: 4 to see the grid-bounds validation reject
+  it ("... extends past the template's 4 columns"), or two fields with the same "key" to see the
+  duplicate-key check.
+}

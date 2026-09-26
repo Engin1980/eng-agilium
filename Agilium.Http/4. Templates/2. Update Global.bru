@@ -1,0 +1,34 @@
+meta {
+  name: 2. Update Global
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/templates/4
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "columnCount": 4,
+    "items": [
+      { "id": {{globalFeatureField_description}}, "key": "description", "title": "Description (edited by Bruno)", "type": 3, "validatingRegex": null, "orderIndex": 1, "columnStart": 1, "columnSpan": 3, "rowStart": 1, "rowSpan": 1 },
+      { "id": {{globalFeatureField_comments}}, "key": "comments", "title": "Comments", "type": 8, "validatingRegex": null, "orderIndex": 2, "columnStart": 1, "columnSpan": 3, "rowStart": 2, "rowSpan": 1 },
+      { "id": {{globalFeatureField_priority}}, "key": "priority", "title": "Priority", "type": 4, "validatingRegex": null, "orderIndex": 3, "columnStart": 4, "columnSpan": 1, "rowStart": 1, "rowSpan": 1 },
+      { "id": {{globalFeatureField_complexity}}, "key": "complexity", "title": "Complexity", "type": 4, "validatingRegex": null, "orderIndex": 4, "columnStart": 4, "columnSpan": 1, "rowStart": 2, "rowSpan": 1 }
+    ]
+  }
+}
+
+docs {
+  Run "1. Get Global" first to capture each field's real id. This only renames "description" - it's a
+  full replace, so leaving a field's id out of the list would delete it (try removing "complexity" to
+  see that). Editing the global template does NOT retroactively change any project's own copy - only
+  new projects created afterwards see this change.
+}
