@@ -46,11 +46,10 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
       // Feature has no generic ancestor - it simply stays at the root of the tree.
       parentId = command.Type switch
       {
-        ItemType.UserStory => await EnsureGenericItemAsync(project.Id, ItemType.Feature, "Bez feature", cancellationToken),
+        ItemType.UserStory => await EnsureGenericItemAsync(project.Id, ItemType.Feature, cancellationToken),
         ItemType.Task or ItemType.Bug => await EnsureGenericItemAsync(
           project.Id,
           ItemType.UserStory,
-          "Bez user-story",
           cancellationToken
         ),
         _ => null,
@@ -91,6 +90,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
       throw new BadRequestException($"A {childType} cannot have a parent of type {parentType}");
   }
 
+  /// <summary>Title shared by every lazily-created generic container item (Feature and User-Story alike).</summary>
+  private const string GenericItemTitle = "(default)";
+
   /// <summary>
   /// Finds the project's single generic container item of the given type, lazily creating it (and, for
   /// a generic user-story, its own generic-feature parent) the first time it is needed.
@@ -98,7 +100,6 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
   private async Task<int> EnsureGenericItemAsync(
     int projectId,
     ItemType type,
-    string title,
     CancellationToken cancellationToken
   )
   {
@@ -111,12 +112,12 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
 
     int? parentId =
       type == ItemType.UserStory
-        ? await EnsureGenericItemAsync(projectId, ItemType.Feature, "Bez feature", cancellationToken)
+        ? await EnsureGenericItemAsync(projectId, ItemType.Feature, cancellationToken)
         : null;
 
     var generic = new Item
     {
-      Title = title,
+      Title = GenericItemTitle,
       Type = type,
       ProjectId = projectId,
       ParentId = parentId,

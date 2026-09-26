@@ -15,7 +15,7 @@ public class Item
   public AppUser? Assignee { get; set; }
 
   /// <summary>
-  /// Marks the project's lazily-created "Bez feature" / "Bez user-story" container item.
+  /// Marks the project's lazily-created "(default)" Feature / User-Story container item.
   /// At most one per (ProjectId, Type) pair; cannot be renamed, reparented or deleted.
   /// </summary>
   public bool IsGeneric { get; set; }
