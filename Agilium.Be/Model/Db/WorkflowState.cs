@@ -14,6 +14,6 @@ public class WorkflowState
 public enum WorkflowStateType
 {
   ToDo = 1,
-  InProgress = 2,
+  Active = 2,
   Done = 3,
 }

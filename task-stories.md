@@ -27,15 +27,20 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 Menší, ale průřezové změny, na kterých staví defaultní data zakládaná v dalších storách (projekt při
 založení vytváří workflow stavy a šablony) — proto dává smysl je udělat jako první, ne až dodatečně.
 
-- [ ] Odstranit `ItemType.Epic` (`Model\Db\Item.cs`), používat všude jen `Feature` (dle `description.md`).
-- [ ] Přejmenovat `WorkflowStateType.InProgress` na `.Active` (`Model\Db\WorkflowState.cs`).
-- [ ] Odstranit `Sprint.ExpectedStartDateTime`/`ExpectedEndDateTime` (`Model\Db\Sprint.cs`) — sprint má
+- [x] Odstranit `ItemType.Epic` (`Model\Db\Item.cs`), používat všude jen `Feature` (dle `description.md`).
+- [x] Přejmenovat `WorkflowStateType.InProgress` na `.Active` (`Model\Db\WorkflowState.cs`).
+- [x] Odstranit `Sprint.ExpectedStartDateTime`/`ExpectedEndDateTime` (`Model\Db\Sprint.cs`) — sprint má
       jen `StartDateTime`/`EndDateTime`.
-- [ ] Doplnit `TemplateItemType.Checkbox` a `.LabelOnly` (`Model\Db\TemplateItem.cs`).
-- [ ] Opravit bug v `Features\Projects\Create.cs` → `AddDefaultTemplates`: v obou `foreach` smyčkách se
-      `Template.Type` nastavuje natvrdo na `ItemType.Task` místo na iterovanou proměnnou `type` — reálně
-      tak nevznikají šablony pro `Bug`/`UserStory`/`Feature`.
-- [ ] Přidat jednu souhrnnou EF Core migraci pro výše uvedené změny modelu.
+- [x] Doplnit `TemplateItemType.Checkbox` a `.LabelOnly` (`Model\Db\TemplateItem.cs`).
+- [x] Opravit bug v `Features\Projects\Create.cs` → `AddDefaultTemplates`: v obou `foreach` smyčkách se
+      `Template.Type` nastavovalo natvrdo na `ItemType.Task` místo na iterovanou proměnnou `type` —
+      opraveno na `Type = type`, zároveň odebrán `ItemType.Epic` z pole `highTypes`.
+- [x] Bonus nález přímo v `AddProjectRoles` (stejný soubor): role se nikdy nepřidávaly do
+      `project.Roles` a `roles.ForEach(roles.Add)` navíc vždy shodil `InvalidOperationException`
+      (modifikace kolekce během iterace) — tzn. založení projektu by vždy spadlo. Opraveno na
+      `project.Roles.Add(...)`.
+- [x] Přidána souhrnná EF Core migrace `Story0_ModelCleanup` pro výše uvedené změny modelu (zachytila i
+      starší nedotaženou drift změnu `Projects.Status` → `Projects.State`, viz `Migrations\`).
 
 ## Story 1 — Uživatel si založí a spravuje projekty
 

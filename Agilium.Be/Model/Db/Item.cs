@@ -21,5 +21,4 @@ public enum ItemType
   Bug = 2,
   UserStory = 3,
   Feature = 4,
-  Epic = 5,
 }

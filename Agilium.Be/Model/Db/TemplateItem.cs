@@ -23,4 +23,6 @@ public enum TemplateItemType
   NNextlineDouble = 7,
   Comments = 8,
   Untemplated = 9,
+  Checkbox = 10,
+  LabelOnly = 11,
 }

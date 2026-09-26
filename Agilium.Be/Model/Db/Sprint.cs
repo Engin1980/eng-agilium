@@ -8,8 +8,6 @@ public class Sprint
   public Project Project { get; set; } = null!;
   public DateTime? StartDateTime { get; set; }
   public DateTime? EndDateTime { get; set; }
-  public DateTime? ExpectedStartDateTime { get; set; }
-  public DateTime? ExpectedEndDateTime { get; set; }
   public SprintState State { get; set; }
 }
 

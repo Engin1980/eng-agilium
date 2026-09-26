@@ -68,7 +68,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
         Project = project,
         Title = "In Progress",
         OrderIndex = 2,
-        Type = WorkflowStateType.InProgress,
+        Type = WorkflowStateType.Active,
       }
     );
     project.WorkflowStates.Add(
@@ -88,7 +88,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
 
     foreach (var type in taskTypes)
     {
-      Template template = new() { Project = project, Type = ItemType.Task };
+      Template template = new() { Project = project, Type = type };
       var left = new TemplateColumn() { Template = template, WidthWeight = 3 };
       var right = new TemplateColumn() { Template = template, WidthWeight = 1 };
 
@@ -151,11 +151,11 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
       project.Templates.Add(template);
     }
 
-    var highTypes = new[] { ItemType.UserStory, ItemType.Feature, ItemType.Epic };
+    var highTypes = new[] { ItemType.UserStory, ItemType.Feature };
 
     foreach (var type in highTypes)
     {
-      Template template = new() { Project = project, Type = ItemType.Task };
+      Template template = new() { Project = project, Type = type };
       var left = new TemplateColumn() { Template = template, WidthWeight = 3 };
       var right = new TemplateColumn() { Template = template, WidthWeight = 1 };
 
@@ -216,8 +216,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
 
   private void AddProjectRoles(Project project)
   {
-    List<Role> roles =
-    [
+    project.Roles.Add(
       new Role
       {
         Project = project,
@@ -227,7 +226,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
         CanManageSprints = true,
         CanViewMembers = true,
         CanViewProject = true,
-      },
+      }
+    );
+    project.Roles.Add(
       new Role
       {
         Project = project,
@@ -237,9 +238,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
         CanManageSprints = false,
         CanViewMembers = true,
         CanViewProject = true,
-      },
-    ];
-    roles.ForEach(roles.Add);
+      }
+    );
   }
 }
 

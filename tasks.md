@@ -23,24 +23,20 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 - [x] Počáteční EF Core migrace (`Migrations\20260318163756_Initial_DB_Structure*`).
 - [ ] Zkontrolovat, že `SprintItem` a vazby na `WorkflowState` jsou v migraci kompletní a odpovídají
       aktuální podobě modelu (u nových funkcí níže bude potřeba přidávat další migrace).
-- [ ] **Bug v `Projects\Create.cs` → `AddDefaultTemplates`** — ve smyčce `foreach (var type in taskTypes)`
-      (řádky ~87-152) i `foreach (var type in highTypes)` (řádky ~154-201) se `Template.Type` nastavuje
-      natvrdo na `ItemType.Task` místo na iterovanou proměnnou `type` — reálně tak vznikají jen šablony
-      typu `Task` (a druhý běh smyčky navíc pravděpodobně selže na duplicitě/kolizi), místo samostatných
-      šablon pro `Task`, `Bug`, `UserStory`, `Feature`. Opravit na `Type = type` v obou smyčkách.
-- [ ] Odstranit `ItemType.Epic` (`Item.cs`) a nahradit ho všude `ItemType.Feature` — dle `description.md`
-      je Epic zrušen/sloučen do Feature. Konkrétně:
-  - odstranit `Epic = 5` z enumu `ItemType`,
-  - v `Projects\Create.cs` → `AddDefaultTemplates` odebrat `ItemType.Epic` z pole `highTypes`
-    (zůstane jen `ItemType.UserStory, ItemType.Feature`),
-  - projít repo (`ItemType.Epic`) a zkontrolovat, že nikde jinde není použité,
-  - přidat EF migraci.
-- [ ] Přejmenovat `WorkflowStateType.InProgress` na `WorkflowStateType.Active` (`WorkflowState.cs`) —
-      sjednotit terminologii s `description.md` ("ACTIVE"). V `Projects\Create.cs` →
-      `AddDefaultWorkflowStates` upravit `Type = WorkflowStateType.InProgress` na `.Active` (text
-      `Title = "In Progress"` může zůstat jako zobrazovaný název). Přidat EF migraci.
-- [ ] Odstranit `ExpectedStartDateTime`/`ExpectedEndDateTime` ze `Sprint` entity (`Sprint.cs`) — dle
-      `description.md` má sprint jen jeden pár datumů (`StartDateTime`/`EndDateTime`). Přidat EF migraci.
+- [x] **Bug v `Projects\Create.cs` → `AddDefaultTemplates`** — opraveno na `Type = type` v obou smyčkách
+      (dřív se `Template.Type` nastavovalo natvrdo na `ItemType.Task`).
+- [x] Odstranit `ItemType.Epic` (`Item.cs`) a nahradit ho všude `ItemType.Feature` — hotovo (enum hodnota
+      odstraněna, `AddDefaultTemplates` → `highTypes` upraveno, v repu nejsou další výskyty).
+- [x] Přejmenovat `WorkflowStateType.InProgress` na `WorkflowStateType.Active` (`WorkflowState.cs`) —
+      hotovo, `AddDefaultWorkflowStates` upraveno (zobrazovaný `Title = "In Progress"` zůstal).
+- [x] Odstranit `ExpectedStartDateTime`/`ExpectedEndDateTime` ze `Sprint` entity (`Sprint.cs`) — hotovo.
+- [x] Doplnit `TemplateItemType.Checkbox`/`LabelOnly` (`TemplateItem.cs`) — hotovo.
+- [x] EF migrace `Story0_ModelCleanup` pro všechny výše uvedené změny — přidána (zachytila i starší
+      nedotaženou drift změnu `Projects.Status` → `Projects.State`).
+- [x] Bonus nález v `Projects\Create.cs` → `AddProjectRoles`: role se nikdy nepřidávaly do
+      `project.Roles` (jen do lokální proměnné) a `roles.ForEach(roles.Add)` navíc vždy spadl na
+      `InvalidOperationException` (modifikace kolekce během iterace) — založení projektu by tedy vždy
+      selhalo. Opraveno na `project.Roles.Add(...)`.
 - [ ] Přepracovat pozicování polí šablony z pevných sloupců (`TemplateColumn.WidthWeight`) na CSS grid
       (viz `description.md`, sekce "Upřesnění k User stories"):
   - navrhnout, jestli `TemplateColumn` zůstává jako entita (např. jako "grid řádek/oblast") nebo se
@@ -50,8 +46,9 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
     obdoba),
   - upravit `Projects\Create.cs` → `AddDefaultTemplates`, aby vytvářel výchozí šablony v novém tvaru,
   - přidat EF migraci (jde o breaking change modelu, promyslet i dopad na již vytvořená data).
-- [ ] Doplnit do `TemplateItemType` enumu (`TemplateItem.cs`) chybějící hodnoty `Checkbox` a
-      `LabelOnly` (viz `description.md`, "Datové typy položek šablony"). Přidat EF migraci.
+- [x] Doplnit do `TemplateItemType` enumu (`TemplateItem.cs`) chybějící hodnoty `Checkbox` a
+      `LabelOnly` (viz `description.md`, "Datové typy položek šablony") — hotovo v rámci migrace
+      `Story0_ModelCleanup`.
 - [ ] Doplnit úložiště hodnot polí šablony pro konkrétní `Item` — v `Item` entitě zatím není žádné
       pole/tabulka pro reálné hodnoty definované přes `TemplateItem`. Navrhnout novou entitu, např.
       `ItemFieldValue` (`ItemId`, `TemplateItemId`, `Value` jako string/nullable typované sloupce podle
