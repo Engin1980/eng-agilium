@@ -9,6 +9,7 @@ public record ItemResult(
   int Id,
   string Title,
   int Type,
+  bool IsGeneric,
   ProjectAppUserResult? Assignee,
   int? ParentId,
   List<ItemResult> SubItems
@@ -50,6 +51,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, IdPa
         i.Id,
         i.Title,
         (int)i.Type,
+        i.IsGeneric,
         i.Assignee is not null
           ? new ProjectAppUserResult(
             i.Assignee.Id,

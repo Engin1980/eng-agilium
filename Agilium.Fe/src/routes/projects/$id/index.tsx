@@ -1,13 +1,34 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import * as React from "react";
 import { useProject } from "../../../services/projects-queries";
+import { ItemTree } from "../../../components/specific/item-tree";
+import { useAuth } from "../../../contexts/auth-context";
 
 export const Route = createFileRoute("/projects/$id/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { user, isRestoringSession } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!isRestoringSession && !user) {
+      navigate({ to: "/login" });
+    }
+  }, [isRestoringSession, user, navigate]);
+
+  if (isRestoringSession || !user) {
+    return <div className="p-6 text-gray-500">Načítání…</div>;
+  }
+
+  return <ProjectDetail />;
+}
+
+function ProjectDetail() {
   const { id } = useParams({ from: Route.id });
-  const { data: project, isLoading } = useProject(Number(id));
+  const projectId = Number(id);
+  const { data: project, isLoading } = useProject(projectId);
 
   return (
     <div className="p-6">
@@ -38,6 +59,10 @@ function RouteComponent() {
             <p className="text-gray-700">{project.description}</p>
             <p className="text-sm text-gray-500">{project.memberCount} členů</p>
           </main>
+
+          <div className="mt-6">
+            <ItemTree projectId={projectId} />
+          </div>
         </>
       )}
     </div>

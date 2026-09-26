@@ -13,6 +13,12 @@ public class Item
 
   public int? AssigneeId { get; set; }
   public AppUser? Assignee { get; set; }
+
+  /// <summary>
+  /// Marks the project's lazily-created "Bez feature" / "Bez user-story" container item.
+  /// At most one per (ProjectId, Type) pair; cannot be renamed, reparented or deleted.
+  /// </summary>
+  public bool IsGeneric { get; set; }
 }
 
 public enum ItemType

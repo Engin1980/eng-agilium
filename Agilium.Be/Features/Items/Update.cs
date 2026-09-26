@@ -24,6 +24,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
       await dbContext.Items.FirstOrDefaultAsync(i => i.Id == parameters.Id, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Item), parameters.Id);
 
+    if (item.IsGeneric)
+      throw new BadRequestException("Generic container items cannot be renamed or retyped");
+
     item.Title = command.Title;
     item.Type = command.Type;
 

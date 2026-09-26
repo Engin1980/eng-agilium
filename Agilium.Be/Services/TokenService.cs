@@ -18,6 +18,7 @@ public class TokenService(AppDbContext dbContext, AppSettingsService appSettings
       await dbContext
         .Tokens.Include(q => q.AppUser)
           .ThenInclude(q => q.Memberships)
+            .ThenInclude(m => m.Role)
         .FirstOrDefaultAsync(t => t.Value == tokenHash && t.Type == tokenType)
       ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenNotFound, null);
     if (token.Expiration < DateTime.UtcNow)

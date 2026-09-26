@@ -32,6 +32,7 @@ public class Handler(AppDbContext dbContext, TokenService tokenService, AppSetti
         .AppUsers //
         .AsNoTracking()
         .Include(q => q.Memberships)
+          .ThenInclude(m => m.Role)
         .FirstOrDefaultAsync(u => u.Email == email, cancellationToken: cancellationToken)
       ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.EmailNotFound, null);
 

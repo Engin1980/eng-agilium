@@ -85,20 +85,36 @@ Jádro "agilní" funkcionality — vytváření a organizace položek.
 
 - [x] BE: vytvoření položky vč. validace projektu a rodiče (`Features\Items\Create.cs`).
 - [x] BE: úprava položky — název, typ (`Features\Items\Update.cs`).
-- [x] BE: změna rodiče položky vč. kontroly cyklu a příslušnosti k projektu (`Features\Items\UpdateParent.cs`).
+- [x] BE: změna rodiče položky vč. kontroly cyklu a příslušnosti k projektu (`Features\Items\UpdateParent.cs`)
+      — oprava: původní kontrola cyklu řešila jen přímé `pId == item.Id`, ne cyklus přes delší řetězec
+      předků; nahrazeno průchodem od nového rodiče směrem nahoru ke kořeni.
 - [x] BE: číselník typů položek (`Features\Items\TypeOptions.cs`).
-- [x] BE: výpis položek projektu jako stromu (`Features\Projects\ListItems.cs`).
-- [ ] BE: **lazy vytváření generické feature / generické user-story** — v `Items\Create.cs` zatím chybí;
-      podle `description.md` když uživatel založí user-story bez feature (nebo task/bug bez user-story),
-      má se místo chyby/volného rodiče automaticky použít (a při první potřebě založit) generická
-      feature/user-story daného projektu. Bez tohoto kroku nejde tuhle část zadání smysluplně otestovat.
-- [ ] BE: ochrana generické feature/user-story proti přejmenování a smazání (viz `Update.cs`/budoucí
-      `Delete.cs`).
-- [ ] BE: smazání položky (`Features\Items\Delete.cs`) — rozhodnout chování u položky s potomky.
-- [ ] FE: zobrazení stromu features → user-story → tasks v detailu projektu (napojení na `ListItems`).
-- [ ] FE: UI pro přidání feature / user-story / task / bug (formulář/dialog, výběr rodiče).
-- [ ] FE: UI pro přesun rodiče, smazání, přiřazení assignee (`UpdateParent`, `Delete`, `UpdateAssignee`
-      — `UpdateAssignee` je na BE už hotový, na FE zatím chybí).
+- [x] BE: výpis položek projektu jako stromu (`Features\Projects\ListItems.cs`) — doplněn příznak
+      `IsGeneric` do `ItemResult`, aby FE poznalo automatické kontejnery.
+- [x] BE: **lazy vytváření generické feature / generické user-story** (`Features\Items\Create.cs`) —
+      `Item.IsGeneric` (nový sloupec, migrace `Story2_ItemsGenericAndHierarchy`), založí se nejvýše
+      jedna generická feature/user-story na projekt, líně při první potřebě (generická user-story si
+      při svém vzniku stejnou cestou zajistí i generickou feature jako rodiče).
+- [x] BE: ochrana generické feature/user-story proti přejmenování (`Update.cs`), přesunu
+      (`UpdateParent.cs`) a smazání (`Delete.cs`).
+- [x] BE: smazání položky — `DELETE /api/v1/projects/items/{id}` (`Features\Items\Delete.cs`); zvoleno
+      kaskádové smazání (položka + všichni potomci + jejich `SprintItem` záznamy, v transakci), protože
+      zákaz mazání neprázdné feature/user-story by byl pro reálné použití zbytečně svazující.
+- [x] BE: doplněna validace hierarchie Feature → User-Story → Task/Bug při zakládání (`Create.cs`) i při
+      přesunu (`UpdateParent.cs`) — Feature nesmí mít rodiče, User-Story musí mít rodiče typu Feature,
+      Task/Bug musí mít rodiče typu User-Story (dřív šlo namíchat libovolné typy do libovolné hierarchie).
+- [x] BE bonus nález: `Login.cs` a `TokenService.ObtainAppUserByTokenAsync` (refresh) načítaly
+      `Membership` bez `.ThenInclude(m => m.Role)` → jakýkoliv uživatel, který byl členem alespoň
+      jednoho projektu (tedy i zakladatel po Story 1), dostal při loginu/refreshi `NullReferenceException`
+      (500). Opraveno doplněním `ThenInclude`.
+- [x] FE: zobrazení stromu features → user-story → tasks v detailu projektu
+      (`src\components\specific\item-tree.tsx`, napojeno na `GET /projects/{id}/items`).
+- [x] FE: UI pro přidání feature / user-story / task / bug — inline formulář u kořene (jen Feature) a u
+      každého uzlu podle dovolených typů potomků (Feature→User-Story, User-Story→Task/Bug).
+- [x] FE: UI pro přesun rodiče (`select` s validními cíli dle hierarchie, generické položky nejde
+      přesouvat), smazání (potvrzovací dialog, zakázáno pro generické položky) a přiřazení assignee
+      (`UpdateParent`/`Delete`/`UpdateAssignee`). Assignee se zatím zadává ručně jako ID uživatele —
+      výběr ze seznamu členů projektu čeká na `ListMembers` ze Story 5.
 
 ## Story 3 — Uživatel edituje detail položky podle šablony
 
