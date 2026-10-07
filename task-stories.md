@@ -31,7 +31,10 @@ založení vytváří workflow stavy a šablony) — proto dává smysl je uděl
 - [ ] Přejmenovat `WorkflowStateType.InProgress` na `.Active` (`Model\Db\WorkflowState.cs`).
 - [ ] Odstranit `Sprint.ExpectedStartDateTime`/`ExpectedEndDateTime` (`Model\Db\Sprint.cs`) — sprint má
       jen `StartDateTime`/`EndDateTime`.
-- [ ] Doplnit `TemplateItemType.Checkbox` a `.LabelOnly` (`Model\Db\TemplateItem.cs`).
+- [ ] Zúžit/přemapovat `TemplateItemType` (`Model\Db\TemplateItem.cs`) na výčet z `layout-templates.md`:
+      5 "hodnotových" typů (víceřádkový text, jednořádkový text, celé číslo, desetinné číslo, true/false)
+      + 2 speciální typy `Comments` (komentáře/diskuze k položce) a `Untemplated` (textový popisek bez
+      vstupu, "label-only") (viz `description.md`).
 - [ ] Opravit bug v `Features\Projects\Create.cs` → `AddDefaultTemplates`: v obou `foreach` smyčkách se
       `Template.Type` nastavuje natvrdo na `ItemType.Task` místo na iterovanou proměnnou `type` — reálně
       tak nevznikají šablony pro `Bug`/`UserStory`/`Feature`.
@@ -82,11 +85,12 @@ Jádro "agilní" funkcionality — vytváření a organizace položek.
 ## Story 3 — Uživatel edituje detail položky podle šablony
 
 Navazuje na Story 2 — jakmile existují položky, potřebují editovatelný detail. Toto je zároveň
-nejnáročnější story na model (CSS grid) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd.
-u položek.
+nejnáročnější story na model (hierarchie tabulka → sloupec → sekce → atribut, viz
+`layout-templates.md`) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd. u položek.
 
-- [ ] DB: přepracovat `TemplateColumn`/`TemplateItem` z pevných sloupců (`WidthWeight`) na CSS grid
-      pozicování (`grid-column`/`grid-row` obdoba) — viz `description.md`.
+- [ ] DB: přepracovat `TemplateColumn`/`TemplateItem` z pevných sloupců (`WidthWeight`) na hierarchii
+      tabulka → sloupec (šířka, suma 12) → sekce (titulek) → atribut (titulek + hodnota) — viz
+      `layout-templates.md` a `description.md` (nahrazuje dřívější plán na CSS grid pozicování).
 - [ ] DB: nová entita pro hodnoty polí položky (např. `ItemFieldValue`: `ItemId`, `TemplateItemId`,
       `Value`) — v `Item` zatím není žádné úložiště pro reálná data zadaná přes šablonu.
 - [ ] BE: CRUD nad projektově specifickou šablonou pro daný `ItemType`
@@ -98,7 +102,8 @@ u položek.
       `TemplateItem.ValidatingRegex`/`TemplateItemType`.
 - [ ] FE: komponenta pro dynamické vykreslení formuláře detailu položky podle šablony
       (`src\components\specific\item-detail-form.tsx`).
-- [ ] FE: editor šablony (přidání/úprava/smazání/přesun polí v gridu), globální i projektová varianta.
+- [ ] FE: editor šablony (přidání/úprava/smazání/přesun tabulek, sloupců, sekcí a atributů dle
+      `layout-templates.md`), globální i projektová varianta.
 
 ## Story 4 — Uživatel plánuje a řídí práci přes sprinty a kanban
 

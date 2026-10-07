@@ -41,17 +41,23 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       `Title = "In Progress"` může zůstat jako zobrazovaný název). Přidat EF migraci.
 - [ ] Odstranit `ExpectedStartDateTime`/`ExpectedEndDateTime` ze `Sprint` entity (`Sprint.cs`) — dle
       `description.md` má sprint jen jeden pár datumů (`StartDateTime`/`EndDateTime`). Přidat EF migraci.
-- [ ] Přepracovat pozicování polí šablony z pevných sloupců (`TemplateColumn.WidthWeight`) na CSS grid
-      (viz `description.md`, sekce "Upřesnění k User stories"):
-  - navrhnout, jestli `TemplateColumn` zůstává jako entita (např. jako "grid řádek/oblast") nebo se
-    zruší úplně a `TemplateItem` bude mít pozici přímo (`GridColumnStart`, `GridColumnSpan`,
-    `GridRowStart`, `GridRowSpan` apod.),
-  - `Template` bude pravděpodobně potřebovat vlastní počet sloupců gridu (`GridColumnsCount` nebo
-    obdoba),
+- [ ] Přepracovat rozložení šablony z pevných sloupců (`TemplateColumn.WidthWeight`) na hierarchii
+      tabulka → sloupec (šířka, suma 12) → sekce (titulek) → atribut (titulek + hodnota), viz
+      `layout-templates.md` a `description.md` ("Rozvržení polí šablony") - toto **nahrazuje** dřívější
+      plán na pozicování přes CSS grid:
+  - navrhnout entity pro novou hierarchii (např. `TemplateTable`/`TemplateColumn`/`TemplateSection`/
+    `TemplateItem`, pojmenování upravit dle konvencí) - `TemplateColumn` ponese šířku sloupce místo
+    `WidthWeight`, přibude entita pro sekci (titulek + vazba na sloupec + pořadí) a šablona/tabulka
+    může existovat vícekrát pod sebou pro jednu šablonu,
+  - zvážit validaci "suma šířek sloupců jedné tabulky = 12" (na BE při ukládání šablony),
   - upravit `Projects\Create.cs` → `AddDefaultTemplates`, aby vytvářel výchozí šablony v novém tvaru,
   - přidat EF migraci (jde o breaking change modelu, promyslet i dopad na již vytvořená data).
-- [ ] Doplnit do `TemplateItemType` enumu (`TemplateItem.cs`) chybějící hodnoty `Checkbox` a
-      `LabelOnly` (viz `description.md`, "Datové typy položek šablony"). Přidat EF migraci.
+- [ ] Zúžit/přemapovat `TemplateItemType` enum (`TemplateItem.cs`) na výčet z `layout-templates.md`
+      a `description.md` ("Datové typy položek šablony"): 5 "hodnotových" typů (víceřádkový text,
+      jednořádkový text, celé číslo, desetinné číslo, true/false) + 2 speciální typy `Comments`
+      (komplexní prvek pro komentáře/diskuzi k položce) a `Untemplated` (čistě textový popisek bez
+      vstupu, "label-only") - odpadá rozlišení Inline/Nextline, checkbox se řeší jako `true/false`.
+      Přidat EF migraci.
 - [ ] Doplnit úložiště hodnot polí šablony pro konkrétní `Item` — v `Item` entitě zatím není žádné
       pole/tabulka pro reálné hodnoty definované přes `TemplateItem`. Navrhnout novou entitu, např.
       `ItemFieldValue` (`ItemId`, `TemplateItemId`, `Value` jako string/nullable typované sloupce podle
@@ -183,8 +189,8 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       jen pro SuperAdmina).
 - [ ] CRUD nad projektově specifickou šablonou (přepis/úprava výchozí šablony pro konkrétní projekt):
   - `GET /api/v1/projects/{id}/templates/{itemType}` (`Features\Templates\Get.cs`) — vrátí `Template`
-    vč. `TemplateColumn`/`TemplateItem` (resp. nový CSS grid tvar, viz sekce "databáze/model") pro daný
-    typ položky v projektu.
+    vč. nové hierarchie tabulka → sloupec → sekce → atribut (viz sekce "databáze/model" a
+    `layout-templates.md`) pro daný typ položky v projektu.
   - `PUT /api/v1/projects/{id}/templates/{itemType}` (`Features\Templates\Update.cs`) — nahradí
     definici polí šablony (přidání/úprava/smazání `TemplateItem`); zvážit, jak se chovat k `Item`, které
     už mají hodnoty pro odstraněná pole (`ItemFieldValue`).
@@ -225,9 +231,10 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
     alespoň select/tlačítka jako MVP).
 - [ ] Detail položky (feature/user-story/task/bug) s formulářem generovaným dle šablony — čeká na BE
       endpointy CRUD hodnot polí a šablony (sekce "šablony"/"položky" výše):
-  - komponenta v `src\components\specific` (např. `item-detail-form.tsx`), dynamicky vyrenderuje pole
-    podle `TemplateItem.Type` a CSS grid pozice,
-  - editor šablony (`template-editor.tsx`) — přidávání/mazání/přesun polí, nastavení pozice v gridu.
+  - komponenta v `src\components\specific` (např. `item-detail-form.tsx`), dynamicky vyrenderuje
+    tabulky/sloupce/sekce/atributy dle šablony (viz `layout-templates.md`) a typ hodnoty atributu,
+  - editor šablony (`template-editor.tsx`) — přidávání/mazání/přesun tabulek, sloupců (šířka, suma 12),
+    sekcí a atributů.
 - [ ] Správa členství a rolí v projektu — UI nad `AssignMember`/`UnassignMember` a novými endpointy
       pro role/výpis členů (sekce "projekty" výše): seznam členů, dialog pro přidání/změnu role,
       odebrání člena.
