@@ -120,6 +120,11 @@ Navazuje na Story 2 — jakmile existují položky, potřebují editovatelný de
 nejnáročnější story na model (hierarchie tabulka → sloupec → sekce → atribut, viz
 `layout-templates.md`) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd. u položek.
 
+> **Pozor:** tato story je hotová ve variantě s CSS gridem. Nové zadání (`layout-templates.md`) grid
+> **nahrazuje** hierarchií tabulka → sloupec → sekce → atribut a globální šablony se už **needitují** —
+> viz Story 3X (přechod) a Story 3Y (editace projektových šablon). Body níže zůstávají jako historie
+> toho, co bylo implementováno.
+
 - [x] DB: přepracovat `TemplateColumn`/`TemplateItem` z pevných sloupců (`WidthWeight`) na CSS grid
       pozicování — `TemplateColumn` odstraněn, `TemplateItem` má `ColumnStart`/`ColumnSpan`/`RowStart`/
       `RowSpan` (1-based, obdoba `grid-column`/`grid-row`) a `Template` má `ColumnCount`
@@ -161,19 +166,131 @@ nejnáročnější story na model (hierarchie tabulka → sloupec → sekce → 
       projektová (`routes\projects\$id\templates\index.tsx`, odkaz z detailu projektu) i globální
       (`routes\templates\index.tsx`, odkaz ze seznamu projektů).
 
-## Story 3X - Update zadání 3
+## Story 3X — Přechod šablon na hierarchii tabulka → sloupec → sekce → atribut
 
-Navazuje na Story 3 -- jedná se o update story 3 po upřesnění zadání.
-Jakmile existují položky, potřebují editovatelný detail. Toto je zároveň nejnáročnější story na model (hierarchie tabulka → sloupec → sekce → atribut, viz layout-templates.md) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd. u položek.
+Navazuje na Story 3 — po upřesnění zadání (`layout-templates.md`) se CSS grid z Story 3 **nahrazuje**
+hierarchií tabulka → sloupec (šířka) → sekce (titulek) → atribut (titulek + hodnota). Hodnoty polí
+(`ItemFieldValue`) a obecná kostra detailu položky ze Story 3 zůstávají, mění se model šablony, jeho
+endpointy a renderování. Globální šablony se **needitují** (jsou dané systémem), editují se jen projektové.
 
-    DB: přepracovat TemplateColumn/TemplateItem z pevných sloupců (WidthWeight) na hierarchii tabulka → sloupec (šířka, suma 12) → sekce (titulek) → atribut (titulek + hodnota) — viz layout-templates.md a description.md (nahrazuje dřívější plán na CSS grid pozicování).
-    DB: nová entita pro hodnoty polí položky (např. ItemFieldValue: ItemId, TemplateItemId, Value) — v Item zatím není žádné úložiště pro reálná data zadaná přes šablonu.
-    BE: CRUD nad projektově specifickou šablonou pro daný ItemType (Features\Templates\Get.cs/Update.cs).
-    BE: CRUD nad univerzální (výchozí) šablonou nezávislou na projektu — dnes Template.ProjectId je povinné, takže není jasné, kde "globální" výchozí šablona žije; potřeba nejdřív rozhodnout návrh.
-    BE: čtení/uložení hodnot polí položky dle šablony (Features\Items\GetFieldValues.cs/SetFieldValues.cs), vč. validace podle TemplateItem.ValidatingRegex/TemplateItemType.
-    FE: komponenta pro dynamické vykreslení formuláře detailu položky podle šablony (src\components\specific\item-detail-form.tsx).
-    FE: editor šablony (přidání/úprava/smazání/přesun tabulek, sloupců, sekcí a atributů dle layout-templates.md), globální i projektová varianta.
+- [ ] DB: entity `TemplateTable` → `TemplateColumn` (`Width` ≥ 1) → `TemplateSection` (`Title` smí být
+      prázdný) → `TemplateItem` (atribut), každá úroveň s `OrderIndex`; odstranit CSS grid pole z
+      `TemplateItem` (`ColumnStart/ColumnSpan/RowStart/RowSpan`) a `Template.ColumnCount`.
+- [ ] DB: zúžit `TemplateItemType` na `SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`,
+      `Comments`, `LabelOnly` (`Checkbox` → `Boolean`, `Untemplated` → `LabelOnly`, Inline/Nextline odpadá).
+- [ ] DB: EF migrace nového modelu — bez převodu starých grid dat (stávající šablony a `ItemFieldValue` se
+      zahodí, šablony vznikají jen kopírováním z globálních).
+- [ ] BE: `DefaultTemplates.cs` (globální šablony) a `Projects\Create.cs` (kopie celého stromu do projektu)
+      v novém tvaru.
+- [ ] BE: přepsat `Templates\Get.cs`/`Update.cs` na stromovou strukturu (viz `tasks.md`, "Backend — šablony");
+      validace sdílená v `TemplateGridValidation` přejmenovat/přepsat (≥ 1 sloupec, šířka ≥ 1, unikátní
+      `Key`, platný typ; součet 12 se nevynucuje).
+- [ ] BE: odstranit editaci globální šablony (`GetGlobal.cs`, `UpdateGlobal.cs`, `BaseRoute.Templates`).
+- [ ] BE: `Items\GetFieldValues.cs`/`SetFieldValues.cs` — upravit na novou strukturu šablony; validace typů
+      zůstává, doplnit nové názvy typů.
+- [ ] FE: sdílený renderer layoutu (`template-layout.tsx` — tabulky pod sebou, sloupce přes CSS grid s
+      `fr` jednotkami podle `Width`, sekce s titulkem, atributy přes celou šířku sloupce) a přepis
+      `item-detail-form.tsx` nad ním; komponenty pro jednotlivé typy hodnot, `LabelOnly` jen text,
+      `Comments` zatím jako textarea (speciální komponenta později).
+- [ ] FE: aktualizovat `templates-api.ts`/`templates-queries.ts` a typy na nový tvar, odstranit globální
+      editor (`routes\templates\index.tsx`) a odkaz na něj ze seznamu projektů.
+- [ ] FE: původní `template-fields-editor.tsx` (grid editor) se nahradí editorem ze Story 3Y.
 
+## Story 3Y — Editace projektových šablon v nastavení projektu
+
+Navazuje na Story 3X (BE strom šablony + sdílený renderer layoutu). Uživatel s přístupem k projektu může
+v nastavení projektu upravit rozložení a atributy šablony pro každý z typů **Feature / User-Story / Task /
+Bug** — každý typ má v projektu vlastní kopii šablony (vznikla při založení projektu z globální). Globální
+šablony se v UI neupravují. Tato story je převážně FE; BE doplňuje jen to, co 3X nepokrývá.
+
+### Rozhodnutí návrhu
+
+- Úpravy se dělají na **lokálním draftu** celého stromu šablony jednoho typu a uloží se jedním `PUT`
+  (atomicky, stejně jako `Templates\Update.cs`). Žádné průběžné ukládání po jednotlivých změnách.
+- Každý prvek stromu (tabulka/sloupec/sekce/atribut) má `Id` z BE, nově přidaný dočasné klientské ID
+  (`crypto.randomUUID()`), které se při `PUT` neposílá — BE tak pozná, co vytvořit, co aktualizovat
+  a co smazat (chybějící prvky = smazané).
+- Smazání atributu, který už existoval, smaže i jeho hodnoty u všech položek daného typu (`ItemFieldValue`)
+  — před uložením musí uživatel potvrdit (dialog uvádí počet smazaných atributů; skutečný počet smazaných
+  hodnot vrací `Update` v `Result`). Změna typu existujícího atributu = smazání + nový atribut, proto je
+  v editoru typ u již uloženého atributu **needitovatelný** (u nového ano).
+- Součet šířek sloupců = 12 se **nevynucuje** (viz `layout-templates.md`): editor jen zobrazí neblokující
+  upozornění u tabulky, jejíž součet ≠ 12. Blokující je jen šířka < 1, tabulka bez sloupce, prázdný titulek
+  atributu a duplicitní `Key`.
+- Prázdné tabulky a prázdné sekce jsou povolené; titulek sekce smí být prázdný.
+- Pořadí (`OrderIndex`) se spravuje pořadím v poli draftu a při uložení se přečísluje 0..n. MVP přesouvání =
+  tlačítka ↑/↓ a "Přesunout do…" (select cílové sekce/sloupce/tabulky); drag & drop je případné rozšíření.
+- Oprávnění: `RequiredRoles` je zatím prázdné (Story 6); editor má v budoucnu vyžadovat `CanManageProject`.
+
+### BE (drobné doplňky, pokud nejsou ve 3X)
+
+- [ ] `Templates\Update.cs` vrací v `Result` počet smazaných `ItemFieldValue` (pro potvrzovací/hlášku po
+      uložení) a při chybě validace vrací problem-details s cestou k vadnému prvku (např. `tables[1]
+      .columns[0].width`), aby FE umělo chybu zobrazit u správného prvku.
+- [ ] Volitelně: `POST /api/v1/projects/{id}/templates/{itemType}/reset` — obnoví projektovou šablonu z
+      globální (smaže hodnoty u atributů, které v globální nejsou). Jen pokud ho zadavatel chce.
+
+### FE — navigace
+
+- [ ] Stránka nastavení projektu `routes\projects\$id\settings\index.tsx` (rozcestník sekcí nastavení;
+      odkaz z detailu projektu) a podstránka `routes\projects\$id\settings\templates\index.tsx` se
+      záložkami/přepínačem typu položky (Feature / User-Story / Task / Bug), typ v search param
+      (`?type=`). Stávající `routes\projects\$id\templates\index.tsx` přesměrovat/odstranit.
+- [ ] Při přepnutí typu nebo odchodu ze stránky s neuloženými změnami zobrazit potvrzení (router
+      blocker + `beforeunload`).
+
+### FE — editor (`src\components\specific\template-editor\`)
+
+- [ ] `template-editor.tsx` — kontejner: načte šablonu (`useProjectTemplate`), drží draft ve `useReducer`,
+      počítá `isDirty`, liší tlačítka Uložit / Zahodit změny, zobrazí chyby z API, po úspěchu
+      invaliduje query šablony i `fields` položek daného typu.
+- [ ] `template-draft.ts` — typy draftu, převod BE ⇄ draft, reducer s akcemi (add/remove/move/update pro
+      tabulku, sloupec, sekce, atribut), `validateDraft()` (blokující chyby + neblokující upozornění),
+      přečíslování `OrderIndex`. Čistá logika, bez React závislostí → snadno testovatelná.
+- [ ] `table-editor.tsx` — hlavička tabulky (přidat sloupec, přesunout nahoru/dolů, smazat tabulku —
+      i neprázdnou, po potvrzení), upozornění na součet šířek ≠ 12, plus tlačítko "Přidat tabulku" pod
+      posledním.
+- [ ] `column-editor.tsx` — vstup pro šířku (int ≥ 1), přidat sekci, přesun sloupce doleva/doprava, smazání
+      sloupce (nejde smazat poslední sloupec tabulky; neprázdný jen po potvrzení).
+- [ ] `section-editor.tsx` — titulek sekce (smí být prázdný), přidat atribut, přesun nahoru/dolů, "Přesunout
+      do…" (jiný sloupec/tabulka), smazání sekce (neprázdná po potvrzení).
+- [ ] `attribute-editor.tsx` — titulek, `Key` (generuje se z titulku, u existujícího atributu
+      needitovatelný), typ (7 hodnot z `TemplateItemType`, u uloženého needitovatelný), volitelný
+      `ValidatingRegex` (jen u textových typů), přesun nahoru/dolů / do jiné sekce, smazání (u uloženého
+      atributu varování o smazání hodnot).
+- [ ] Živý náhled — přepínač "Editace / Náhled", náhled používá stejný `template-layout.tsx` jako
+      detail položky (prázdný nevyplněný formulář), takže editor a skutečný detail se nerozejdou.
+- [ ] Dialogy: potvrzení smazání (atribut s hodnotami, neprázdná sekce/sloupec/tabulka), souhrnné
+      potvrzení při `Uložit`, pokud draft odstraňuje existující atributy ("Smazáním atributů přijdete o
+      jejich hodnoty u všech položek typu X"), využít `components\global\Dialog`.
+- [ ] Přístupnost a UX: popisky `aria-label` u ikonových tlačítek, focus po přidání prvku na jeho první
+      vstup, klávesové ovládání přesunu, stavy načítání/chyby přes `Working`.
+
+### Pořadí implementace
+
+1. 3X kompletně hotová (BE strom + renderer layoutu) — bez toho nemá editor nad čím stát.
+2. `template-draft.ts` (typy, reducer, validace) + jednotkové testy (pokud už existuje testovací projekt
+   z Story 7; jinak aspoň ručně ověřit okrajové případy níže).
+3. Statický editor: načtení → vykreslení stromu bez úprav → náhled.
+4. Úpravy po úrovních: atributy → sekce → sloupce → tabulky; vždy s validací a přesunem.
+5. Uložení (`PUT`), mapování chyb na prvky, potvrzovací dialogy, blokování odchodu s neuloženými změnami.
+6. Navigace (stránka nastavení, přepínač typu), úklid starých rout a komponent.
+
+### Okrajové případy k ověření
+
+- tabulka bez sloupce / sloupec šířky 0 → blokující chyba, `Uložit` zakázáno,
+- součet šířek ≠ 12 → pouze upozornění, uložit jde a layout se vykreslí proporčně,
+- prázdná tabulka a prázdná sekce se uloží a v detailu položky se vykreslí bez chyby,
+- smazání uloženého atributu → hodnoty zmizí z detailu existujících položek, nové položky ok,
+- smazání celé sekce/sloupce/tabulky obsahující uložené atributy → souhrnné potvrzení,
+- dva atributy se stejným `Key` → blokující chyba,
+- souběžná úprava (jiný uživatel uložil šablonu mezi načtením a uložením) — MVP: poslední zápis vyhrává;
+  zvážit `RowVersion` ("šablona se mezitím změnila, načíst znovu") jako rozšíření.
+
+### Mimo rozsah
+
+- Editace globálních šablon (needitují se), speciální komponenta pro `Comments`, sbalování sekcí v detailu
+  položky, drag & drop přesun, autorizace editoru (Story 6).
 
 ## Story 4 — Uživatel plánuje a řídí práci přes sprinty a kanban
 

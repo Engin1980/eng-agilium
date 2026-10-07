@@ -19,7 +19,7 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 ## Backend — databáze / model
 
 - [x] DB schéma a entity: `AppUser`, `Project`, `Role`, `Membership`, `Item`, `Sprint`, `SprintItem`,
-      `WorkflowState`, `Template`, `TemplateColumn`, `TemplateItem`, `Token` (`Model\Db`).
+      `WorkflowState`, `Template`, `TemplateTable`, `TemplateColumn`, `TemplateSection`, `TemplateItem`, `ItemFieldValue`, `Token` (`Model\Db`).
 - [x] Počáteční EF Core migrace (`Migrations\20260318163756_Initial_DB_Structure*`).
 - [ ] Zkontrolovat, že `SprintItem` a vazby na `WorkflowState` jsou v migraci kompletní a odpovídají
       aktuální podobě modelu (u nových funkcí níže bude potřeba přidávat další migrace).
@@ -37,57 +37,30 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       `project.Roles` (jen do lokální proměnné) a `roles.ForEach(roles.Add)` navíc vždy spadl na
       `InvalidOperationException` (modifikace kolekce během iterace) — založení projektu by tedy vždy
       selhalo. Opraveno na `project.Roles.Add(...)`.
-- [ ] Přepracovat pozicování polí šablony z pevných sloupců (`TemplateColumn.WidthWeight`) na CSS grid
-      (viz `description.md`, sekce "Upřesnění k User stories"):
-  - navrhnout, jestli `TemplateColumn` zůstává jako entita (např. jako "grid řádek/oblast") nebo se
-    zruší úplně a `TemplateItem` bude mít pozici přímo (`GridColumnStart`, `GridColumnSpan`,
-    `GridRowStart`, `GridRowSpan` apod.),
-  - `Template` bude pravděpodobně potřebovat vlastní počet sloupců gridu (`GridColumnsCount` nebo
-    obdoba),
-  - upravit `Projects\Create.cs` → `AddDefaultTemplates`, aby vytvářel výchozí šablony v novém tvaru,
-  - přidat EF migraci (jde o breaking change modelu, promyslet i dopad na již vytvořená data).
-- [x] Doplnit do `TemplateItemType` enumu (`TemplateItem.cs`) chybějící hodnoty `Checkbox` a
-      `LabelOnly` (viz `description.md`, "Datové typy položek šablony") — hotovo v rámci migrace
-      `Story0_ModelCleanup`.
-- [ ] **Bug v `Projects\Create.cs` → `AddDefaultTemplates`** — ve smyčce `foreach (var type in taskTypes)`
-      (řádky ~87-152) i `foreach (var type in highTypes)` (řádky ~154-201) se `Template.Type` nastavuje
-      natvrdo na `ItemType.Task` místo na iterovanou proměnnou `type` — reálně tak vznikají jen šablony
-      typu `Task` (a druhý běh smyčky navíc pravděpodobně selže na duplicitě/kolizi), místo samostatných
-      šablon pro `Task`, `Bug`, `UserStory`, `Feature`. Opravit na `Type = type` v obou smyčkách.
-- [ ] Odstranit `ItemType.Epic` (`Item.cs`) a nahradit ho všude `ItemType.Feature` — dle `description.md`
-      je Epic zrušen/sloučen do Feature. Konkrétně:
-  - odstranit `Epic = 5` z enumu `ItemType`,
-  - v `Projects\Create.cs` → `AddDefaultTemplates` odebrat `ItemType.Epic` z pole `highTypes`
-    (zůstane jen `ItemType.UserStory, ItemType.Feature`),
-  - projít repo (`ItemType.Epic`) a zkontrolovat, že nikde jinde není použité,
-  - přidat EF migraci.
-- [ ] Přejmenovat `WorkflowStateType.InProgress` na `WorkflowStateType.Active` (`WorkflowState.cs`) —
-      sjednotit terminologii s `description.md` ("ACTIVE"). V `Projects\Create.cs` →
-      `AddDefaultWorkflowStates` upravit `Type = WorkflowStateType.InProgress` na `.Active` (text
-      `Title = "In Progress"` může zůstat jako zobrazovaný název). Přidat EF migraci.
-- [ ] Odstranit `ExpectedStartDateTime`/`ExpectedEndDateTime` ze `Sprint` entity (`Sprint.cs`) — dle
-      `description.md` má sprint jen jeden pár datumů (`StartDateTime`/`EndDateTime`). Přidat EF migraci.
-- [ ] Přepracovat rozložení šablony z pevných sloupců (`TemplateColumn.WidthWeight`) na hierarchii
-      tabulka → sloupec (šířka, suma 12) → sekce (titulek) → atribut (titulek + hodnota), viz
-      `layout-templates.md` a `description.md` ("Rozvržení polí šablony") - toto **nahrazuje** dřívější
-      plán na pozicování přes CSS grid:
-  - navrhnout entity pro novou hierarchii (např. `TemplateTable`/`TemplateColumn`/`TemplateSection`/
-    `TemplateItem`, pojmenování upravit dle konvencí) - `TemplateColumn` ponese šířku sloupce místo
-    `WidthWeight`, přibude entita pro sekci (titulek + vazba na sloupec + pořadí) a šablona/tabulka
-    může existovat vícekrát pod sebou pro jednu šablonu,
-  - zvážit validaci "suma šířek sloupců jedné tabulky = 12" (na BE při ukládání šablony),
-  - upravit `Projects\Create.cs` → `AddDefaultTemplates`, aby vytvářel výchozí šablony v novém tvaru,
-  - přidat EF migraci (jde o breaking change modelu, promyslet i dopad na již vytvořená data).
-- [ ] Zúžit/přemapovat `TemplateItemType` enum (`TemplateItem.cs`) na výčet z `layout-templates.md`
-      a `description.md` ("Datové typy položek šablony"): 5 "hodnotových" typů (víceřádkový text,
-      jednořádkový text, celé číslo, desetinné číslo, true/false) + 2 speciální typy `Comments`
-      (komplexní prvek pro komentáře/diskuzi k položce) a `Untemplated` (čistě textový popisek bez
-      vstupu, "label-only") - odpadá rozlišení Inline/Nextline, checkbox se řeší jako `true/false`.
-      Přidat EF migraci.
-- [ ] Doplnit úložiště hodnot polí šablony pro konkrétní `Item` — v `Item` entitě zatím není žádné
-      pole/tabulka pro reálné hodnoty definované přes `TemplateItem`. Navrhnout novou entitu, např.
-      `ItemFieldValue` (`ItemId`, `TemplateItemId`, `Value` jako string/nullable typované sloupce podle
-      `TemplateItemType`) a přidat ji do `AppDbContext` + migrace.
+- [x] ~~Přepracovat pozicování polí šablony na CSS grid~~ — hotovo ve Story 3, ale **nahrazeno** novým zadáním
+      (`layout-templates.md`), viz další bod. (Starší duplicitní body o opravě `AddDefaultTemplates`,
+      odstranění `Epic`, přejmenování `InProgress` → `Active` a odstranění `Expected*DateTime` jsou hotové
+      — viz Story 0 v `task-stories.md`.)
+- [ ] Přepracovat rozložení šablony na hierarchii tabulka → sloupec (šířka) → sekce (titulek) → atribut
+      (titulek + hodnota), viz `layout-templates.md` a `description.md` ("Rozvržení polí šablony"):
+  - entity `Template` → `TemplateTable` (`TemplateId`, `OrderIndex`) → `TemplateColumn` (`TemplateTableId`,
+    `Width` int min. 1, `OrderIndex`) → `TemplateSection` (`TemplateColumnId`, `Title` smí být prázdný,
+    `OrderIndex`) → `TemplateItem` (`TemplateSectionId`, `Key`, `Title`, `Type`, `ValidatingRegex`,
+    `OrderIndex`); z `TemplateItem` odstranit `ColumnStart/ColumnSpan/RowStart/RowSpan`, z `Template`
+    `ColumnCount`,
+  - validace na BE při ukládání: každá tabulka má ≥ 1 sloupec, šířka sloupce ≥ 1, `Key` unikátní v rámci
+    šablony; **součet šířek = 12 se nevynucuje** (jen se předpokládá, FE upozorní), prázdné tabulky a sekce
+    jsou povolené,
+  - upravit `DefaultTemplates.cs` a `Projects\Create.cs` (kopie globální šablony do projektu — kopíruje celý
+    strom) do nového tvaru,
+  - EF migrace bez převodu starých grid dat — stávající šablony a `ItemFieldValue` se zahodí, šablony
+    vznikají jen kopírováním z globálních.
+- [ ] Zúžit/přemapovat `TemplateItemType` enum (`TemplateItem.cs`) na 7 hodnot: `SingleLineText`,
+      `MultiLineText`, `Integer`, `Decimal`, `Boolean`, `Comments` (speciální komponenta pro komentáře;
+      zatím prostý text) a `LabelOnly` (jen popisek bez hodnoty). Odpadá Inline/Nextline, `Checkbox` →
+      `Boolean`, `Untemplated` → `LabelOnly`. Migrace převede stávající hodnoty enumu.
+- [x] Úložiště hodnot polí šablony pro konkrétní `Item` — `ItemFieldValue` (`ItemId`, `TemplateItemId`,
+      `Value`), hotovo ve Story 3 (zůstává beze změny, váže se na `TemplateItem.Id`).
 - [ ] Doplnit vazbu položky na aktuální stav v rámci sprintu — `Item` sama o sobě nemá `WorkflowState`,
       ten je jen přes `SprintItem.WorkflowStateId` (tj. stav položky má smysl jen v kontextu konkrétního
       sprintu/kanbanu). Ověřit, že tohle je žádaný design (položka mimo sprint nemá žádný stav — pak je
@@ -207,22 +180,21 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 
 ## Backend — šablony
 
-- [ ] CRUD nad univerzální (výchozí) šablonou pro daný `ItemType` — aktuálně se výchozí šablony jen
-      vytvářejí natvrdo při vzniku projektu v `Projects\Create.cs`; není jasné, kde/jak žije "globální"
-      výchozí šablona nezávislá na projektu (`Template.ProjectId` je dnes povinné, `int`, ne nullable).
-      Navrhnout buď zvláštní "systémový" projekt/placeholder, nebo `ProjectId` u výchozích šablon
-      nullable + endpointy `Features\Templates\GetDefault.cs` / `UpdateDefault.cs` pro správu (typicky
-      jen pro SuperAdmina).
-- [ ] CRUD nad projektově specifickou šablonou (přepis/úprava výchozí šablony pro konkrétní projekt):
-  - `GET /api/v1/projects/{id}/templates/{itemType}` (`Features\Templates\Get.cs`) — vrátí `Template`
-    vč. nové hierarchie tabulka → sloupec → sekce → atribut (viz sekce "databáze/model" a
-    `layout-templates.md`) pro daný typ položky v projektu.
-  - `PUT /api/v1/projects/{id}/templates/{itemType}` (`Features\Templates\Update.cs`) — nahradí
-    definici polí šablony (přidání/úprava/smazání `TemplateItem`); zvážit, jak se chovat k `Item`, které
-    už mají hodnoty pro odstraněná pole (`ItemFieldValue`).
-- [ ] Endpoint pro načtení šablony pro konkrétní typ položky v projektu pro vykreslení detailu na FE —
-      pokud bude `GET .../templates/{itemType}` z bodu výše, samostatný endpoint navíc není potřeba;
-      jinak zvážit `GET /api/v1/projects/items/{id}/template` odvozující typ přímo z `Item.Type`.
+- [x] Univerzální (globální) šablony — `Template.ProjectId IS NULL`, zakládají se idempotentně při startu
+      (`Features\Templates\DefaultTemplates.cs`); **needitují se** (žádný CRUD/UI), v budoucnu se případně
+      upraví přímo v DB/seedu. Při založení projektu se z nich kopíruje celý strom do projektu.
+- [ ] Odstranit endpointy a FE pro úpravu globální šablony (`Features\Templates\GetGlobal.cs`,
+      `UpdateGlobal.cs`, `BaseRoute.Templates`, `routes\templates\index.tsx` + odkaz ze seznamu projektů,
+      globální varianta v `templates-api.ts`/`templates-queries.ts`) — nově se editují jen projektové.
+- [ ] Přepsat `Features\Templates\Get.cs`/`Update.cs` (`GET`/`PUT /api/v1/projects/{id}/templates/{itemType}`)
+      na hierarchii tabulka → sloupec → sekce → atribut:
+  - `Get` vrací strom včetně `Id` a `OrderIndex` na každé úrovni,
+  - `Update` přijímá celý strom; prvky s `Id` se aktualizují, bez `Id` vytvoří, ty, které chybí, se smažou
+    (u atributů i s jejich `ItemFieldValue`; změna `Type` existujícího atributu se bere jako smazání +
+    nový atribut, aby zůstala hodnota konzistentní); `Result` vrací počet smazaných hodnot,
+  - validace: ≥ 1 sloupec v tabulce, šířka ≥ 1, `Key` unikátní, platný `Type`; součet 12 se nevynucuje.
+- [ ] Samostatný endpoint šablony pro vykreslení detailu položky není potřeba — `GetFieldValues` vrací
+      šablonu + hodnoty (viz sekce "položky").
 
 ## Backend — obecné / infrastruktura
 
@@ -255,12 +227,14 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
   - routa kanban view pro konkrétní sprint (`src\routes\projects\$id\sprints\$sprintId\index.tsx`) —
     sloupce dle `WorkflowState`, karty = tasky/bugy, přiřazování a posun mezi sloupci (drag & drop nebo
     alespoň select/tlačítka jako MVP).
-- [ ] Detail položky (feature/user-story/task/bug) s formulářem generovaným dle šablony — čeká na BE
-      endpointy CRUD hodnot polí a šablony (sekce "šablony"/"položky" výše):
-  - komponenta v `src\components\specific` (např. `item-detail-form.tsx`), dynamicky vyrenderuje
-    tabulky/sloupce/sekce/atributy dle šablony (viz `layout-templates.md`) a typ hodnoty atributu,
-  - editor šablony (`template-editor.tsx`) — přidávání/mazání/přesun tabulek, sloupců (šířka, suma 12),
-    sekcí a atributů.
+- [ ] Detail položky (feature/user-story/task/bug) s formulářem generovaným dle šablony (hotová verze ze
+      Story 3 je nad CSS gridem a je potřeba ji přepsat na novou hierarchii, Story 3X):
+  - komponenta v `src\components\specific` (`item-detail-form.tsx`), dynamicky vyrenderuje
+    tabulky/sloupce/sekce/atributy dle šablony (viz `layout-templates.md`) a typ hodnoty atributu;
+    layout renderer vyčlenit do sdílené komponenty, kterou použije i náhled v editoru šablon,
+- [ ] Editor projektových šablon v nastavení projektu (`template-editor.tsx`, Story 3Y) —
+      přidávání/mazání/přesun tabulek, sloupců (šířka ≥ 1, upozornění když součet ≠ 12), sekcí a atributů;
+      globální šablony se needitují.
 - [ ] Správa členství a rolí v projektu — UI nad `AssignMember`/`UnassignMember` a novými endpointy
       pro role/výpis členů (sekce "projekty" výše): seznam členů, dialog pro přidání/změnu role,
       odebrání člena.

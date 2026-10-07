@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Agilium is a Kanban/agile project-management tool (full spec in `description.md`, in Czech). Users belong
 to projects; each project has Features → User-Stories → Tasks/Bugs ("Items"), organized into Sprints for
 a Kanban view. Item status (TODO/ACTIVE/DONE) rolls up from tasks to user-stories to features. Item field
-layout (what's editable per item type) is driven by per-project `Template`/`TemplateColumn`/`TemplateItem`
-definitions. See `tasks.md` for the current implementation backlog (what's done vs. still missing) — check
+layout (what's editable per item type) is driven by per-project `Template`/`TemplateTable`/`TemplateColumn`/`TemplateSection`/`TemplateItem`
+definitions (see `layout-templates.md`). See `tasks.md` for the current implementation backlog (what's done vs. still missing) — check
 it before assuming a feature exists.
 
 ## Solution layout
@@ -63,7 +63,7 @@ Handlers/Endpoints are auto-discovered and DI-registered by scanning the assembl
 `MapEndpoints`) — no manual registration needed for new features.
 
 Model classes are in `Model`; entities mapped to the database are in `Model\Db` (e.g. `Project`, `Item`,
-`Sprint`, `SprintItem`, `Template`/`TemplateColumn`/`TemplateItem`, `Role`, `Membership`,
+`Sprint`, `SprintItem`, `Template`/`TemplateTable`/`TemplateColumn`/`TemplateSection`/`TemplateItem`, `Role`, `Membership`,
 `WorkflowState`).
 
 **Validation:** only use custom attributes from `Exceptions/Validation` (e.g. `XNonEmpty`,
