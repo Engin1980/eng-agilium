@@ -52,8 +52,6 @@ Základní vstupní bod do aplikace — bez projektu nejde dělat nic dalšího.
 - [x] BE: změna stavu projektu Active/Inactive (`Features\Projects\UpdateStatus.cs`) + číselník stavů
       (`Features\Projects\StateOptions.cs`).
 - [x] BE: výpis projektů, volitelně podle člena (`Features\Projects\List.cs`).
-- [ ] BE: smazání projektu — konzultováno se zadavatelem, zatím se nedělá (`UpdateStatus.cs` řeší
-      deaktivaci, to pro teď stačí); necháno jako otevřený bod do budoucna.
 - [x] BE bonus nález: `AddOwnerMembership` (`Features\Projects\Create.cs`) nastavovala `RoleId` na
       `.Id` role, která v tu chvíli ještě nebyla uložená do DB (tedy `0`) → `POST /api/v1/projects`
       vždy spadl na FK violaci. Opraveno nastavením navigation property `Role` místo `RoleId`.
@@ -119,8 +117,8 @@ Jádro "agilní" funkcionality — vytváření a organizace položek.
 ## Story 3 — Uživatel edituje detail položky podle šablony
 
 Navazuje na Story 2 — jakmile existují položky, potřebují editovatelný detail. Toto je zároveň
-nejnáročnější story na model (CSS grid) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd.
-u položek.
+nejnáročnější story na model (hierarchie tabulka → sloupec → sekce → atribut, viz
+`layout-templates.md`) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd. u položek.
 
 - [x] DB: přepracovat `TemplateColumn`/`TemplateItem` z pevných sloupců (`WidthWeight`) na CSS grid
       pozicování — `TemplateColumn` odstraněn, `TemplateItem` má `ColumnStart`/`ColumnSpan`/`RowStart`/
@@ -162,6 +160,20 @@ u položek.
       smazání/přesun polí v gridu (číselné vstupy pro pozici + živý náhled rozložení), obě varianty:
       projektová (`routes\projects\$id\templates\index.tsx`, odkaz z detailu projektu) i globální
       (`routes\templates\index.tsx`, odkaz ze seznamu projektů).
+
+## Story 3X - Update zadání 3
+
+Navazuje na Story 3 -- jedná se o update story 3 po upřesnění zadání.
+Jakmile existují položky, potřebují editovatelný detail. Toto je zároveň nejnáročnější story na model (hierarchie tabulka → sloupec → sekce → atribut, viz layout-templates.md) a bez ní nejde plnohodnotně vyplňovat popis/prioritu/atd. u položek.
+
+    DB: přepracovat TemplateColumn/TemplateItem z pevných sloupců (WidthWeight) na hierarchii tabulka → sloupec (šířka, suma 12) → sekce (titulek) → atribut (titulek + hodnota) — viz layout-templates.md a description.md (nahrazuje dřívější plán na CSS grid pozicování).
+    DB: nová entita pro hodnoty polí položky (např. ItemFieldValue: ItemId, TemplateItemId, Value) — v Item zatím není žádné úložiště pro reálná data zadaná přes šablonu.
+    BE: CRUD nad projektově specifickou šablonou pro daný ItemType (Features\Templates\Get.cs/Update.cs).
+    BE: CRUD nad univerzální (výchozí) šablonou nezávislou na projektu — dnes Template.ProjectId je povinné, takže není jasné, kde "globální" výchozí šablona žije; potřeba nejdřív rozhodnout návrh.
+    BE: čtení/uložení hodnot polí položky dle šablony (Features\Items\GetFieldValues.cs/SetFieldValues.cs), vč. validace podle TemplateItem.ValidatingRegex/TemplateItemType.
+    FE: komponenta pro dynamické vykreslení formuláře detailu položky podle šablony (src\components\specific\item-detail-form.tsx).
+    FE: editor šablony (přidání/úprava/smazání/přesun tabulek, sloupců, sekcí a atributů dle layout-templates.md), globální i projektová varianta.
+
 
 ## Story 4 — Uživatel plánuje a řídí práci přes sprinty a kanban
 

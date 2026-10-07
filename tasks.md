@@ -49,6 +49,41 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 - [x] Doplnit do `TemplateItemType` enumu (`TemplateItem.cs`) chybějící hodnoty `Checkbox` a
       `LabelOnly` (viz `description.md`, "Datové typy položek šablony") — hotovo v rámci migrace
       `Story0_ModelCleanup`.
+- [ ] **Bug v `Projects\Create.cs` → `AddDefaultTemplates`** — ve smyčce `foreach (var type in taskTypes)`
+      (řádky ~87-152) i `foreach (var type in highTypes)` (řádky ~154-201) se `Template.Type` nastavuje
+      natvrdo na `ItemType.Task` místo na iterovanou proměnnou `type` — reálně tak vznikají jen šablony
+      typu `Task` (a druhý běh smyčky navíc pravděpodobně selže na duplicitě/kolizi), místo samostatných
+      šablon pro `Task`, `Bug`, `UserStory`, `Feature`. Opravit na `Type = type` v obou smyčkách.
+- [ ] Odstranit `ItemType.Epic` (`Item.cs`) a nahradit ho všude `ItemType.Feature` — dle `description.md`
+      je Epic zrušen/sloučen do Feature. Konkrétně:
+  - odstranit `Epic = 5` z enumu `ItemType`,
+  - v `Projects\Create.cs` → `AddDefaultTemplates` odebrat `ItemType.Epic` z pole `highTypes`
+    (zůstane jen `ItemType.UserStory, ItemType.Feature`),
+  - projít repo (`ItemType.Epic`) a zkontrolovat, že nikde jinde není použité,
+  - přidat EF migraci.
+- [ ] Přejmenovat `WorkflowStateType.InProgress` na `WorkflowStateType.Active` (`WorkflowState.cs`) —
+      sjednotit terminologii s `description.md` ("ACTIVE"). V `Projects\Create.cs` →
+      `AddDefaultWorkflowStates` upravit `Type = WorkflowStateType.InProgress` na `.Active` (text
+      `Title = "In Progress"` může zůstat jako zobrazovaný název). Přidat EF migraci.
+- [ ] Odstranit `ExpectedStartDateTime`/`ExpectedEndDateTime` ze `Sprint` entity (`Sprint.cs`) — dle
+      `description.md` má sprint jen jeden pár datumů (`StartDateTime`/`EndDateTime`). Přidat EF migraci.
+- [ ] Přepracovat rozložení šablony z pevných sloupců (`TemplateColumn.WidthWeight`) na hierarchii
+      tabulka → sloupec (šířka, suma 12) → sekce (titulek) → atribut (titulek + hodnota), viz
+      `layout-templates.md` a `description.md` ("Rozvržení polí šablony") - toto **nahrazuje** dřívější
+      plán na pozicování přes CSS grid:
+  - navrhnout entity pro novou hierarchii (např. `TemplateTable`/`TemplateColumn`/`TemplateSection`/
+    `TemplateItem`, pojmenování upravit dle konvencí) - `TemplateColumn` ponese šířku sloupce místo
+    `WidthWeight`, přibude entita pro sekci (titulek + vazba na sloupec + pořadí) a šablona/tabulka
+    může existovat vícekrát pod sebou pro jednu šablonu,
+  - zvážit validaci "suma šířek sloupců jedné tabulky = 12" (na BE při ukládání šablony),
+  - upravit `Projects\Create.cs` → `AddDefaultTemplates`, aby vytvářel výchozí šablony v novém tvaru,
+  - přidat EF migraci (jde o breaking change modelu, promyslet i dopad na již vytvořená data).
+- [ ] Zúžit/přemapovat `TemplateItemType` enum (`TemplateItem.cs`) na výčet z `layout-templates.md`
+      a `description.md` ("Datové typy položek šablony"): 5 "hodnotových" typů (víceřádkový text,
+      jednořádkový text, celé číslo, desetinné číslo, true/false) + 2 speciální typy `Comments`
+      (komplexní prvek pro komentáře/diskuzi k položce) a `Untemplated` (čistě textový popisek bez
+      vstupu, "label-only") - odpadá rozlišení Inline/Nextline, checkbox se řeší jako `true/false`.
+      Přidat EF migraci.
 - [ ] Doplnit úložiště hodnot polí šablony pro konkrétní `Item` — v `Item` entitě zatím není žádné
       pole/tabulka pro reálné hodnoty definované přes `TemplateItem`. Navrhnout novou entitu, např.
       `ItemFieldValue` (`ItemId`, `TemplateItemId`, `Value` jako string/nullable typované sloupce podle
@@ -180,8 +215,8 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       jen pro SuperAdmina).
 - [ ] CRUD nad projektově specifickou šablonou (přepis/úprava výchozí šablony pro konkrétní projekt):
   - `GET /api/v1/projects/{id}/templates/{itemType}` (`Features\Templates\Get.cs`) — vrátí `Template`
-    vč. `TemplateColumn`/`TemplateItem` (resp. nový CSS grid tvar, viz sekce "databáze/model") pro daný
-    typ položky v projektu.
+    vč. nové hierarchie tabulka → sloupec → sekce → atribut (viz sekce "databáze/model" a
+    `layout-templates.md`) pro daný typ položky v projektu.
   - `PUT /api/v1/projects/{id}/templates/{itemType}` (`Features\Templates\Update.cs`) — nahradí
     definici polí šablony (přidání/úprava/smazání `TemplateItem`); zvážit, jak se chovat k `Item`, které
     už mají hodnoty pro odstraněná pole (`ItemFieldValue`).
@@ -222,9 +257,10 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
     alespoň select/tlačítka jako MVP).
 - [ ] Detail položky (feature/user-story/task/bug) s formulářem generovaným dle šablony — čeká na BE
       endpointy CRUD hodnot polí a šablony (sekce "šablony"/"položky" výše):
-  - komponenta v `src\components\specific` (např. `item-detail-form.tsx`), dynamicky vyrenderuje pole
-    podle `TemplateItem.Type` a CSS grid pozice,
-  - editor šablony (`template-editor.tsx`) — přidávání/mazání/přesun polí, nastavení pozice v gridu.
+  - komponenta v `src\components\specific` (např. `item-detail-form.tsx`), dynamicky vyrenderuje
+    tabulky/sloupce/sekce/atributy dle šablony (viz `layout-templates.md`) a typ hodnoty atributu,
+  - editor šablony (`template-editor.tsx`) — přidávání/mazání/přesun tabulek, sloupců (šířka, suma 12),
+    sekcí a atributů.
 - [ ] Správa členství a rolí v projektu — UI nad `AssignMember`/`UnassignMember` a novými endpointy
       pro role/výpis členů (sekce "projekty" výše): seznam členů, dialog pro přidání/změnu role,
       odebrání člena.
