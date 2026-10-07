@@ -323,9 +323,56 @@ dělat paralelně s ní.
 - Počáteční stav po přiřazení = první `ToDo` stav projektu dle `OrderIndex`.
 - Nový sprint je `Planned`; stav a datumy se mění přes `PATCH`, ověřuje se jen konec ≥ začátek. Název
   sprintu je v projektu unikátní. Smazat jde jen sprint bez položek.
-- Kanban sloupce = `WorkflowState` projektu (výchozí 3); sloupce půjde v budoucnu editovat, kód s počtem
-  sloupců nepočítá napevno. Správa workflow stavů zatím není součástí.
+- Kanban sloupce = `WorkflowState` projektu (výchozí 3); kód s počtem sloupců nepočítá napevno. Správa
+  workflow stavů (editace sloupců) je ve Story 4a.
 - Drag & drop je nativní HTML5, u karty je navíc `select` jako záložní ovládání.
+
+## Story 4a — Uživatel upravuje workflow projektu (sloupce kanbanu)
+
+Navazuje na Story 4 — kanban sloupce jsou `WorkflowState` projektu a uživatel je v nastavení projektu
+může upravit. Jen základní editace.
+
+### Rozhodnutí návrhu
+
+- Editovat jde **počet sloupců, jejich název a typ stavu** (ToDo / Active / Done) a jejich pořadí. Popis
+  stavu (`Description`) se needitoval a zůstává beze změny.
+- Změny platí pro celý projekt, tedy i pro existující sprinty (board čte sloupce vždy z aktuálních
+  `WorkflowState`). Změna typu existujícího sloupce se tak okamžitě promítne i do odvozených stavů
+  feature/user-story a do počítadla "hotovo" ve sprintech.
+- Uložení = jeden `PUT` s kompletním seznamem sloupců (pořadí pole = pořadí sloupců, `OrderIndex` se
+  přečísluje 1..n). Prvek s `Id` se aktualizuje, bez `Id` se vytvoří, chybějící se zruší.
+- Zrušený sloupec: položky ve sprintech (`SprintItem`), které v něm byly, se přesunou do **nejbližšího
+  levého zachovaného sloupce** (podle původního pořadí). Pokud zrušený sloupec nemá nalevo žádný zachovaný
+  (rušil se první), přesunou se do nejbližšího zachovaného **pravého** (tj. nového prvního) sloupce.
+- Validace: aspoň 2 sloupce, aspoň jeden typu ToDo a aspoň jeden typu Done, neprázdný název (≤ 256),
+  platný typ, `Id` patří do projektu a nesmí se opakovat. Typ Active je volitelný.
+- Nová `SprintItem` se zakládá do prvního ToDo sloupce podle pořadí (beze změny oproti Story 4).
+- Oprávnění: `RequiredRoles` zatím prázdné (Story 6), editor má v budoucnu vyžadovat `CanManageProject`.
+
+### BE
+
+- [x] `Features\Workflow\Get.cs` — `GET /api/v1/projects/{id}/workflow`: sloupce seřazené dle
+      `OrderIndex` (`Id`, `Title`, `Type`, `ItemCount` = počet položek ve sprintech v tomto sloupci).
+- [x] `Features\Workflow\Update.cs` — `PUT /api/v1/projects/{id}/workflow`: kompletní nahrazení seznamu
+      sloupců, přesun položek ze zrušených sloupců (viz výše), vše v jedné transakci; `Result` vrací počet
+      přesunutých položek.
+
+### FE
+
+- [x] Odkaz v `settings\index.tsx` a stránka `routes\projects\$id\settings\workflow\index.tsx` —
+      editor sloupců nad lokálním draftem (název, typ, ↑/↓, odebrat, přidat sloupec), validace stejná jako
+      v BE (Uložit zakázáno při porušení), potvrzení při rušení sloupců s položkami, upozornění na
+      neuložené změny, po uložení se invalidují boardy sprintů.
+- [x] `services\workflow-api.ts` / `workflow-queries.ts`.
+
+### Okrajové případy k ověření
+
+- zrušení prostředního / posledního sloupce → položky do nejbližšího levého,
+- zrušení prvního sloupce → položky do nového prvního,
+- zrušení více sousedních sloupců najednou → do nejbližšího zachovaného levého,
+- méně než 2 sloupce, chybějící ToDo nebo Done → 400,
+- cizí / duplicitní `Id` → 400,
+- změna typu sloupce se projeví v odvozeném stavu feature/user-story na boardu.
 
 ## Story 5 — Uživatel spravuje členy a role projektu
 

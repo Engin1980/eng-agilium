@@ -17,6 +17,7 @@ import { Route as ProjectsIdIndexRouteImport } from './routes/projects/$id/index
 import { Route as ProjectsIdSprintsIndexRouteImport } from './routes/projects/$id/sprints/index'
 import { Route as ProjectsIdSettingsIndexRouteImport } from './routes/projects/$id/settings/index'
 import { Route as ProjectsIdSprintsSprintIdIndexRouteImport } from './routes/projects/$id/sprints/$sprintId/index'
+import { Route as ProjectsIdSettingsWorkflowIndexRouteImport } from './routes/projects/$id/settings/workflow/index'
 import { Route as ProjectsIdSettingsTemplatesIndexRouteImport } from './routes/projects/$id/settings/templates/index'
 import { Route as ProjectsIdItemsItemIdIndexRouteImport } from './routes/projects/$id/items/$itemId/index'
 
@@ -61,6 +62,12 @@ const ProjectsIdSprintsSprintIdIndexRoute =
     path: '/projects/$id/sprints/$sprintId/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ProjectsIdSettingsWorkflowIndexRoute =
+  ProjectsIdSettingsWorkflowIndexRouteImport.update({
+    id: '/projects/$id/settings/workflow/',
+    path: '/projects/$id/settings/workflow/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectsIdSettingsTemplatesIndexRoute =
   ProjectsIdSettingsTemplatesIndexRouteImport.update({
     id: '/projects/$id/settings/templates/',
@@ -84,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/projects/$id/sprints/': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
   '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
+  '/projects/$id/settings/workflow/': typeof ProjectsIdSettingsWorkflowIndexRoute
   '/projects/$id/sprints/$sprintId/': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -96,6 +104,7 @@ export interface FileRoutesByTo {
   '/projects/$id/sprints': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId': typeof ProjectsIdItemsItemIdIndexRoute
   '/projects/$id/settings/templates': typeof ProjectsIdSettingsTemplatesIndexRoute
+  '/projects/$id/settings/workflow': typeof ProjectsIdSettingsWorkflowIndexRoute
   '/projects/$id/sprints/$sprintId': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRoutesById {
@@ -109,6 +118,7 @@ export interface FileRoutesById {
   '/projects/$id/sprints/': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
   '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
+  '/projects/$id/settings/workflow/': typeof ProjectsIdSettingsWorkflowIndexRoute
   '/projects/$id/sprints/$sprintId/': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/projects/$id/sprints/'
     | '/projects/$id/items/$itemId/'
     | '/projects/$id/settings/templates/'
+    | '/projects/$id/settings/workflow/'
     | '/projects/$id/sprints/$sprintId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/projects/$id/sprints'
     | '/projects/$id/items/$itemId'
     | '/projects/$id/settings/templates'
+    | '/projects/$id/settings/workflow'
     | '/projects/$id/sprints/$sprintId'
   id:
     | '__root__'
@@ -147,6 +159,7 @@ export interface FileRouteTypes {
     | '/projects/$id/sprints/'
     | '/projects/$id/items/$itemId/'
     | '/projects/$id/settings/templates/'
+    | '/projects/$id/settings/workflow/'
     | '/projects/$id/sprints/$sprintId/'
   fileRoutesById: FileRoutesById
 }
@@ -160,6 +173,7 @@ export interface RootRouteChildren {
   ProjectsIdSprintsIndexRoute: typeof ProjectsIdSprintsIndexRoute
   ProjectsIdItemsItemIdIndexRoute: typeof ProjectsIdItemsItemIdIndexRoute
   ProjectsIdSettingsTemplatesIndexRoute: typeof ProjectsIdSettingsTemplatesIndexRoute
+  ProjectsIdSettingsWorkflowIndexRoute: typeof ProjectsIdSettingsWorkflowIndexRoute
   ProjectsIdSprintsSprintIdIndexRoute: typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 
@@ -221,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIdSprintsSprintIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$id/settings/workflow/': {
+      id: '/projects/$id/settings/workflow/'
+      path: '/projects/$id/settings/workflow'
+      fullPath: '/projects/$id/settings/workflow/'
+      preLoaderRoute: typeof ProjectsIdSettingsWorkflowIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$id/settings/templates/': {
       id: '/projects/$id/settings/templates/'
       path: '/projects/$id/settings/templates'
@@ -248,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIdSprintsIndexRoute: ProjectsIdSprintsIndexRoute,
   ProjectsIdItemsItemIdIndexRoute: ProjectsIdItemsItemIdIndexRoute,
   ProjectsIdSettingsTemplatesIndexRoute: ProjectsIdSettingsTemplatesIndexRoute,
+  ProjectsIdSettingsWorkflowIndexRoute: ProjectsIdSettingsWorkflowIndexRoute,
   ProjectsIdSprintsSprintIdIndexRoute: ProjectsIdSprintsSprintIdIndexRoute,
 }
 export const routeTree = rootRouteImport

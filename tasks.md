@@ -181,6 +181,11 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       každou feature/user-story s alespoň jedním potomkem v daném sprintu ji zahrnout do výstupu (bez
       vlastního `SprintItem` záznamu, je jen odvozená).
 
+- [x] Editace workflow projektu (Story 4a) — `GET`/`PUT /api/v1/projects/{id}/workflow`
+      (`FeaturesWorkflowGet.cs`/`Update.cs`): počet sloupců, názvy, typy ToDo/Active/Done, pořadí; min. 2
+      sloupce, ToDo i Done povinné; položky ze zrušeného sloupce se přesunou do nejbližšího levého (u prvního
+      sloupce do pravého). FE: `settingsworkflow`, `workflow-editor.tsx`.
+
 ## Backend — šablony
 
 - [x] Univerzální (globální) šablony — `Template.ProjectId IS NULL`, zakládají se idempotentně při startu
