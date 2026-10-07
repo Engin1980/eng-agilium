@@ -1,10 +1,10 @@
 import * as React from "react";
-import { TemplateItemType } from "../../services/templates-api";
-import type { ItemFieldDto } from "../../services/item-fields-api";
+import { AttributeInput } from "./attribute-input";
+import { TemplateLayout } from "./template-layout";
 import { useItemFields, useSetItemFields } from "../../services/item-fields-queries";
 import { ApiError } from "../../services/http-client";
 
-/** Renders the item's template-driven fields on a CSS grid and saves edited values in one PUT. */
+/** Renders the item's template-driven fields (tables → columns → sections → attributes) and saves edited values in one PUT. */
 export function ItemDetailForm({ itemId }: { itemId: number }) {
   const { data, isLoading, error } = useItemFields(itemId);
   const setFields = useSetItemFields(itemId);
@@ -15,7 +15,15 @@ export function ItemDetailForm({ itemId }: { itemId: number }) {
 
   React.useEffect(() => {
     if (data) {
-      setValues(Object.fromEntries(data.fields.map((f) => [f.templateItemId, f.value])));
+      setValues(
+        Object.fromEntries(
+          data.tables.flatMap((table) =>
+            table.columns.flatMap((column) =>
+              column.sections.flatMap((section) => section.items.map((f) => [f.templateItemId, f.value])),
+            ),
+          ),
+        ),
+      );
     }
   }, [data]);
 
@@ -46,19 +54,18 @@ export function ItemDetailForm({ itemId }: { itemId: number }) {
 
   return (
     <div>
-      <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: `repeat(${data.columnCount}, minmax(0, 1fr))` }}
-      >
-        {data.fields.map((field) => (
-          <FieldInput
-            key={field.templateItemId}
-            field={field}
+      <TemplateLayout
+        tables={data.tables}
+        getAttributeKey={(field) => field.templateItemId}
+        renderAttribute={(field) => (
+          <AttributeInput
+            title={field.title}
+            type={field.type}
             value={values[field.templateItemId] ?? null}
             onChange={(v) => setValues((prev) => ({ ...prev, [field.templateItemId]: v }))}
           />
-        ))}
-      </div>
+        )}
+      />
 
       <div className="mt-4 flex items-center gap-3">
         <button
@@ -73,94 +80,4 @@ export function ItemDetailForm({ itemId }: { itemId: number }) {
       </div>
     </div>
   );
-}
-
-function FieldInput({
-  field,
-  value,
-  onChange,
-}: {
-  field: ItemFieldDto;
-  value: string | null;
-  onChange: (value: string | null) => void;
-}) {
-  const style: React.CSSProperties = {
-    gridColumn: `${field.columnStart} / span ${field.columnSpan}`,
-    gridRow: `${field.rowStart} / span ${field.rowSpan}`,
-  };
-
-  if (field.type === TemplateItemType.LabelOnly) {
-    return (
-      <div style={style} className="flex items-end pb-2 font-medium text-gray-700">
-        {field.title}
-      </div>
-    );
-  }
-
-  return (
-    <div style={style}>
-      <label className="mb-1 block text-sm font-medium text-gray-700">{field.title}</label>
-      {renderControl(field, value, onChange)}
-    </div>
-  );
-}
-
-function renderControl(field: ItemFieldDto, value: string | null, onChange: (value: string | null) => void) {
-  const inputClassName =
-    "w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
-
-  switch (field.type) {
-    case TemplateItemType.NextlineTextArea:
-    case TemplateItemType.Comments:
-    case TemplateItemType.Untemplated:
-      return (
-        <textarea
-          className={inputClassName}
-          rows={field.type === TemplateItemType.NextlineTextArea ? 4 : 3}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
-        />
-      );
-    case TemplateItemType.InlineInt:
-    case TemplateItemType.NextlineInt:
-      return (
-        <input
-          type="number"
-          step={1}
-          className={inputClassName}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
-        />
-      );
-    case TemplateItemType.InlineDouble:
-    case TemplateItemType.NNextlineDouble:
-      // Plain text (not type="number") on purpose: the backend accepts a comma decimal separator too.
-      return (
-        <input
-          type="text"
-          inputMode="decimal"
-          className={inputClassName}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
-        />
-      );
-    case TemplateItemType.Checkbox:
-      return (
-        <input
-          type="checkbox"
-          className="h-5 w-5"
-          checked={value === "true"}
-          onChange={(e) => onChange(e.target.checked ? "true" : "false")}
-        />
-      );
-    default:
-      return (
-        <input
-          type="text"
-          className={inputClassName}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
-        />
-      );
-  }
 }

@@ -173,28 +173,28 @@ hierarchií tabulka → sloupec (šířka) → sekce (titulek) → atribut (titu
 (`ItemFieldValue`) a obecná kostra detailu položky ze Story 3 zůstávají, mění se model šablony, jeho
 endpointy a renderování. Globální šablony se **needitují** (jsou dané systémem), editují se jen projektové.
 
-- [ ] DB: entity `TemplateTable` → `TemplateColumn` (`Width` ≥ 1) → `TemplateSection` (`Title` smí být
+- [x] DB: entity `TemplateTable` → `TemplateColumn` (`Width` ≥ 1) → `TemplateSection` (`Title` smí být
       prázdný) → `TemplateItem` (atribut), každá úroveň s `OrderIndex`; odstranit CSS grid pole z
       `TemplateItem` (`ColumnStart/ColumnSpan/RowStart/RowSpan`) a `Template.ColumnCount`.
-- [ ] DB: zúžit `TemplateItemType` na `SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`,
+- [x] DB: zúžit `TemplateItemType` na `SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`,
       `Comments`, `LabelOnly` (`Checkbox` → `Boolean`, `Untemplated` → `LabelOnly`, Inline/Nextline odpadá).
-- [ ] DB: EF migrace nového modelu — bez převodu starých grid dat (stávající šablony a `ItemFieldValue` se
+- [x] DB: EF migrace nového modelu — bez převodu starých grid dat (stávající šablony a `ItemFieldValue` se
       zahodí, šablony vznikají jen kopírováním z globálních).
-- [ ] BE: `DefaultTemplates.cs` (globální šablony) a `Projects\Create.cs` (kopie celého stromu do projektu)
+- [x] BE: `DefaultTemplates.cs` (globální šablony) a `Projects\Create.cs` (kopie celého stromu do projektu)
       v novém tvaru.
-- [ ] BE: přepsat `Templates\Get.cs`/`Update.cs` na stromovou strukturu (viz `tasks.md`, "Backend — šablony");
+- [x] BE: přepsat `Templates\Get.cs`/`Update.cs` na stromovou strukturu (viz `tasks.md`, "Backend — šablony");
       validace sdílená v `TemplateGridValidation` přejmenovat/přepsat (≥ 1 sloupec, šířka ≥ 1, unikátní
       `Key`, platný typ; součet 12 se nevynucuje).
-- [ ] BE: odstranit editaci globální šablony (`GetGlobal.cs`, `UpdateGlobal.cs`, `BaseRoute.Templates`).
-- [ ] BE: `Items\GetFieldValues.cs`/`SetFieldValues.cs` — upravit na novou strukturu šablony; validace typů
+- [x] BE: odstranit editaci globální šablony (`GetGlobal.cs`, `UpdateGlobal.cs`, `BaseRoute.Templates`).
+- [x] BE: `Items\GetFieldValues.cs`/`SetFieldValues.cs` — upravit na novou strukturu šablony; validace typů
       zůstává, doplnit nové názvy typů.
-- [ ] FE: sdílený renderer layoutu (`template-layout.tsx` — tabulky pod sebou, sloupce přes CSS grid s
+- [x] FE: sdílený renderer layoutu (`template-layout.tsx` — tabulky pod sebou, sloupce přes CSS grid s
       `fr` jednotkami podle `Width`, sekce s titulkem, atributy přes celou šířku sloupce) a přepis
       `item-detail-form.tsx` nad ním; komponenty pro jednotlivé typy hodnot, `LabelOnly` jen text,
       `Comments` zatím jako textarea (speciální komponenta později).
-- [ ] FE: aktualizovat `templates-api.ts`/`templates-queries.ts` a typy na nový tvar, odstranit globální
+- [x] FE: aktualizovat `templates-api.ts`/`templates-queries.ts` a typy na nový tvar, odstranit globální
       editor (`routes\templates\index.tsx`) a odkaz na něj ze seznamu projektů.
-- [ ] FE: původní `template-fields-editor.tsx` (grid editor) se nahradí editorem ze Story 3Y.
+- [x] FE: původní `template-fields-editor.tsx` (grid editor) odstraněn; stránka šablon projektu je do Story 3Y jen read-only náhled (`routes\projects\$id\templates`).
 
 ## Story 3Y — Editace projektových šablon v nastavení projektu
 

@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import * as React from "react";
 import { ItemType } from "../../../../services/items-api";
-import { useProjectTemplate, useUpdateProjectTemplate } from "../../../../services/templates-queries";
-import { TemplateFieldsEditor } from "../../../../components/specific/template-fields-editor";
+import { useProjectTemplate } from "../../../../services/templates-queries";
+import { AttributeInput } from "../../../../components/specific/attribute-input";
+import { TemplateLayout } from "../../../../components/specific/template-layout";
 import { useAuth } from "../../../../contexts/auth-context";
 
 export const Route = createFileRoute("/projects/$id/templates/")({
@@ -45,13 +46,7 @@ function ProjectTemplatesPage() {
       </Link>
 
       <h1 className="mt-4 text-2xl font-semibold">Šablony projektu</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Úpravy se týkají jen tohoto projektu. Globální výchozí šablony lze upravit na{" "}
-        <Link to="/templates" className="text-blue-600 hover:underline">
-          samostatné stránce
-        </Link>
-        .
-      </p>
+      <p className="mt-1 text-sm text-gray-500">Náhled rozložení šablony projektu (editor přibude v další změně).</p>
 
       <div className="mt-4 flex gap-2 border-b border-gray-200">
         {TYPE_TABS.map((tab) => (
@@ -78,17 +73,17 @@ function ProjectTemplatesPage() {
 
 function ProjectTemplateEditor({ projectId, itemType }: { projectId: number; itemType: ItemType }) {
   const { data, isLoading, error } = useProjectTemplate(projectId, itemType);
-  const updateTemplate = useUpdateProjectTemplate(projectId, itemType);
 
   if (isLoading) return <p className="text-gray-500">Načítání šablony…</p>;
   if (error || !data) return <p className="text-red-600">Nepodařilo se načíst šablonu.</p>;
 
   return (
-    <TemplateFieldsEditor
-      template={data}
-      isSaving={updateTemplate.isPending}
-      saveError={updateTemplate.error}
-      onSave={(columnCount, items) => updateTemplate.mutate({ columnCount, items })}
+    <TemplateLayout
+      tables={data.tables}
+      getAttributeKey={(attribute) => attribute.id}
+      renderAttribute={(attribute) => (
+        <AttributeInput title={attribute.title} type={attribute.type} value={null} onChange={() => {}} disabled />
+      )}
     />
   );
 }

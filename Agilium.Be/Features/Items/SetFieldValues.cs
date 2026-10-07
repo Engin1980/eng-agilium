@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Eng.Agilium.Be.Exceptions;
+using Eng.Agilium.Be.Features.Templates;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,11 +26,11 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
     var template =
       await dbContext
         .Templates.AsNoTracking()
-        .Include(t => t.TemplateItems)
+        .IncludeTree()
         .FirstOrDefaultAsync(t => t.ProjectId == item.ProjectId && t.Type == item.Type, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Template), item.ProjectId);
 
-    var templateItemsById = template.TemplateItems.ToDictionary(ti => ti.Id);
+    var templateItemsById = template.Tables.SelectMany(tb => tb.Columns).SelectMany(c => c.Sections).SelectMany(s => s.Items).ToDictionary(ti => ti.Id);
 
     var existingByTemplateItemId = await dbContext
       .ItemFieldValues.Where(v => v.ItemId == item.Id)
@@ -88,26 +89,24 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
 
     switch (templateItem.Type)
     {
-      case TemplateItemType.InlineInt:
-      case TemplateItemType.NextlineInt:
+      case TemplateItemType.Integer:
         if (!int.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
           throw new BadRequestException($"Field '{templateItem.Key}' expects a whole number");
         break;
 
-      case TemplateItemType.InlineDouble:
-      case TemplateItemType.NNextlineDouble:
+      case TemplateItemType.Decimal:
         rawValue = rawValue.Replace(',', '.');
         if (!double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
           throw new BadRequestException($"Field '{templateItem.Key}' expects a decimal number");
         break;
 
-      case TemplateItemType.Checkbox:
+      case TemplateItemType.Boolean:
         if (rawValue != "true" && rawValue != "false")
           throw new BadRequestException($"Field '{templateItem.Key}' expects 'true' or 'false'");
         break;
 
       default:
-        break; // free-text types: InlineText, NextlineText, NextlineTextArea, Comments, Untemplated
+        break; // free-text types: SingleLineText, MultiLineText, Comments
     }
 
     if (!string.IsNullOrEmpty(templateItem.ValidatingRegex) && !Regex.IsMatch(rawValue, templateItem.ValidatingRegex))

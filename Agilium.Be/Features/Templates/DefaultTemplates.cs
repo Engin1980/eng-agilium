@@ -3,104 +3,70 @@ using Eng.Agilium.Be.Model.Db;
 namespace Eng.Agilium.Be.Features.Templates;
 
 /// <summary>
-/// The built-in field layout used to seed the global default template for each <see cref="ItemType"/>
-/// (see <c>AppInitializer</c>) and as a fallback in <c>Projects.Create</c> if that seed is somehow
-/// missing. A 4-column grid: a wide left column (description/comments) and a narrow right column
-/// (numeric fields), mirroring the old fixed-column layout this replaces.
+/// The built-in layout used to seed the global default template for each <see cref="ItemType"/>
+/// (see <c>AppInitializer</c>). Global templates are not editable through the API; every project gets
+/// its own copy of them (see <see cref="TemplateTree.CloneTables"/>) which is then edited per project.
+/// Layout: one table with a wide left column (description, comments) and a narrow right column
+/// (priority, complexity and - for task/bug - time tracking); widths sum to 12.
 /// </summary>
 public static class DefaultTemplates
 {
-  public const int DefaultColumnCount = 4;
-
-  public static List<TemplateItem> BuildFieldsFor(ItemType type) =>
-    type switch
+  public static List<TemplateTable> BuildTablesFor(ItemType type)
+  {
+    var details = new List<TemplateItem>
     {
-      ItemType.Task or ItemType.Bug => TaskOrBugFields(),
-      ItemType.UserStory or ItemType.Feature => FeatureOrUserStoryFields(),
-      _ => throw new ArgumentOutOfRangeException(nameof(type)),
+      Item(1, "priority", "Priority", TemplateItemType.Integer),
+      Item(2, "complexity", "Complexity", TemplateItemType.Integer),
     };
 
-  private static List<TemplateItem> TaskOrBugFields() =>
+    if (type is ItemType.Task or ItemType.Bug)
+    {
+      details.Add(Item(3, "time-expected", "Time Expected (h)", TemplateItemType.Decimal));
+      details.Add(Item(4, "time-spent", "Time Spent (h)", TemplateItemType.Decimal));
+    }
+
+    return
     [
-      DescriptionField(),
-      CommentsField(),
-      PriorityField(),
-      ComplexityField(),
-      new()
+      new TemplateTable
       {
-        OrderIndex = 5,
-        Key = "time-expected",
-        Title = "Time Expected (h)",
-        Type = TemplateItemType.InlineDouble,
-        ColumnStart = 4,
-        ColumnSpan = 1,
-        RowStart = 3,
-        RowSpan = 1,
-      },
-      new()
-      {
-        OrderIndex = 6,
-        Key = "time-spent",
-        Title = "Time Spent (h)",
-        Type = TemplateItemType.InlineDouble,
-        ColumnStart = 4,
-        ColumnSpan = 1,
-        RowStart = 4,
-        RowSpan = 1,
+        OrderIndex = 1,
+        Columns =
+        [
+          new TemplateColumn
+          {
+            OrderIndex = 1,
+            Width = 8,
+            Sections =
+            [
+              Section(1, "Description", Item(1, "description", "Description", TemplateItemType.MultiLineText)),
+              Section(2, "Discussion", Item(1, "comments", "Comments", TemplateItemType.Comments)),
+            ],
+          },
+          new TemplateColumn
+          {
+            OrderIndex = 2,
+            Width = 4,
+            Sections = [Section(1, "Details", [.. details])],
+          },
+        ],
       },
     ];
+  }
 
-  private static List<TemplateItem> FeatureOrUserStoryFields() => [DescriptionField(), CommentsField(), PriorityField(), ComplexityField()];
-
-  private static TemplateItem DescriptionField() =>
+  private static TemplateSection Section(int orderIndex, string title, params TemplateItem[] items) =>
     new()
     {
-      OrderIndex = 1,
-      Key = "description",
-      Title = "Description",
-      Type = TemplateItemType.NextlineTextArea,
-      ColumnStart = 1,
-      ColumnSpan = 3,
-      RowStart = 1,
-      RowSpan = 1,
+      OrderIndex = orderIndex,
+      Title = title,
+      Items = items,
     };
 
-  private static TemplateItem CommentsField() =>
+  private static TemplateItem Item(int orderIndex, string key, string title, TemplateItemType type) =>
     new()
     {
-      OrderIndex = 2,
-      Key = "comments",
-      Title = "Comments",
-      Type = TemplateItemType.Comments,
-      ColumnStart = 1,
-      ColumnSpan = 3,
-      RowStart = 2,
-      RowSpan = 1,
-    };
-
-  private static TemplateItem PriorityField() =>
-    new()
-    {
-      OrderIndex = 3,
-      Key = "priority",
-      Title = "Priority",
-      Type = TemplateItemType.InlineInt,
-      ColumnStart = 4,
-      ColumnSpan = 1,
-      RowStart = 1,
-      RowSpan = 1,
-    };
-
-  private static TemplateItem ComplexityField() =>
-    new()
-    {
-      OrderIndex = 4,
-      Key = "complexity",
-      Title = "Complexity",
-      Type = TemplateItemType.InlineInt,
-      ColumnStart = 4,
-      ColumnSpan = 1,
-      RowStart = 2,
-      RowSpan = 1,
+      OrderIndex = orderIndex,
+      Key = key,
+      Title = title,
+      Type = type,
     };
 }

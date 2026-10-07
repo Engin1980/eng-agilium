@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsIdIndexRouteImport } from './routes/projects/$id/index'
 import { Route as ProjectsIdTemplatesIndexRouteImport } from './routes/projects/$id/templates/index'
@@ -31,11 +30,6 @@ const LoginRoute = LoginRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TemplatesIndexRoute = TemplatesIndexRouteImport.update({
-  id: '/templates/',
-  path: '/templates/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
@@ -66,7 +60,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/templates/': typeof TemplatesIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
   '/projects/$id/templates/': typeof ProjectsIdTemplatesIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
@@ -76,7 +69,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects': typeof ProjectsIndexRoute
-  '/templates': typeof TemplatesIndexRoute
   '/projects/$id': typeof ProjectsIdIndexRoute
   '/projects/$id/templates': typeof ProjectsIdTemplatesIndexRoute
   '/projects/$id/items/$itemId': typeof ProjectsIdItemsItemIdIndexRoute
@@ -87,7 +79,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/templates/': typeof TemplatesIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
   '/projects/$id/templates/': typeof ProjectsIdTemplatesIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
@@ -99,7 +90,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/projects/'
-    | '/templates/'
     | '/projects/$id/'
     | '/projects/$id/templates/'
     | '/projects/$id/items/$itemId/'
@@ -109,7 +99,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/projects'
-    | '/templates'
     | '/projects/$id'
     | '/projects/$id/templates'
     | '/projects/$id/items/$itemId'
@@ -119,7 +108,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/projects/'
-    | '/templates/'
     | '/projects/$id/'
     | '/projects/$id/templates/'
     | '/projects/$id/items/$itemId/'
@@ -130,7 +118,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
-  TemplatesIndexRoute: typeof TemplatesIndexRoute
   ProjectsIdIndexRoute: typeof ProjectsIdIndexRoute
   ProjectsIdTemplatesIndexRoute: typeof ProjectsIdTemplatesIndexRoute
   ProjectsIdItemsItemIdIndexRoute: typeof ProjectsIdItemsItemIdIndexRoute
@@ -157,13 +144,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/templates/': {
-      id: '/templates/'
-      path: '/templates'
-      fullPath: '/templates/'
-      preLoaderRoute: typeof TemplatesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/': {
@@ -202,7 +182,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
-  TemplatesIndexRoute: TemplatesIndexRoute,
   ProjectsIdIndexRoute: ProjectsIdIndexRoute,
   ProjectsIdTemplatesIndexRoute: ProjectsIdTemplatesIndexRoute,
   ProjectsIdItemsItemIdIndexRoute: ProjectsIdItemsItemIdIndexRoute,

@@ -87,48 +87,18 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
   /// <summary>
   /// Gives the new project its own copy of each ItemType's global default template (see
   /// description.md: "při vytvoření projektu se udělá lokální kopie šablon"). Falls back to the
-  /// hardcoded field layout if a global template is somehow missing (it's seeded by AppInitializer).
+  /// built-in layout if a global template is somehow missing (it's seeded by AppInitializer).
   /// </summary>
   private async Task AddDefaultTemplatesAsync(Project project, CancellationToken cancellationToken)
   {
     var globalTemplates = await dbContext
       .Templates.AsNoTracking()
-      .Include(t => t.TemplateItems)
+      .IncludeTree()
       .Where(t => t.ProjectId == null)
       .ToListAsync(cancellationToken);
 
     foreach (var type in Enum.GetValues<ItemType>())
-    {
-      var global = globalTemplates.FirstOrDefault(t => t.Type == type);
-      var sourceFields = global?.TemplateItems ?? DefaultTemplates.BuildFieldsFor(type);
-
-      var template = new Template
-      {
-        Project = project,
-        Type = type,
-        ColumnCount = global?.ColumnCount ?? DefaultTemplates.DefaultColumnCount,
-      };
-
-      foreach (var field in sourceFields)
-      {
-        template.TemplateItems.Add(
-          new TemplateItem
-          {
-            Key = field.Key,
-            Title = field.Title,
-            Type = field.Type,
-            ValidatingRegex = field.ValidatingRegex,
-            OrderIndex = field.OrderIndex,
-            ColumnStart = field.ColumnStart,
-            ColumnSpan = field.ColumnSpan,
-            RowStart = field.RowStart,
-            RowSpan = field.RowSpan,
-          }
-        );
-      }
-
-      project.Templates.Add(template);
-    }
+      project.Templates.Add(TemplateTree.NewProjectTemplate(globalTemplates.FirstOrDefault(t => t.Type == type), type, project));
   }
 
   private void AddOwnerMembership(Project project)

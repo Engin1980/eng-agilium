@@ -7,20 +7,15 @@ namespace Eng.Agilium.Be.Features.Templates.Get;
 
 public record Parameters(int Id, [property: XEnumValidation] ItemType ItemType);
 
-public record TemplateItemResult(
-  int Id,
-  string Key,
-  string Title,
-  int Type,
-  string? ValidatingRegex,
-  int OrderIndex,
-  int ColumnStart,
-  int ColumnSpan,
-  int RowStart,
-  int RowSpan
-);
+public record AttributeResult(int Id, string Key, string Title, int Type, string? ValidatingRegex);
 
-public record Result(int TemplateId, int ColumnCount, List<TemplateItemResult> Items);
+public record SectionResult(int Id, string Title, List<AttributeResult> Items);
+
+public record ColumnResult(int Id, int Width, List<SectionResult> Sections);
+
+public record TableResult(int Id, List<ColumnResult> Columns);
+
+public record Result(int TemplateId, List<TableResult> Tables);
 
 public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, Parameters, Result>
 {
@@ -33,35 +28,41 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, Para
     await dbContext.Projects.EnsureExistsAsync(parameters.Id, cancellationToken);
 
     var template =
-      await dbContext
-        .Templates.AsNoTracking()
-        .Include(t => t.TemplateItems)
+      await dbContext.Templates //
+        .AsNoTracking()
+        .IncludeTree()
         .FirstOrDefaultAsync(t => t.ProjectId == parameters.Id && t.Type == parameters.ItemType, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Template), parameters.Id);
 
     return new Result(
       template.Id,
-      template.ColumnCount,
       template
-        .TemplateItems.OrderBy(i => i.OrderIndex)
-        .Select(i => new TemplateItemResult(
-          i.Id,
-          i.Key,
-          i.Title,
-          (int)i.Type,
-          i.ValidatingRegex,
-          i.OrderIndex,
-          i.ColumnStart,
-          i.ColumnSpan,
-          i.RowStart,
-          i.RowSpan
+        .Tables.OrderBy(tb => tb.OrderIndex)
+        .Select(tb => new TableResult(
+          tb.Id,
+          tb
+            .Columns.OrderBy(c => c.OrderIndex)
+            .Select(c => new ColumnResult(
+              c.Id,
+              c.Width,
+              c.Sections.OrderBy(s => s.OrderIndex)
+                .Select(s => new SectionResult(
+                  s.Id,
+                  s.Title,
+                  s.Items.OrderBy(i => i.OrderIndex)
+                    .Select(i => new AttributeResult(i.Id, i.Key, i.Title, (int)i.Type, i.ValidatingRegex))
+                    .ToList()
+                ))
+                .ToList()
+            ))
+            .ToList()
         ))
         .ToList()
     );
   }
 }
 
-[EndpointSummary("Returns a project's template (fields + grid layout) for the given item type")]
+[EndpointSummary("Returns a project's template (tables → columns → sections → attributes) for the given item type")]
 public class Endpoint : GenericOkEndpoint<EmptyCommand, Parameters, Handler, Result>
 {
   public override HttpMethod Method => HttpMethod.Get;

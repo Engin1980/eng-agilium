@@ -290,6 +290,8 @@ class AppInitializer(WebApplication app, AppSettings appSettings)
     db.Database.Migrate();
     SeedGlobalTemplates(db);
     db.SaveChanges();
+    TemplateTree.EnsureProjectTemplatesAsync(db).GetAwaiter().GetResult();
+    db.SaveChanges();
   }
 
   /// <summary>
@@ -305,9 +307,7 @@ class AppInitializer(WebApplication app, AppSettings appSettings)
       if (existingTypes.Contains(type))
         continue;
 
-      var template = new Template { ProjectId = null, Type = type, ColumnCount = DefaultTemplates.DefaultColumnCount };
-      foreach (var field in DefaultTemplates.BuildFieldsFor(type))
-        template.TemplateItems.Add(field);
+      var template = new Template { ProjectId = null, Type = type, Tables = DefaultTemplates.BuildTablesFor(type) };
 
       db.Templates.Add(template);
     }

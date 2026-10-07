@@ -7,17 +7,13 @@ export type ItemFieldDto = {
   title: string;
   type: TemplateItemType;
   validatingRegex: string | null;
-  columnStart: number;
-  columnSpan: number;
-  rowStart: number;
-  rowSpan: number;
   value: string | null;
 };
 
-export type ItemFieldsDto = {
-  columnCount: number;
-  fields: ItemFieldDto[];
-};
+export type ItemFieldSectionDto = { id: number; title: string; items: ItemFieldDto[] };
+export type ItemFieldColumnDto = { id: number; width: number; sections: ItemFieldSectionDto[] };
+export type ItemFieldTableDto = { id: number; columns: ItemFieldColumnDto[] };
+export type ItemFieldsDto = { tables: ItemFieldTableDto[] };
 
 export function getItemFields(itemId: number): Promise<ItemFieldsDto> {
   return apiRequest(`/projects/items/${itemId}/fields`);

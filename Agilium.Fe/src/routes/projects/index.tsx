@@ -72,9 +72,6 @@ function ProjectsList() {
         >
           <h1 style={{ margin: 0 }}>Projects</h1>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <Link to="/templates" className="text-sm text-blue-600 hover:underline">
-              Globální šablony
-            </Link>
             <button
               onClick={() => setCreateProjectDialogVisible(true)}
               style={{

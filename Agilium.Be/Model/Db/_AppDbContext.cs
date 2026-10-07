@@ -14,6 +14,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
   public DbSet<WorkflowState> WorkflowStates { get; set; } = null!;
   public DbSet<Token> Tokens { get; set; } = null!;
   public DbSet<Template> Templates { get; set; } = null!;
+  public DbSet<TemplateTable> TemplateTables { get; set; } = null!;
+  public DbSet<TemplateColumn> TemplateColumns { get; set; } = null!;
+  public DbSet<TemplateSection> TemplateSections { get; set; } = null!;
   public DbSet<TemplateItem> TemplateItems { get; set; } = null!;
   public DbSet<ItemFieldValue> ItemFieldValues { get; set; } = null!;
 
@@ -142,22 +145,56 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.HasKey(e => e.Id);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Type).IsRequired();
-      entity.Property(e => e.ColumnCount).IsRequired();
       entity
         .HasOne(e => e.Project)
         .WithMany(e => e.Templates)
         .HasForeignKey(e => e.ProjectId)
         .OnDelete(DeleteBehavior.Restrict)
         .IsRequired(false);
-      entity
-        .HasMany(e => e.TemplateItems)
-        .WithOne(i => i.Template)
-        .HasForeignKey(i => i.TemplateId)
-        .OnDelete(DeleteBehavior.Restrict);
       // At most one project-specific template per (project, type), and at most one global
       // (ProjectId IS NULL) default template per type.
       entity.HasIndex(e => new { e.ProjectId, e.Type }).IsUnique().HasFilter("[ProjectId] IS NOT NULL");
       entity.HasIndex(e => e.Type).IsUnique().HasFilter("[ProjectId] IS NULL");
+    });
+
+    // Template -> Table -> Column -> Section -> Item is a single owned tree, so it cascades; only
+    // ItemFieldValue -> TemplateItem is Restrict (values are removed explicitly by the template update).
+    modelBuilder.Entity<TemplateTable>(entity =>
+    {
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.OrderIndex).IsRequired();
+      entity
+        .HasOne(e => e.Template)
+        .WithMany(t => t.Tables)
+        .HasForeignKey(e => e.TemplateId)
+        .OnDelete(DeleteBehavior.Cascade);
+    });
+
+    modelBuilder.Entity<TemplateColumn>(entity =>
+    {
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.Width).IsRequired();
+      entity.Property(e => e.OrderIndex).IsRequired();
+      entity
+        .HasOne(e => e.Table)
+        .WithMany(t => t.Columns)
+        .HasForeignKey(e => e.TemplateTableId)
+        .OnDelete(DeleteBehavior.Cascade);
+    });
+
+    modelBuilder.Entity<TemplateSection>(entity =>
+    {
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.Title).IsRequired().HasMaxLength(256);
+      entity.Property(e => e.OrderIndex).IsRequired();
+      entity
+        .HasOne(e => e.Column)
+        .WithMany(c => c.Sections)
+        .HasForeignKey(e => e.TemplateColumnId)
+        .OnDelete(DeleteBehavior.Cascade);
     });
 
     modelBuilder.Entity<TemplateItem>(entity =>
@@ -170,13 +207,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Type).IsRequired();
       entity.Property(e => e.ValidatingRegex).HasMaxLength(1024);
       entity
-        .HasOne(e => e.Template)
-        .WithMany(t => t.TemplateItems)
-        .HasForeignKey(e => e.TemplateId)
-        .OnDelete(DeleteBehavior.Restrict);
-      entity.HasIndex(e => new { e.TemplateId, e.Key }).IsUnique();
+        .HasOne(e => e.Section)
+        .WithMany(s => s.Items)
+        .HasForeignKey(e => e.TemplateSectionId)
+        .OnDelete(DeleteBehavior.Cascade);
     });
-
     modelBuilder.Entity<ItemFieldValue>(entity =>
     {
       entity.HasKey(e => e.Id);
