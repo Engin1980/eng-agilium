@@ -298,22 +298,34 @@ Bug** — každý typ má v projektu vlastní kopii šablony (vznikla při zalo�
 Staví na Story 2 (existující tasky/bugy) — sprint samotný o hodnotách polí (Story 3) nezávisí, dá se
 dělat paralelně s ní.
 
-- [ ] BE: CRUD sprintu v rámci projektu (`Features\Sprints\Create.cs`/`Update.cs`/`List.cs`/`Delete.cs`)
+- [x] BE: CRUD sprintu v rámci projektu (`Features\Sprints\Create.cs`/`Update.cs`/`List.cs`/`Delete.cs`)
       — kontrola jednoznačnosti názvu sprintu v projektu.
-- [ ] BE: přiřazení/odebrání tasku/bugu na/ze sprintu (`SprintItem`) —
+- [x] BE: přiřazení/odebrání tasku/bugu na/ze sprintu (`SprintItem`) —
       `Features\Sprints\AssignItem.cs`/`UnassignItem.cs`; validace, že jde jen o task/bug, ne feature/
       user-story přímo.
-- [ ] BE: endpoint pro kanban data sprintu (`Features\Sprints\GetBoard.cs`) — sloupce dle
+- [x] BE: endpoint pro kanban data sprintu (`Features\Sprints\GetBoard.cs`) — sloupce dle
       `WorkflowState`, položky rozřazené podle aktuálního stavu.
-- [ ] BE: posun položky mezi sloupci kanbanu (`Features\Sprints\UpdateItemState.cs`) — volný posun bez
+- [x] BE: posun položky mezi sloupci kanbanu (`Features\Sprints\UpdateItemState.cs`) — volný posun bez
       omezení přechodů.
-- [ ] BE: automatické zobrazení feature/user-story ve sprintu, pokud má aspoň jeden vlastní task/bug ve
+- [x] BE: automatické zobrazení feature/user-story ve sprintu, pokud má aspoň jeden vlastní task/bug ve
       sprintu (odvozené pravidlo, promítnout do `GetBoard`).
-- [ ] BE: odvození stavu feature/user-story ze stavů podřízených položek (TODO/ACTIVE/DONE podle dětí) —
-      napojeno na `SprintItem`, nejdřív ujasnit kontext (stav v rámci jednoho sprintu vs. napříč sprinty).
-- [ ] FE: routa se seznamem sprintů projektu.
-- [ ] FE: routa/kanban board pro konkrétní sprint — sloupce, karty, přiřazování a posun mezi sloupci
-      (drag & drop nebo jednodušší MVP přes select/tlačítka).
+- [x] BE: odvození stavu feature/user-story ze stavů podřízených položek (TODO/ACTIVE/DONE podle dětí) —
+      odsouhlaseno: task/bug je vždy v jednom sprintu, stav feature/user-story se počítá v rámci
+      zobrazeného sprintu z jeho dětí (`SprintRules.DeriveStatus`, projekce v `GetBoard`).
+- [x] FE: routa se seznamem sprintů projektu.
+- [x] FE: routa/kanban board pro konkrétní sprint — sloupce, karty, přiřazování a posun mezi sloupci
+      (drag & drop).
+
+### Upřesnění (odsouhlaseno)
+
+- Task/bug je vždy v právě jednom sprintu (unikátní `SprintItem.ItemId`); přiřazení do jiného sprintu ho
+  přesune a zachová stav. Do dokončeného sprintu se přiřazovat nedá.
+- Počáteční stav po přiřazení = první `ToDo` stav projektu dle `OrderIndex`.
+- Nový sprint je `Planned`; stav a datumy se mění přes `PATCH`, ověřuje se jen konec ≥ začátek. Název
+  sprintu je v projektu unikátní. Smazat jde jen sprint bez položek.
+- Kanban sloupce = `WorkflowState` projektu (výchozí 3); sloupce půjde v budoucnu editovat, kód s počtem
+  sloupců nepočítá napevno. Správa workflow stavů zatím není součástí.
+- Drag & drop je nativní HTML5, u karty je navíc `select` jako záložní ovládání.
 
 ## Story 5 — Uživatel spravuje členy a role projektu
 

@@ -130,12 +130,11 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 - [ ] Nastavení/změna stavu položky v rámci sprintu — `Item` sám o sobě `WorkflowState` nemá, stav se
       váže přes `SprintItem` (viz bod v sekci "databáze/model"). Konkrétní endpoint pro posun na
       kanbanu patří spíš pod sprinty, viz `PATCH .../sprints/{sprintId}/items/{itemId}/state` níže.
-- [ ] Odvození stavu feature/user-story ze stavů podřízených položek (pravidlo z `description.md`:
-      TODO/ACTIVE/DONE podle dětí; user-story bez tasků = vždy TODO). Protože stav je vázaný na
-      `SprintItem` (konkrétní sprint), je potřeba nejdřív ujasnit, v jakém kontextu se toto pravidlo
-      počítá (např. "poslední/aktivní sprint položky" vs. přes všechny sprinty najednou) — pak doplnit
-      výpočet, nejspíš jako projekci v `ListItems`/novém detailu položky (ne jako uložené pole, aby se
-      nerozcházelo se skutečnými stavy dětí).
+- [x] Odvození stavu feature/user-story ze stavů podřízených položek (TODO/ACTIVE/DONE podle dětí).
+      Odsouhlasený kontext: task/bug patří vždy do právě jednoho sprintu, user-story/feature může mít
+      děti v několika sprintech, proto se stav počítá **v rámci zobrazeného sprintu** z dětí, které v něm
+      jsou (všechny ToDo → TODO, všechny Done → DONE, jinak ACTIVE) — projekce v `GetBoard`
+      (`SprintRules.DeriveStatus`), ne uložené pole. Mimo sprint (strom projektu) se stav nezobrazuje.
 - [ ] CRUD nad hodnotami polí položky podle šablony (`TemplateItem`) — po doplnění úložiště hodnot
       (`ItemFieldValue`, viz sekce výše):
   - `GET /api/v1/projects/items/{id}/fields` (`Features\Items\GetFieldValues.cs`) — vrátí šablonu pro
@@ -146,7 +145,8 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 
 ## Backend — sprinty a kanban
 
-- [ ] CRUD sprintu v rámci projektu — entita `Sprint` existuje, endpointy ve `Features` zcela chybí:
+- [x] CRUD sprintu v rámci projektu (hotovo ve Story 4; unikátní index `(ProjectId, Title)`, smazat jde
+      jen prázdný sprint, nový sprint je `Planned`, stav/datumy se mění přes `PATCH`):
   - `POST /api/v1/projects/sprints` (`Features\Sprints\Create.cs`) — `Command(Title, ProjectId,
     StartDateTime, EndDateTime)`, kontrola jednoznačnosti `Title` v rámci projektu
     (`EntityAlreadyExistsException`), `IdResult`.
@@ -157,23 +157,26 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
     `SprintItem` záznamy (kaskádový delete vs. zákaz smazání neprázdného sprintu).
   - Zvážit přidání `BaseRoute.Sprints` do `GenericEndpoint.cs` (obdoba `BaseRoute.Items`), pokud bude
     více endpointů operovat přímo nad `sprintId` bez potřeby `projectId` v command.
-- [ ] Přiřazení/odebrání položky (tasku/bugu) na/ze sprintu přes `SprintItem`:
+- [x] Přiřazení/odebrání položky (tasku/bugu) na/ze sprintu přes `SprintItem` (task/bug je vždy v právě
+      jednom sprintu — unikátní index `SprintItem.ItemId`; přiřazení do jiného sprintu položku přesune a
+      zachová její stav; do dokončeného sprintu přiřadit nejde; navíc `GET /projects/{id}/backlog`
+      — `Features\Sprints\ListBacklog.cs` — tasky/bugy projektu se sprintem, do kterého patří):
   - `POST /api/v1/projects/sprints/{sprintId}/items` (`Features\Sprints\AssignItem.cs`) —
     `Command(ItemId)`, ověřit, že item patří do stejného projektu jako sprint a že ještě není v tomto
     sprintu; založí `SprintItem` s počátečním `WorkflowState` (typicky první `ToDo` stav projektu).
   - `DELETE /api/v1/projects/sprints/{sprintId}/items/{itemId}` (`Features\Sprints\UnassignItem.cs`).
   - Podle `description.md` lze na sprint přiřazovat jen tasky/bugy (ne feature/user-story přímo) —
     validovat `Item.Type`.
-- [ ] Endpoint pro načtení kanban dat konkrétního sprintu — `GET /api/v1/projects/sprints/{id}/board`
+- [x] Endpoint pro načtení kanban dat konkrétního sprintu — `GET /api/v1/projects/sprints/{id}/board`
       (`Features\Sprints\GetBoard.cs`):
   - vrátí sloupce projektu (`WorkflowState`, seřazené dle `OrderIndex`) a v nich položky (`SprintItem`
     → `Item`) přiřazené danému sprintu,
   - zahrnuje i "odvozené" zobrazení feature/user-story (viz bod níže) nad tasky/bugy v daném sprintu.
-- [ ] Posun položky mezi sloupci kanbanu — `PATCH /api/v1/projects/sprints/{sprintId}/items/{itemId}/state`
+- [x] Posun položky mezi sloupci kanbanu — `PATCH /api/v1/projects/sprints/{sprintId}/items/{itemId}/state`
       (`Features\Sprints\UpdateItemState.cs`) — `Command(WorkflowStateId)`, ověří, že cílový stav patří
       do stejného projektu jako sprint; dle `description.md` jde o **volný** posun (bez omezení
       pořadí/přechodů mezi stavy).
-- [ ] Automatické „zobrazení“ feature/user-story ve sprintu, pokud má alespoň jeden svůj task/bug ve
+- [x] Automatické „zobrazení“ feature/user-story ve sprintu, pokud má alespoň jeden svůj task/bug ve
       sprintu (odvozené pravidlo z `description.md`) — promítnout do `GetBoard`/`List` odpovědi: pro
       každou feature/user-story s alespoň jedním potomkem v daném sprintu ji zahrnout do výstupu (bez
       vlastního `SprintItem` záznamu, je jen odvozená).
@@ -222,7 +225,8 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       `POST /api/v1/projects` pro dialog založení projektu v `handleCreate`).
 - [ ] Detail projektu — přehled features → user-story → tasks (strom, napojení na
       `GET /projects/{id}/items` v `routes\projects\$id\index.tsx`).
-- [ ] Pohled přes sprinty — čeká na BE endpointy (sekce "sprinty a kanban" výše):
+- [x] Pohled přes sprinty (hotovo ve Story 4; kanban používá nativní HTML5 drag & drop + `select` jako
+      záložní ovládání; sloupce se berou z `WorkflowState` projektu, takže jich může být libovolně):
   - routa se seznamem sprintů projektu (`src\routes\projects\$id\sprints\index.tsx`),
   - routa kanban view pro konkrétní sprint (`src\routes\projects\$id\sprints\$sprintId\index.tsx`) —
     sloupce dle `WorkflowState`, karty = tasky/bugy, přiřazování a posun mezi sloupci (drag & drop nebo

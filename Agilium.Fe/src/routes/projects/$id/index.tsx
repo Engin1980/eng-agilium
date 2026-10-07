@@ -59,6 +59,13 @@ function ProjectDetail() {
             <p className="text-gray-700">{project.description}</p>
             <p className="text-sm text-gray-500">{project.memberCount} členů</p>
             <Link
+              to="/projects/$id/sprints"
+              params={{ id }}
+              className="mr-4 inline-block text-sm text-blue-600 hover:underline"
+            >
+              Sprinty a kanban →
+            </Link>
+            <Link
               to="/projects/$id/settings"
               params={{ id }}
               className="inline-block text-sm text-blue-600 hover:underline"

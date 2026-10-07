@@ -98,12 +98,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Title).IsRequired().HasMaxLength(256);
       entity.HasOne(e => e.Project).WithMany().HasForeignKey(e => e.ProjectId).OnDelete(DeleteBehavior.Restrict);
+      entity.HasIndex(e => new { e.ProjectId, e.Title }).IsUnique();
     });
 
     modelBuilder.Entity<SprintItem>(entity =>
     {
       entity.HasKey(e => e.Id);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      // A task/bug belongs to exactly one sprint at a time.
+      entity.HasIndex(e => e.ItemId).IsUnique();
       entity.HasOne(e => e.Item).WithMany().HasForeignKey(e => e.ItemId).OnDelete(DeleteBehavior.Restrict);
       entity.HasOne(e => e.Sprint).WithMany().HasForeignKey(e => e.SprintId).OnDelete(DeleteBehavior.Restrict);
       entity

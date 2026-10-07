@@ -14,7 +14,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsIdIndexRouteImport } from './routes/projects/$id/index'
+import { Route as ProjectsIdSprintsIndexRouteImport } from './routes/projects/$id/sprints/index'
 import { Route as ProjectsIdSettingsIndexRouteImport } from './routes/projects/$id/settings/index'
+import { Route as ProjectsIdSprintsSprintIdIndexRouteImport } from './routes/projects/$id/sprints/$sprintId/index'
 import { Route as ProjectsIdSettingsTemplatesIndexRouteImport } from './routes/projects/$id/settings/templates/index'
 import { Route as ProjectsIdItemsItemIdIndexRouteImport } from './routes/projects/$id/items/$itemId/index'
 
@@ -43,11 +45,22 @@ const ProjectsIdIndexRoute = ProjectsIdIndexRouteImport.update({
   path: '/projects/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsIdSprintsIndexRoute = ProjectsIdSprintsIndexRouteImport.update({
+  id: '/projects/$id/sprints/',
+  path: '/projects/$id/sprints/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsIdSettingsIndexRoute = ProjectsIdSettingsIndexRouteImport.update({
   id: '/projects/$id/settings/',
   path: '/projects/$id/settings/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsIdSprintsSprintIdIndexRoute =
+  ProjectsIdSprintsSprintIdIndexRouteImport.update({
+    id: '/projects/$id/sprints/$sprintId/',
+    path: '/projects/$id/sprints/$sprintId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectsIdSettingsTemplatesIndexRoute =
   ProjectsIdSettingsTemplatesIndexRouteImport.update({
     id: '/projects/$id/settings/templates/',
@@ -68,8 +81,10 @@ export interface FileRoutesByFullPath {
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
   '/projects/$id/settings/': typeof ProjectsIdSettingsIndexRoute
+  '/projects/$id/sprints/': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
   '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
+  '/projects/$id/sprints/$sprintId/': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,8 +93,10 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsIndexRoute
   '/projects/$id': typeof ProjectsIdIndexRoute
   '/projects/$id/settings': typeof ProjectsIdSettingsIndexRoute
+  '/projects/$id/sprints': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId': typeof ProjectsIdItemsItemIdIndexRoute
   '/projects/$id/settings/templates': typeof ProjectsIdSettingsTemplatesIndexRoute
+  '/projects/$id/sprints/$sprintId': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,8 +106,10 @@ export interface FileRoutesById {
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
   '/projects/$id/settings/': typeof ProjectsIdSettingsIndexRoute
+  '/projects/$id/sprints/': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
   '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
+  '/projects/$id/sprints/$sprintId/': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,8 +120,10 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/projects/$id/'
     | '/projects/$id/settings/'
+    | '/projects/$id/sprints/'
     | '/projects/$id/items/$itemId/'
     | '/projects/$id/settings/templates/'
+    | '/projects/$id/sprints/$sprintId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,8 +132,10 @@ export interface FileRouteTypes {
     | '/projects'
     | '/projects/$id'
     | '/projects/$id/settings'
+    | '/projects/$id/sprints'
     | '/projects/$id/items/$itemId'
     | '/projects/$id/settings/templates'
+    | '/projects/$id/sprints/$sprintId'
   id:
     | '__root__'
     | '/'
@@ -121,8 +144,10 @@ export interface FileRouteTypes {
     | '/projects/'
     | '/projects/$id/'
     | '/projects/$id/settings/'
+    | '/projects/$id/sprints/'
     | '/projects/$id/items/$itemId/'
     | '/projects/$id/settings/templates/'
+    | '/projects/$id/sprints/$sprintId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,8 +157,10 @@ export interface RootRouteChildren {
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ProjectsIdIndexRoute: typeof ProjectsIdIndexRoute
   ProjectsIdSettingsIndexRoute: typeof ProjectsIdSettingsIndexRoute
+  ProjectsIdSprintsIndexRoute: typeof ProjectsIdSprintsIndexRoute
   ProjectsIdItemsItemIdIndexRoute: typeof ProjectsIdItemsItemIdIndexRoute
   ProjectsIdSettingsTemplatesIndexRoute: typeof ProjectsIdSettingsTemplatesIndexRoute
+  ProjectsIdSprintsSprintIdIndexRoute: typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -173,11 +200,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$id/sprints/': {
+      id: '/projects/$id/sprints/'
+      path: '/projects/$id/sprints'
+      fullPath: '/projects/$id/sprints/'
+      preLoaderRoute: typeof ProjectsIdSprintsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$id/settings/': {
       id: '/projects/$id/settings/'
       path: '/projects/$id/settings'
       fullPath: '/projects/$id/settings/'
       preLoaderRoute: typeof ProjectsIdSettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$id/sprints/$sprintId/': {
+      id: '/projects/$id/sprints/$sprintId/'
+      path: '/projects/$id/sprints/$sprintId'
+      fullPath: '/projects/$id/sprints/$sprintId/'
+      preLoaderRoute: typeof ProjectsIdSprintsSprintIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$id/settings/templates/': {
@@ -204,8 +245,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsIdIndexRoute: ProjectsIdIndexRoute,
   ProjectsIdSettingsIndexRoute: ProjectsIdSettingsIndexRoute,
+  ProjectsIdSprintsIndexRoute: ProjectsIdSprintsIndexRoute,
   ProjectsIdItemsItemIdIndexRoute: ProjectsIdItemsItemIdIndexRoute,
   ProjectsIdSettingsTemplatesIndexRoute: ProjectsIdSettingsTemplatesIndexRoute,
+  ProjectsIdSprintsSprintIdIndexRoute: ProjectsIdSprintsSprintIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
