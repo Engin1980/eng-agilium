@@ -14,7 +14,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsIdIndexRouteImport } from './routes/projects/$id/index'
-import { Route as ProjectsIdTemplatesIndexRouteImport } from './routes/projects/$id/templates/index'
+import { Route as ProjectsIdSettingsIndexRouteImport } from './routes/projects/$id/settings/index'
+import { Route as ProjectsIdSettingsTemplatesIndexRouteImport } from './routes/projects/$id/settings/templates/index'
 import { Route as ProjectsIdItemsItemIdIndexRouteImport } from './routes/projects/$id/items/$itemId/index'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -42,10 +43,15 @@ const ProjectsIdIndexRoute = ProjectsIdIndexRouteImport.update({
   path: '/projects/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsIdTemplatesIndexRoute =
-  ProjectsIdTemplatesIndexRouteImport.update({
-    id: '/projects/$id/templates/',
-    path: '/projects/$id/templates/',
+const ProjectsIdSettingsIndexRoute = ProjectsIdSettingsIndexRouteImport.update({
+  id: '/projects/$id/settings/',
+  path: '/projects/$id/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsIdSettingsTemplatesIndexRoute =
+  ProjectsIdSettingsTemplatesIndexRouteImport.update({
+    id: '/projects/$id/settings/templates/',
+    path: '/projects/$id/settings/templates/',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ProjectsIdItemsItemIdIndexRoute =
@@ -61,8 +67,9 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
-  '/projects/$id/templates/': typeof ProjectsIdTemplatesIndexRoute
+  '/projects/$id/settings/': typeof ProjectsIdSettingsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
+  '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,8 +77,9 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/projects': typeof ProjectsIndexRoute
   '/projects/$id': typeof ProjectsIdIndexRoute
-  '/projects/$id/templates': typeof ProjectsIdTemplatesIndexRoute
+  '/projects/$id/settings': typeof ProjectsIdSettingsIndexRoute
   '/projects/$id/items/$itemId': typeof ProjectsIdItemsItemIdIndexRoute
+  '/projects/$id/settings/templates': typeof ProjectsIdSettingsTemplatesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,8 +88,9 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
   '/projects/$id/': typeof ProjectsIdIndexRoute
-  '/projects/$id/templates/': typeof ProjectsIdTemplatesIndexRoute
+  '/projects/$id/settings/': typeof ProjectsIdSettingsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
+  '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,8 +100,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/projects/'
     | '/projects/$id/'
-    | '/projects/$id/templates/'
+    | '/projects/$id/settings/'
     | '/projects/$id/items/$itemId/'
+    | '/projects/$id/settings/templates/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,8 +110,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/projects'
     | '/projects/$id'
-    | '/projects/$id/templates'
+    | '/projects/$id/settings'
     | '/projects/$id/items/$itemId'
+    | '/projects/$id/settings/templates'
   id:
     | '__root__'
     | '/'
@@ -109,8 +120,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/projects/'
     | '/projects/$id/'
-    | '/projects/$id/templates/'
+    | '/projects/$id/settings/'
     | '/projects/$id/items/$itemId/'
+    | '/projects/$id/settings/templates/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,8 +131,9 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ProjectsIdIndexRoute: typeof ProjectsIdIndexRoute
-  ProjectsIdTemplatesIndexRoute: typeof ProjectsIdTemplatesIndexRoute
+  ProjectsIdSettingsIndexRoute: typeof ProjectsIdSettingsIndexRoute
   ProjectsIdItemsItemIdIndexRoute: typeof ProjectsIdItemsItemIdIndexRoute
+  ProjectsIdSettingsTemplatesIndexRoute: typeof ProjectsIdSettingsTemplatesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -160,11 +173,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/$id/templates/': {
-      id: '/projects/$id/templates/'
-      path: '/projects/$id/templates'
-      fullPath: '/projects/$id/templates/'
-      preLoaderRoute: typeof ProjectsIdTemplatesIndexRouteImport
+    '/projects/$id/settings/': {
+      id: '/projects/$id/settings/'
+      path: '/projects/$id/settings'
+      fullPath: '/projects/$id/settings/'
+      preLoaderRoute: typeof ProjectsIdSettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$id/settings/templates/': {
+      id: '/projects/$id/settings/templates/'
+      path: '/projects/$id/settings/templates'
+      fullPath: '/projects/$id/settings/templates/'
+      preLoaderRoute: typeof ProjectsIdSettingsTemplatesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$id/items/$itemId/': {
@@ -183,8 +203,9 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsIdIndexRoute: ProjectsIdIndexRoute,
-  ProjectsIdTemplatesIndexRoute: ProjectsIdTemplatesIndexRoute,
+  ProjectsIdSettingsIndexRoute: ProjectsIdSettingsIndexRoute,
   ProjectsIdItemsItemIdIndexRoute: ProjectsIdItemsItemIdIndexRoute,
+  ProjectsIdSettingsTemplatesIndexRoute: ProjectsIdSettingsTemplatesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

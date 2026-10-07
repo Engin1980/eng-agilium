@@ -41,7 +41,7 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       (`layout-templates.md`), viz další bod. (Starší duplicitní body o opravě `AddDefaultTemplates`,
       odstranění `Epic`, přejmenování `InProgress` → `Active` a odstranění `Expected*DateTime` jsou hotové
       — viz Story 0 v `task-stories.md`.)
-- [ ] Přepracovat rozložení šablony na hierarchii tabulka → sloupec (šířka) → sekce (titulek) → atribut
+- [x] Přepracovat rozložení šablony na hierarchii tabulka → sloupec (šířka) → sekce (titulek) → atribut
       (titulek + hodnota), viz `layout-templates.md` a `description.md` ("Rozvržení polí šablony"):
   - entity `Template` → `TemplateTable` (`TemplateId`, `OrderIndex`) → `TemplateColumn` (`TemplateTableId`,
     `Width` int min. 1, `OrderIndex`) → `TemplateSection` (`TemplateColumnId`, `Title` smí být prázdný,
@@ -55,7 +55,7 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
     strom) do nového tvaru,
   - EF migrace bez převodu starých grid dat — stávající šablony a `ItemFieldValue` se zahodí, šablony
     vznikají jen kopírováním z globálních.
-- [ ] Zúžit/přemapovat `TemplateItemType` enum (`TemplateItem.cs`) na 7 hodnot: `SingleLineText`,
+- [x] Zúžit/přemapovat `TemplateItemType` enum (`TemplateItem.cs`) na 7 hodnot: `SingleLineText`,
       `MultiLineText`, `Integer`, `Decimal`, `Boolean`, `Comments` (speciální komponenta pro komentáře;
       zatím prostý text) a `LabelOnly` (jen popisek bez hodnoty). Odpadá Inline/Nextline, `Checkbox` →
       `Boolean`, `Untemplated` → `LabelOnly`. Migrace převede stávající hodnoty enumu.
@@ -183,7 +183,7 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
 - [x] Univerzální (globální) šablony — `Template.ProjectId IS NULL`, zakládají se idempotentně při startu
       (`Features\Templates\DefaultTemplates.cs`); **needitují se** (žádný CRUD/UI), v budoucnu se případně
       upraví přímo v DB/seedu. Při založení projektu se z nich kopíruje celý strom do projektu.
-- [ ] Odstranit endpointy a FE pro úpravu globální šablony (`Features\Templates\GetGlobal.cs`,
+- [x] Odstranit endpointy a FE pro úpravu globální šablony (`Features\Templates\GetGlobal.cs`,
       `UpdateGlobal.cs`, `BaseRoute.Templates`, `routes\templates\index.tsx` + odkaz ze seznamu projektů,
       globální varianta v `templates-api.ts`/`templates-queries.ts`) — nově se editují jen projektové.
 - [ ] Přepsat `Features\Templates\Get.cs`/`Update.cs` (`GET`/`PUT /api/v1/projects/{id}/templates/{itemType}`)
@@ -227,12 +227,12 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
   - routa kanban view pro konkrétní sprint (`src\routes\projects\$id\sprints\$sprintId\index.tsx`) —
     sloupce dle `WorkflowState`, karty = tasky/bugy, přiřazování a posun mezi sloupci (drag & drop nebo
     alespoň select/tlačítka jako MVP).
-- [ ] Detail položky (feature/user-story/task/bug) s formulářem generovaným dle šablony (hotová verze ze
+- [x] Detail položky (feature/user-story/task/bug) s formulářem generovaným dle šablony (hotová verze ze
       Story 3 je nad CSS gridem a je potřeba ji přepsat na novou hierarchii, Story 3X):
   - komponenta v `src\components\specific` (`item-detail-form.tsx`), dynamicky vyrenderuje
     tabulky/sloupce/sekce/atributy dle šablony (viz `layout-templates.md`) a typ hodnoty atributu;
     layout renderer vyčlenit do sdílené komponenty, kterou použije i náhled v editoru šablon,
-- [ ] Editor projektových šablon v nastavení projektu (`template-editor.tsx`, Story 3Y) —
+- [x] Editor projektových šablon v nastavení projektu (`template-editor.tsx`, Story 3Y) —
       přidávání/mazání/přesun tabulek, sloupců (šířka ≥ 1, upozornění když součet ≠ 12), sekcí a atributů;
       globální šablony se needitují.
 - [ ] Správa členství a rolí v projektu — UI nad `AssignMember`/`UnassignMember` a novými endpointy

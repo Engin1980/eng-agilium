@@ -224,47 +224,48 @@ Bug** — každý typ má v projektu vlastní kopii šablony (vznikla při zalo�
 
 ### BE (drobné doplňky, pokud nejsou ve 3X)
 
-- [ ] `Templates\Update.cs` vrací v `Result` počet smazaných `ItemFieldValue` (pro potvrzovací/hlášku po
-      uložení) a při chybě validace vrací problem-details s cestou k vadnému prvku (např. `tables[1]
-      .columns[0].width`), aby FE umělo chybu zobrazit u správného prvku.
-- [ ] Volitelně: `POST /api/v1/projects/{id}/templates/{itemType}/reset` — obnoví projektovou šablonu z
+- [x] `Templates\Update.cs` vrací v `Result` počet smazaných `ItemFieldValue` (hláška po uložení). Chyba
+      validace z BE se zobrazí jako jedna zpráva nad editorem; mapování na konkrétní prvek (cesta v
+      problem-details) **není** hotové — FE stejná pravidla ověřuje předem (`validateDraft`), takže chyba z BE
+      je jen pojistka.
+- [ ] Volitelně (nerealizováno, zadavatel o něj nestál): `POST /api/v1/projects/{id}/templates/{itemType}/reset` — obnoví projektovou šablonu z
       globální (smaže hodnoty u atributů, které v globální nejsou). Jen pokud ho zadavatel chce.
 
 ### FE — navigace
 
-- [ ] Stránka nastavení projektu `routes\projects\$id\settings\index.tsx` (rozcestník sekcí nastavení;
+- [x] Stránka nastavení projektu `routes\projects\$id\settings\index.tsx` (rozcestník sekcí nastavení;
       odkaz z detailu projektu) a podstránka `routes\projects\$id\settings\templates\index.tsx` se
       záložkami/přepínačem typu položky (Feature / User-Story / Task / Bug), typ v search param
       (`?type=`). Stávající `routes\projects\$id\templates\index.tsx` přesměrovat/odstranit.
-- [ ] Při přepnutí typu nebo odchodu ze stránky s neuloženými změnami zobrazit potvrzení (router
+- [x] Při přepnutí typu nebo odchodu ze stránky s neuloženými změnami zobrazit potvrzení (router
       blocker + `beforeunload`).
 
 ### FE — editor (`src\components\specific\template-editor\`)
 
-- [ ] `template-editor.tsx` — kontejner: načte šablonu (`useProjectTemplate`), drží draft ve `useReducer`,
+- [x] `template-editor.tsx` — kontejner: načte šablonu (`useProjectTemplate`), drží draft ve `useReducer`,
       počítá `isDirty`, liší tlačítka Uložit / Zahodit změny, zobrazí chyby z API, po úspěchu
       invaliduje query šablony i `fields` položek daného typu.
-- [ ] `template-draft.ts` — typy draftu, převod BE ⇄ draft, reducer s akcemi (add/remove/move/update pro
+- [x] `template-draft.ts` — typy draftu, převod BE ⇄ draft, reducer s akcemi (add/remove/move/update pro
       tabulku, sloupec, sekce, atribut), `validateDraft()` (blokující chyby + neblokující upozornění),
       přečíslování `OrderIndex`. Čistá logika, bez React závislostí → snadno testovatelná.
-- [ ] `table-editor.tsx` — hlavička tabulky (přidat sloupec, přesunout nahoru/dolů, smazat tabulku —
+- [x] `table-editor.tsx` — hlavička tabulky (přidat sloupec, přesunout nahoru/dolů, smazat tabulku —
       i neprázdnou, po potvrzení), upozornění na součet šířek ≠ 12, plus tlačítko "Přidat tabulku" pod
       posledním.
-- [ ] `column-editor.tsx` — vstup pro šířku (int ≥ 1), přidat sekci, přesun sloupce doleva/doprava, smazání
+- [x] `column-editor.tsx` — vstup pro šířku (int ≥ 1), přidat sekci, přesun sloupce doleva/doprava, smazání
       sloupce (nejde smazat poslední sloupec tabulky; neprázdný jen po potvrzení).
-- [ ] `section-editor.tsx` — titulek sekce (smí být prázdný), přidat atribut, přesun nahoru/dolů, "Přesunout
+- [x] `section-editor.tsx` — titulek sekce (smí být prázdný), přidat atribut, přesun nahoru/dolů, "Přesunout
       do…" (jiný sloupec/tabulka), smazání sekce (neprázdná po potvrzení).
-- [ ] `attribute-editor.tsx` — titulek, `Key` (generuje se z titulku, u existujícího atributu
+- [x] `attribute-editor.tsx` — titulek, `Key` (generuje se z titulku, u existujícího atributu
       needitovatelný), typ (7 hodnot z `TemplateItemType`, u uloženého needitovatelný), volitelný
       `ValidatingRegex` (jen u textových typů), přesun nahoru/dolů / do jiné sekce, smazání (u uloženého
       atributu varování o smazání hodnot).
-- [ ] Živý náhled — přepínač "Editace / Náhled", náhled používá stejný `template-layout.tsx` jako
+- [x] Živý náhled — přepínač "Editace / Náhled", náhled používá stejný `template-layout.tsx` jako
       detail položky (prázdný nevyplněný formulář), takže editor a skutečný detail se nerozejdou.
-- [ ] Dialogy: potvrzení smazání (atribut s hodnotami, neprázdná sekce/sloupec/tabulka), souhrnné
+- [x] Dialogy: potvrzení smazání (atribut s hodnotami, neprázdná sekce/sloupec/tabulka), souhrnné
       potvrzení při `Uložit`, pokud draft odstraňuje existující atributy ("Smazáním atributů přijdete o
       jejich hodnoty u všech položek typu X"), využít `components\global\Dialog`.
-- [ ] Přístupnost a UX: popisky `aria-label` u ikonových tlačítek, focus po přidání prvku na jeho první
-      vstup, klávesové ovládání přesunu, stavy načítání/chyby přes `Working`.
+- [x] Přístupnost a UX: popisky `aria-label` u ikonových tlačítek, focus po přidání jen u nového atributu (na jeho titulek;
+      u tabulky/sloupce/sekce ne), přesun je ovladatelný klávesnicí přes tlačítka ↑/↓/←/→, stavy načítání/chyby přes `Working`.
 
 ### Pořadí implementace
 
