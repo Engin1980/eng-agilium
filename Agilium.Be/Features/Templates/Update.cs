@@ -61,14 +61,18 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, Parameter
     {
       var tableCmd = command.Tables[ti];
       var table = Resolve(tableCmd.Id, existingTables, keptTableIds, "table", () => new TemplateTable());
-      table.Template = template;
+      if (tableCmd.Id is null)
+        template.Tables.Add(table); // a new element must be added to its parent collection to get tracked
       table.OrderIndex = ti + 1;
 
       for (var ci = 0; ci < tableCmd.Columns.Count; ci++)
       {
         var columnCmd = tableCmd.Columns[ci];
         var column = Resolve(columnCmd.Id, existingColumns, keptColumnIds, "column", () => new TemplateColumn());
-        column.Table = table;
+        if (columnCmd.Id is null)
+          table.Columns.Add(column);
+        else
+          column.Table = table; // an existing column may move to another table
         column.Width = columnCmd.Width;
         column.OrderIndex = ci + 1;
 
@@ -76,7 +80,10 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, Parameter
         {
           var sectionCmd = columnCmd.Sections[si];
           var section = Resolve(sectionCmd.Id, existingSections, keptSectionIds, "section", () => new TemplateSection());
-          section.Column = column;
+          if (sectionCmd.Id is null)
+            column.Sections.Add(section);
+          else
+            section.Column = column;
           section.Title = sectionCmd.Title.Trim();
           section.OrderIndex = si + 1;
 
@@ -88,7 +95,10 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, Parameter
               throw new BadRequestException(
                 $"Attribute '{item.Key}': the type of an existing attribute cannot be changed (remove it and add a new one)"
               );
-            item.Section = section;
+            if (itemCmd.Id is null)
+              section.Items.Add(item);
+            else
+              item.Section = section;
             item.Key = itemCmd.Key.Trim();
             item.Title = itemCmd.Title.Trim();
             item.Type = itemCmd.Type;
