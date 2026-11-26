@@ -20,4 +20,10 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Route files export `Route` next to their page component and the auth context exports its hook:
+    // that is how TanStack Router / React context are used, fast refresh just falls back to a full reload.
+    files: ['src/routes/**/*.tsx', 'src/contexts/**/*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

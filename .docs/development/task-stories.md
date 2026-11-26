@@ -411,8 +411,12 @@ naslepo.
 
 ## Story 7 — Podpůrné věci (napříč, bez pevného pořadí)
 
-- [ ] Automatizované testy (unit/integration) — v repozitáři zatím žádný testovací projekt neexistuje;
-      má smysl začít zakládat průběžně s výše uvedenými story, ne až na konci.
+- [x] Automatizované testy: `Agilium.Be.Tests` (xUnit, Testcontainers SQL Server, Respawn; jednotkové +
+      integrační characterization testy auth, projektů, položek, šablon, hodnot polí, sprintů, workflow,
+      migrací), FE Vitest + Testing Library + MSW (`http-client`, `template-draft`, `attribute-input`,
+      `workflow-editor`), `scripts	est-all.ps1|sh`, ručně spouštěný `.github\workflows\ci.yml`.
+      Nálezy z testů: opraven zámek účtu (Login načítal uživatele `AsNoTracking`), logout čte refresh token z
+      cookie, zapnuto mapování výjimek na 404/409/401/403, zpráva o uložení workflow se neztrácí po remountu.
 - [x] Kořenový `docker-compose.yml` spouští celý stack (`db`, `be`, `fe`; `Dockerfile` v `Agilium.Be` a
       `Agilium.Fe`) a `Agilium.Http` je Bruno kolekce pro ruční testování API.
 - [ ] Zkontrolovat, zda není potřeba doplnit seed data / inicializační skripty (globální šablony se

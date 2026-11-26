@@ -1,0 +1,36 @@
+# Manually triggered only (Actions tab -> CI -> Run workflow), so it does not spend any minutes by itself.
+# To run it on every push / pull request, add to `on:`:
+#   push: { branches: [master] }
+#   pull_request:
+name: CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      # The tests start SQL Server in a Docker container (Testcontainers); Docker is preinstalled on the runner.
+      - run: dotnet test Agilium.Be.Tests
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Agilium.Fe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Agilium.Fe/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test

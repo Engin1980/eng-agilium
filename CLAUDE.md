@@ -38,7 +38,13 @@ startup and are not editable; each project gets a copy at creation and only the 
   The `be` service uses `ASPNETCORE_ENVIRONMENT=Development`.
 - `Agilium.Http` — Bruno collection for manual/regression testing of the BE API (see its `README.md`).
 
-There are no automated test projects in the solution currently.
+- `Agilium.Be.Tests` — xUnit tests (unit + integration). Integration tests host the whole API in memory
+  (`WebApplicationFactory<Program>`) against a real SQL Server started by Testcontainers (Docker required) and
+  reset the data with Respawn between tests. Helpers: `Infrastructure\TestApi` (register/login/create project,
+  item, sprint), `ApiTestBase` (clean DB per test). `Program` configuration is overridden with `UseSetting`
+  because it is read while the host is being built.
+- `scripts	est-all.ps1` / `scripts	est-all.sh` — run every check (BE tests, FE install/lint/build/tests).
+- `.github\workflows\ci.yml` — the same checks on GitHub, manually triggered only (`workflow_dispatch`).
 
 ## Commands
 
@@ -51,6 +57,11 @@ There are no automated test projects in the solution currently.
   (migrations live in `Agilium.Be/Migrations`).
 - Config is read from `appsettings.json` + `appsettings.Development.json` into a strongly-typed
   `AppSettings` (see `Program.cs`'s `ConfigureConfigurations`).
+
+### Tests
+- `dotnet test Agilium.Be.Tests` — backend tests (first run pulls the SQL Server image).
+- `npm test` in `Agilium.Fe` — Vitest + Testing Library + MSW (`src	est`: setup, MSW `server`, `renderWithProviders`).
+- `scripts	est-all.ps1` — everything; must be green before a step is considered done.
 
 ### Frontend (Agilium.Fe)
 - `npm run dev` — Vite dev server.
@@ -97,7 +108,10 @@ Model classes are in `Model`; entities mapped to the database are in `Model\Db` 
 noting it rather than falling back to built-ins.
 
 **Errors:** throw the typed exceptions in `Exceptions/` (`EntityNotFoundException`, `BadRequestException`,
-`ValidationException`, etc.); `GlobalExceptionHandler` translates them to problem-details responses.
+`ValidationException`, etc.); `GlobalExceptionHandler` translates them to problem-details responses
+(`ErrorKey` + `Params`): NotFound 404, AlreadyExists 409, Authentication 401, Authorization 403, Validation /
+BadRequest / account locked or deactivated 400. The specific exception types are matched before the base
+`BadRequestException` they derive from.
 
 **Auth:** JWT bearer with claim `sub` = user id, `role` = role assignments (`P...`-prefixed strings parsed
 via `IRoleAssignment.FromRoleString`); `LoggedUser` is populated per-request in `GenericEndpoint` and

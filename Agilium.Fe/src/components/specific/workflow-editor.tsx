@@ -2,16 +2,37 @@ import * as React from "react";
 import { useBlocker } from "@tanstack/react-router";
 import { ConfirmDialog } from "../global/dialogs/ConfirmDialog";
 import { ApiError } from "../../services/http-client";
-import { WORKFLOW_STATUS_LABELS, WorkflowStateType } from "../../services/sprints-api";
-import type { WorkflowStateDto, WorkflowStateInput } from "../../services/workflow-api";
-import { useUpdateWorkflow, useWorkflow } from "../../services/workflow-queries";
+import {
+  WORKFLOW_STATUS_LABELS,
+  WorkflowStateType,
+} from "../../services/sprints-api";
+import type {
+  WorkflowStateDto,
+  WorkflowStateInput,
+} from "../../services/workflow-api";
+import {
+  useUpdateWorkflow,
+  useWorkflow,
+} from "../../services/workflow-queries";
 
-type DraftState = { key: string; id: number | null; title: string; type: WorkflowStateType; itemCount: number };
+type DraftState = {
+  key: string;
+  id: number | null;
+  title: string;
+  type: WorkflowStateType;
+  itemCount: number;
+};
 
 const MIN_STATES = 2;
 
 const toDraft = (states: WorkflowStateDto[]): DraftState[] =>
-  states.map((s) => ({ key: `s${s.id}`, id: s.id, title: s.title, type: s.type, itemCount: s.itemCount }));
+  states.map((s) => ({
+    key: `s${s.id}`,
+    id: s.id,
+    title: s.title,
+    type: s.type,
+    itemCount: s.itemCount,
+  }));
 
 const toInput = (draft: DraftState[]): WorkflowStateInput[] =>
   draft.map((s) => ({ id: s.id, title: s.title.trim(), type: s.type }));
@@ -19,33 +40,58 @@ const toInput = (draft: DraftState[]): WorkflowStateInput[] =>
 /** Same rules as the backend: >= 2 columns, at least one ToDo and one Done, non-empty titles. */
 function validateWorkflow(draft: DraftState[]): string[] {
   const errors: string[] = [];
-  if (draft.length < MIN_STATES) errors.push("Workflow musí mít alespoň 2 sloupce.");
-  if (!draft.some((s) => s.type === WorkflowStateType.ToDo)) errors.push("Chybí sloupec se stavem ToDo.");
-  if (!draft.some((s) => s.type === WorkflowStateType.Done)) errors.push("Chybí sloupec se stavem Done.");
-  if (draft.some((s) => !s.title.trim())) errors.push("Každý sloupec musí mít název.");
+  if (draft.length < MIN_STATES)
+    errors.push("Workflow musí mít alespoň 2 sloupce.");
+  if (!draft.some((s) => s.type === WorkflowStateType.ToDo))
+    errors.push("Chybí sloupec se stavem ToDo.");
+  if (!draft.some((s) => s.type === WorkflowStateType.Done))
+    errors.push("Chybí sloupec se stavem Done.");
+  if (draft.some((s) => !s.title.trim()))
+    errors.push("Každý sloupec musí mít název.");
   return errors;
 }
 
 /** Editor of the project's workflow (kanban columns): count, titles, types and order. */
 export function WorkflowEditor({ projectId }: { projectId: number }) {
   const { data, isLoading, error } = useWorkflow(projectId);
+  // Kept here (not in LoadedEditor): a successful save changes the data and so remounts the editor.
+  const [notice, setNotice] = React.useState<string | null>(null);
 
   if (isLoading) return <p className="text-gray-500">Načítání…</p>;
-  if (error || !data) return <p className="text-red-600">Nepodařilo se načíst workflow.</p>;
+  if (error || !data)
+    return <p className="text-red-600">Nepodařilo se načíst workflow.</p>;
 
   // Remount (= fresh draft) whenever the server-side workflow changes, e.g. after a save.
-  return <LoadedEditor key={JSON.stringify(data)} projectId={projectId} states={data.states} />;
+  return (
+    <LoadedEditor
+      key={JSON.stringify(data)}
+      projectId={projectId}
+      states={data.states}
+      notice={notice}
+      setNotice={setNotice}
+    />
+  );
 }
 
-function LoadedEditor({ projectId, states }: { projectId: number; states: WorkflowStateDto[] }) {
+function LoadedEditor({
+  projectId,
+  states,
+  notice,
+  setNotice,
+}: {
+  projectId: number;
+  states: WorkflowStateDto[];
+  notice: string | null;
+  setNotice: (notice: string | null) => void;
+}) {
   const update = useUpdateWorkflow(projectId);
   const original = React.useMemo(() => toDraft(states), [states]);
   const [draft, setDraft] = React.useState<DraftState[]>(original);
   const [confirmSave, setConfirmSave] = React.useState(false);
-  const [notice, setNotice] = React.useState<string | null>(null);
   const nextKey = React.useRef(0);
 
-  const isDirty = JSON.stringify(toInput(draft)) !== JSON.stringify(toInput(original));
+  const isDirty =
+    JSON.stringify(toInput(draft)) !== JSON.stringify(toInput(original));
   const errors = validateWorkflow(draft);
 
   const blocker = useBlocker({
@@ -89,8 +135,13 @@ function LoadedEditor({ projectId, states }: { projectId: number; states: Workfl
     <div className="space-y-4">
       <ol className="space-y-2">
         {draft.map((state, index) => (
-          <li key={state.key} className="flex flex-wrap items-center gap-2 rounded border border-gray-200 p-2">
-            <span className="w-6 text-center text-sm text-gray-500">{index + 1}.</span>
+          <li
+            key={state.key}
+            className="flex flex-wrap items-center gap-2 rounded border border-gray-200 p-2"
+          >
+            <span className="w-6 text-center text-sm text-gray-500">
+              {index + 1}.
+            </span>
             <input
               aria-label={`Název sloupce ${index + 1}`}
               value={state.title}
@@ -103,7 +154,11 @@ function LoadedEditor({ projectId, states }: { projectId: number; states: Workfl
             <select
               aria-label={`Stav sloupce ${index + 1}`}
               value={state.type}
-              onChange={(e) => patch(state.key, { type: Number(e.target.value) as WorkflowStateType })}
+              onChange={(e) =>
+                patch(state.key, {
+                  type: Number(e.target.value) as WorkflowStateType,
+                })
+              }
               className="rounded border border-gray-300 px-2 py-1 text-sm"
             >
               {Object.values(WorkflowStateType).map((type) => (
@@ -112,7 +167,11 @@ function LoadedEditor({ projectId, states }: { projectId: number; states: Workfl
                 </option>
               ))}
             </select>
-            {state.id !== null && <span className="text-xs text-gray-500">položek: {state.itemCount}</span>}
+            {state.id !== null && (
+              <span className="text-xs text-gray-500">
+                položek: {state.itemCount}
+              </span>
+            )}
             <button
               type="button"
               aria-label={`Posunout sloupec ${index + 1} doleva`}
@@ -135,7 +194,9 @@ function LoadedEditor({ projectId, states }: { projectId: number; states: Workfl
               type="button"
               aria-label={`Odebrat sloupec ${index + 1}`}
               disabled={draft.length <= MIN_STATES}
-              onClick={() => setDraft((d) => d.filter((s) => s.key !== state.key))}
+              onClick={() =>
+                setDraft((d) => d.filter((s) => s.key !== state.key))
+              }
               className="rounded border border-red-300 px-2 py-1 text-sm text-red-600 disabled:opacity-30"
             >
               ✕
@@ -149,7 +210,13 @@ function LoadedEditor({ projectId, states }: { projectId: number; states: Workfl
         onClick={() =>
           setDraft((d) => [
             ...d,
-            { key: `n${nextKey.current++}`, id: null, title: "", type: WorkflowStateType.Active, itemCount: 0 },
+            {
+              key: `n${nextKey.current++}`,
+              id: null,
+              title: "",
+              type: WorkflowStateType.Active,
+              itemCount: 0,
+            },
           ])
         }
         className="rounded border border-dashed border-gray-400 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
@@ -166,13 +233,19 @@ function LoadedEditor({ projectId, states }: { projectId: number; states: Workfl
       )}
       {update.error && (
         <p role="alert" className="text-sm text-red-600">
-          {update.error instanceof ApiError ? update.error.message : "Uložení se nezdařilo."}
+          {update.error instanceof ApiError
+            ? update.error.message
+            : "Uložení se nezdařilo."}
         </p>
       )}
-      {notice && !isDirty && <p className="text-sm text-emerald-600">{notice}</p>}
+      {notice && !isDirty && (
+        <p className="text-sm text-emerald-600">{notice}</p>
+      )}
 
       <div className="flex items-center gap-3">
-        {isDirty && <span className="text-sm text-amber-600">Neuložené změny</span>}
+        {isDirty && (
+          <span className="text-sm text-amber-600">Neuložené změny</span>
+        )}
         <span className="mr-auto" />
         <button
           type="button"
