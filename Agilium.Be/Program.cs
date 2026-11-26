@@ -288,28 +288,11 @@ class AppInitializer(WebApplication app, AppSettings appSettings)
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
-    SeedGlobalTemplates(db);
+    DefaultTemplates.EnsureGlobalTemplates(db);
     db.SaveChanges();
     TemplateTree.EnsureProjectTemplatesAsync(db).GetAwaiter().GetResult();
     db.SaveChanges();
   }
-
-  /// <summary>
-  /// Ensures exactly one global (ProjectId == null) default template exists per ItemType - idempotent,
-  /// so it's safe to run on every startup. New projects copy from these (see Projects.Create).
-  /// </summary>
-  private static void SeedGlobalTemplates(AppDbContext db)
-  {
-    var existingTypes = db.Templates.Where(t => t.ProjectId == null).Select(t => t.Type).ToHashSet();
-
-    foreach (var type in Enum.GetValues<ItemType>())
-    {
-      if (existingTypes.Contains(type))
-        continue;
-
-      var template = new Template { ProjectId = null, Type = type, Tables = DefaultTemplates.BuildTablesFor(type) };
-
-      db.Templates.Add(template);
-    }
-  }
 }
+
+public partial class Program { }

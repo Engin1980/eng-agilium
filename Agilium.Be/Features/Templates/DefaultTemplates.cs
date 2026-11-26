@@ -11,6 +11,24 @@ namespace Eng.Agilium.Be.Features.Templates;
 /// </summary>
 public static class DefaultTemplates
 {
+  /// <summary>
+  /// Ensures exactly one global (ProjectId == null) default template exists per ItemType - idempotent,
+  /// so it's safe to run on every startup. New projects copy from these (see Projects.Create).
+  /// Changes are added to the context but not saved.
+  /// </summary>
+  public static void EnsureGlobalTemplates(AppDbContext db)
+  {
+    var existingTypes = db.Templates.Where(t => t.ProjectId == null).Select(t => t.Type).ToHashSet();
+
+    foreach (var type in Enum.GetValues<ItemType>())
+    {
+      if (existingTypes.Contains(type))
+        continue;
+
+      db.Templates.Add(new Template { ProjectId = null, Type = type, Tables = BuildTablesFor(type) });
+    }
+  }
+
   public static List<TemplateTable> BuildTablesFor(ItemType type)
   {
     var details = new List<TemplateItem>

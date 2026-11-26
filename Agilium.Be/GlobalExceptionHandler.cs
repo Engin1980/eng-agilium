@@ -30,6 +30,11 @@ public class ExtendedProblemDetails : ProblemDetails
 
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
+  private const string TYPE_400 = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1";
+  private const string TYPE_403 = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3";
+  private const string TYPE_404 = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4";
+  private const string TYPE_409 = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.8";
+
   private readonly ILogger<GlobalExceptionHandler> logger = logger;
 
   public async ValueTask<bool> TryHandleAsync(
@@ -53,199 +58,147 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
     return IS_HANDLED;
   }
 
-  private ExtendedProblemDetails ConvertBadRequestException(BadRequestException bre)
+  /// <remarks>
+  /// The order of the checks matters: <see cref="AuthenticationFailedException"/>,
+  /// <see cref="AuthorizationFailedException"/>, <see cref="EntityNotFoundException"/> and the others derive
+  /// from <see cref="BadRequestException"/>, so the specific types are matched first.
+  /// </remarks>
+  private static ExtendedProblemDetails ConvertBadRequestException(BadRequestException bre)
   {
-    ExtendedProblemDetails ret;
-
-    // if (bre is AccountDeactivatedException ade)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status400BadRequest,
-    //     Title = "Bad Request",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-    //     Detail = ade.Message,
-    //     ErrorKey = ErrorKeys.ACCOUNT_DEACTIVATED,
-    //   };
-    // }
-    // else if (bre is AccountLockedException ale)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status400BadRequest,
-    //     Title = "Bad Request",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-    //     Detail = ale.Message,
-    //     ErrorKey = ErrorKeys.ACCOUNT_LOCKED,
-    //   };
-    // }
-    // else if (bre is AuthenticationFailedException afe)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status401Unauthorized,
-    //     Title = "Unauthorized",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-    //     Detail = afe.Message,
-    //     ErrorKey = ErrorKeys.AUTHENTICATION_FAILED,
-    //     Params =
-    //     [
-    //       afe.Entity?.GetType().Name.ToString() ?? "",
-    //       afe.Reason == AuthenticationFailedException.FailureReason.EmailNotFound
-    //       || afe.Reason == AuthenticationFailedException.FailureReason.CredentialsInvalid
-    //       || afe.Reason == AuthenticationFailedException.FailureReason.StudyNumberNotFound
-    //         ? AuthenticationFailedException.FailureReason.CredentialsInvalid.ToString()
-    //         : afe.Reason.ToString(),
-    //     ],
-    //     // we don't want to leak whether the email was not found or the credentials were invalid, so we return "CredentialsInvalid" for both cases. For other failure reasons, we return the actual reason.
-    //   };
-    // }
-    // else if (bre is AuthorizationFailedException aufe)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status403Forbidden,
-    //     Title = "Forbidden",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3",
-    //     Detail = aufe.Message,
-    //     ErrorKey = ErrorKeys.AUTHORIZATION_FAILED,
-    //   };
-    // }
-    // else if (bre is EntityAlreadyExistsException eaee)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status409Conflict,
-    //     Title = "Conflict",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-    //     Detail = eaee.Message,
-    //     ErrorKey = ErrorKeys.ENTITY_ALREADY_EXISTS,
-    //     Params = [eaee.EntityType.Name],
-    //   };
-    // }
-    // else if (bre is EntityNotFoundException enfe)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status404NotFound,
-    //     Title = "Not Found",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4",
-    //     Detail = enfe.Message,
-    //     ErrorKey = ErrorKeys.ENTITY_NOT_FOUND,
-    //     Params = [enfe.EntityType.Name, enfe.Identifier],
-    //   };
-    // }
-    // else if (bre is InvalidStateException ise)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status422UnprocessableEntity,
-    //     Title = "Unprocessable Entity",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-    //     Detail = ise.Message,
-    //     ErrorKey = ErrorKeys.INVALID_STATE_OPERATION,
-    //     Params = [ise.Error.ToString()],
-    //   };
-    // }
-    // else if (bre is TurnstileVerificationFailedException tvfe)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status403Forbidden,
-    //     Title = "Forbidden",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3",
-    //     Detail = tvfe.Message,
-    //     ErrorKey = ErrorKeys.GENERIC_BAD_REQUEST,
-    //     Params = tvfe.ErrorCodes,
-    //   };
-    // }
-    // else if (bre is ValidationException ve)
-    // {
-    //   ret = new ExtendedProblemDetails
-    //   {
-    //     Status = StatusCodes.Status400BadRequest,
-    //     Title = "Bad Request",
-    //     Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-    //     Detail = ve.Message,
-    //     ErrorKey = ve.ValidatedObject switch
-    //     {
-    //       ValidatedObject.Command => ErrorKeys.COMMAND_VALIDATION_EXCEPTION,
-    //       ValidatedObject.Parameters => ErrorKeys.PARAMETERS_VALIDATION_EXCEPTION,
-    //       _ => ErrorKeys.GENERIC_BAD_REQUEST,
-    //     },
-    //     Params = ve.ValidationErrors,
-    //   };
-    // }
-    // else
-    ret = new ExtendedProblemDetails
+    return bre switch
     {
-      Status = StatusCodes.Status400BadRequest,
-      Title = "Bad Request",
-      Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1",
-      Detail = bre.Message,
-      ErrorKey = ErrorKeys.GENERIC_BAD_REQUEST,
+      AccountDeactivatedException ade => Create(
+        StatusCodes.Status400BadRequest,
+        "Bad Request",
+        TYPE_400,
+        ade.Message,
+        ErrorKeys.ACCOUNT_DEACTIVATED
+      ),
+      AccountLockedException ale => Create(
+        StatusCodes.Status400BadRequest,
+        "Bad Request",
+        TYPE_400,
+        ale.Message,
+        ErrorKeys.ACCOUNT_LOCKED
+      ),
+      AuthenticationFailedException afe => Create(
+        StatusCodes.Status401Unauthorized,
+        "Unauthorized",
+        TYPE_400,
+        afe.Message,
+        ErrorKeys.AUTHENTICATION_FAILED,
+        [
+          // we don't want to leak whether the email was not found or the credentials were invalid
+          afe.Reason == AuthenticationFailedException.FailureReason.EmailNotFound
+            ? AuthenticationFailedException.FailureReason.CredentialsInvalid.ToString()
+            : afe.Reason.ToString(),
+        ]
+      ),
+      AuthorizationFailedException aufe => Create(
+        StatusCodes.Status403Forbidden,
+        "Forbidden",
+        TYPE_403,
+        aufe.Message,
+        ErrorKeys.AUTHORIZATION_FAILED
+      ),
+      EntityAlreadyExistsException eaee => Create(
+        StatusCodes.Status409Conflict,
+        "Conflict",
+        TYPE_409,
+        eaee.Message,
+        ErrorKeys.ENTITY_ALREADY_EXISTS,
+        [eaee.EntityType.Name]
+      ),
+      EntityNotFoundException enfe => Create(
+        StatusCodes.Status404NotFound,
+        "Not Found",
+        TYPE_404,
+        enfe.Message,
+        ErrorKeys.ENTITY_NOT_FOUND,
+        [enfe.EntityType.Name, enfe.Identifier]
+      ),
+      TurnstileVerificationFailedException tvfe => Create(
+        StatusCodes.Status403Forbidden,
+        "Forbidden",
+        TYPE_403,
+        tvfe.Message,
+        ErrorKeys.GENERIC_BAD_REQUEST,
+        tvfe.ErrorCodes
+      ),
+      ValidationException ve => Create(
+        StatusCodes.Status400BadRequest,
+        "Bad Request",
+        TYPE_400,
+        ve.Message,
+        ve.ValidatedObject switch
+        {
+          ValidatedObject.Command => ErrorKeys.COMMAND_VALIDATION_EXCEPTION,
+          ValidatedObject.Parameters => ErrorKeys.PARAMETERS_VALIDATION_EXCEPTION,
+          _ => ErrorKeys.GENERIC_BAD_REQUEST,
+        },
+        ve.ValidationErrors
+      ),
+      _ => Create(StatusCodes.Status400BadRequest, "Bad Request", TYPE_400, bre.Message, ErrorKeys.GENERIC_BAD_REQUEST),
     };
-
-    return ret;
   }
+
+  private static ExtendedProblemDetails Create(
+    int status,
+    string title,
+    string type,
+    string detail,
+    ErrorKeys errorKey,
+    string[]? parameters = null
+  ) =>
+    new()
+    {
+      Status = status,
+      Title = title,
+      Type = type,
+      Detail = detail,
+      ErrorKey = errorKey,
+      Params = parameters ?? [],
+    };
 
   private static ExtendedProblemDetails ConvertServerException(ServerException se)
   {
-    ExtendedProblemDetails ret;
+    if (se is ServiceUnreachableException sue)
+      return Create(
+        StatusCodes.Status503ServiceUnavailable,
+        "Service Unavailable",
+        "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4",
+        sue.Message,
+        ErrorKeys.SERVICE_UNREACHABLE,
+        [sue.ServiceType.ToString()]
+      );
 
-    //   if (se is ServiceUnreachableException sue)
-    //   {
-    //     ret = new ExtendedProblemDetails
-    //     {
-    //       Status = StatusCodes.Status503ServiceUnavailable,
-    //       Title = "Service Unavailable",
-    //       Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4",
-    //       Detail = sue.Message,
-    //       ErrorKey = ErrorKeys.SERVICE_UNREACHABLE,
-    //       Params = [sue.ServiceType.ToString()],
-    //     };
-    //   }
-    //   else
-    ret = new ExtendedProblemDetails
-    {
-      Status = StatusCodes.Status500InternalServerError,
-      Title = "Server Error",
-      Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
-      Detail = se.Message,
-      ErrorKey = ErrorKeys.INTERNAL_SERVER_ERROR,
-    };
-
-    return ret;
+    return Create(
+      StatusCodes.Status500InternalServerError,
+      "Server Error",
+      "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
+      se.Message,
+      ErrorKeys.INTERNAL_SERVER_ERROR
+    );
   }
 
   private ExtendedProblemDetails ConvertUnhandledException(Exception exception)
   {
-    ExtendedProblemDetails ret;
     if (exception is NotImplementedException nie)
-    {
-      ret = new ExtendedProblemDetails
-      {
-        Status = StatusCodes.Status501NotImplemented,
-        Title = "Not Implemented",
-        Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.2",
-        Detail = nie.Message,
-        ErrorKey = ErrorKeys.INTERNAL_SERVER_ERROR,
-      };
-    }
-    else
-    {
-      logger.LogError(exception, "Došlo k neošetřené chybě: {Message}", exception.Message);
+      return Create(
+        StatusCodes.Status501NotImplemented,
+        "Not Implemented",
+        "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.2",
+        nie.Message,
+        ErrorKeys.INTERNAL_SERVER_ERROR
+      );
 
-      ret = new ExtendedProblemDetails
-      {
-        Status = StatusCodes.Status500InternalServerError,
-        Title = "Server Error",
-        Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
-        Detail = exception.Message,
-        ErrorKey = ErrorKeys.INTERNAL_SERVER_ERROR,
-      };
-    }
-
-    return ret;
+    logger.LogError(exception, "Došlo k neošetřené chybě: {Message}", exception.Message);
+    return Create(
+      StatusCodes.Status500InternalServerError,
+      "Server Error",
+      "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
+      exception.Message,
+      ErrorKeys.INTERNAL_SERVER_ERROR
+    );
   }
 }
