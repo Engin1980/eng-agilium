@@ -12,6 +12,7 @@ import {
 } from "../../services/items-queries";
 import { ApiError } from "../../services/http-client";
 import { useProjectPermissions } from "../../services/projects-queries";
+import { useMembers } from "../../services/members-queries";
 
 const TYPE_LABELS: Record<ItemType, string> = {
   [ItemType.Feature]: "Feature",
@@ -111,11 +112,11 @@ function ItemNodeView({
   const updateAssignee = useUpdateItemAssignee(projectId);
   const deleteItem = useDeleteItem(projectId);
   const { canEditItems } = useProjectPermissions(projectId);
+  const { data: members } = useMembers(projectId);
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(node.title);
   const [addingChildType, setAddingChildType] = React.useState<ItemType | null>(null);
-  const [assigneeInput, setAssigneeInput] = React.useState("");
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const createChild = useCreateItem(projectId);
@@ -224,26 +225,28 @@ function ItemNodeView({
           </select>
         )}
 
-        {canEditItems && (<span className="flex items-center gap-1">
-          <input
-            className="w-16 rounded border border-gray-300 px-2 py-1 text-sm"
-            placeholder="ID uživatele"
-            value={assigneeInput}
-            onChange={(e) => setAssigneeInput(e.target.value)}
-          />
-          <button
-            className="text-sm text-blue-600 hover:underline"
-            onClick={() =>
-              runAction(async () => {
-                const id = assigneeInput.trim() === "" ? null : Number(assigneeInput);
-                await updateAssignee.mutateAsync({ id: node.id, assigneeId: id });
-                setAssigneeInput("");
-              })
+        {canEditItems && (
+          <select
+            aria-label={`Řešitel: ${node.title}`}
+            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            value={node.assignee?.id ?? ""}
+            onChange={(e) =>
+              runAction(() =>
+                updateAssignee.mutateAsync({
+                  id: node.id,
+                  assigneeId: e.target.value === "" ? null : Number(e.target.value),
+                }),
+              )
             }
           >
-            Přiřadit
-          </button>
-        </span>)}
+            <option value="">Nepřiřazeno</option>
+            {members?.map((m) => (
+              <option key={m.userId} value={m.userId}>
+                {m.name} {m.surname}
+              </option>
+            ))}
+          </select>
+        )}
 
         {canEditItems && childTypes.map((t) => (
           <button

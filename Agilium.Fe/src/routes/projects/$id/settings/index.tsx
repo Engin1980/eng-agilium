@@ -57,6 +57,18 @@ function ProjectSettingsPage() {
           </Link>
           <p className="text-sm text-gray-500">Počet, názvy a stavy (ToDo / Active / Done) sloupců kanbanu.</p>
         </li>
+        <li>
+          <Link to="/projects/$id/settings/members" params={{ id }} className="text-blue-600 hover:underline">
+            Členové a pozvánky
+          </Link>
+          <p className="text-sm text-gray-500">Členové projektu, jejich role a pozvánkové klíče.</p>
+        </li>
+        <li>
+          <Link to="/projects/$id/settings/roles" params={{ id }} className="text-blue-600 hover:underline">
+            Role
+          </Link>
+          <p className="text-sm text-gray-500">Systémové a vlastní role s oprávněními.</p>
+        </li>
       </ul>
     </div>
   );

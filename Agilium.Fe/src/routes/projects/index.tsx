@@ -86,6 +86,9 @@ function ProjectsList() {
             >
               Nový projekt
             </button>
+            <Link to="/join" style={{ color: "#2563eb", fontWeight: 600 }}>
+              Připojit se k projektu
+            </Link>
           </div>
         </header>
 

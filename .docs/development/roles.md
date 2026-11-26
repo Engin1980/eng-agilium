@@ -73,4 +73,6 @@ nepřihlášený → 401.
 - Roli s přiřazenými členy nelze smazat; nelze přidělit roli z jiného projektu.
 - Oprávnění se berou z DB (přes cache na serveru, která se při změně maže), ne z JWT — změna role či odebrání
   člena platí od dalšího požadavku.
-- Dnes (před Krokem 2) se žádné z těchto oprávnění na endpointech nevynucuje.
+- Oprávnění se vynucují na všech endpointech (Krok 2); správa členů, rolí a pozvánek je hotová (Krok 3). Člen smí
+  odejít z projektu sám (`DELETE projects/membership/{id}` na vlastní členství), pokud tím projekt nepřijde o posledního
+  Ownera / správce členů a nemá přiřazené položky.

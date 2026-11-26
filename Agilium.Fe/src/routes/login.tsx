@@ -24,6 +24,10 @@ function RouteComponent() {
     setIsSubmitting(true);
     try {
       await login(email, password);
+      if (sessionStorage.getItem("agilium.pendingJoinKey")) {
+        await navigate({ to: "/join" });
+        return;
+      }
       await navigate({ to: "/projects" });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Přihlášení se nezdařilo.");

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsIdIndexRouteImport } from './routes/projects/$id/index'
@@ -19,6 +20,8 @@ import { Route as ProjectsIdSettingsIndexRouteImport } from './routes/projects/$
 import { Route as ProjectsIdSprintsSprintIdIndexRouteImport } from './routes/projects/$id/sprints/$sprintId/index'
 import { Route as ProjectsIdSettingsWorkflowIndexRouteImport } from './routes/projects/$id/settings/workflow/index'
 import { Route as ProjectsIdSettingsTemplatesIndexRouteImport } from './routes/projects/$id/settings/templates/index'
+import { Route as ProjectsIdSettingsRolesIndexRouteImport } from './routes/projects/$id/settings/roles/index'
+import { Route as ProjectsIdSettingsMembersIndexRouteImport } from './routes/projects/$id/settings/members/index'
 import { Route as ProjectsIdItemsItemIdIndexRouteImport } from './routes/projects/$id/items/$itemId/index'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -29,6 +32,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -74,6 +82,18 @@ const ProjectsIdSettingsTemplatesIndexRoute =
     path: '/projects/$id/settings/templates/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ProjectsIdSettingsRolesIndexRoute =
+  ProjectsIdSettingsRolesIndexRouteImport.update({
+    id: '/projects/$id/settings/roles/',
+    path: '/projects/$id/settings/roles/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectsIdSettingsMembersIndexRoute =
+  ProjectsIdSettingsMembersIndexRouteImport.update({
+    id: '/projects/$id/settings/members/',
+    path: '/projects/$id/settings/members/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectsIdItemsItemIdIndexRoute =
   ProjectsIdItemsItemIdIndexRouteImport.update({
     id: '/projects/$id/items/$itemId/',
@@ -83,6 +103,7 @@ const ProjectsIdItemsItemIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
@@ -90,12 +111,15 @@ export interface FileRoutesByFullPath {
   '/projects/$id/settings/': typeof ProjectsIdSettingsIndexRoute
   '/projects/$id/sprints/': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
+  '/projects/$id/settings/members/': typeof ProjectsIdSettingsMembersIndexRoute
+  '/projects/$id/settings/roles/': typeof ProjectsIdSettingsRolesIndexRoute
   '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
   '/projects/$id/settings/workflow/': typeof ProjectsIdSettingsWorkflowIndexRoute
   '/projects/$id/sprints/$sprintId/': typeof ProjectsIdSprintsSprintIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects': typeof ProjectsIndexRoute
@@ -103,6 +127,8 @@ export interface FileRoutesByTo {
   '/projects/$id/settings': typeof ProjectsIdSettingsIndexRoute
   '/projects/$id/sprints': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId': typeof ProjectsIdItemsItemIdIndexRoute
+  '/projects/$id/settings/members': typeof ProjectsIdSettingsMembersIndexRoute
+  '/projects/$id/settings/roles': typeof ProjectsIdSettingsRolesIndexRoute
   '/projects/$id/settings/templates': typeof ProjectsIdSettingsTemplatesIndexRoute
   '/projects/$id/settings/workflow': typeof ProjectsIdSettingsWorkflowIndexRoute
   '/projects/$id/sprints/$sprintId': typeof ProjectsIdSprintsSprintIdIndexRoute
@@ -110,6 +136,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
@@ -117,6 +144,8 @@ export interface FileRoutesById {
   '/projects/$id/settings/': typeof ProjectsIdSettingsIndexRoute
   '/projects/$id/sprints/': typeof ProjectsIdSprintsIndexRoute
   '/projects/$id/items/$itemId/': typeof ProjectsIdItemsItemIdIndexRoute
+  '/projects/$id/settings/members/': typeof ProjectsIdSettingsMembersIndexRoute
+  '/projects/$id/settings/roles/': typeof ProjectsIdSettingsRolesIndexRoute
   '/projects/$id/settings/templates/': typeof ProjectsIdSettingsTemplatesIndexRoute
   '/projects/$id/settings/workflow/': typeof ProjectsIdSettingsWorkflowIndexRoute
   '/projects/$id/sprints/$sprintId/': typeof ProjectsIdSprintsSprintIdIndexRoute
@@ -125,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/join'
     | '/login'
     | '/register'
     | '/projects/'
@@ -132,12 +162,15 @@ export interface FileRouteTypes {
     | '/projects/$id/settings/'
     | '/projects/$id/sprints/'
     | '/projects/$id/items/$itemId/'
+    | '/projects/$id/settings/members/'
+    | '/projects/$id/settings/roles/'
     | '/projects/$id/settings/templates/'
     | '/projects/$id/settings/workflow/'
     | '/projects/$id/sprints/$sprintId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/join'
     | '/login'
     | '/register'
     | '/projects'
@@ -145,12 +178,15 @@ export interface FileRouteTypes {
     | '/projects/$id/settings'
     | '/projects/$id/sprints'
     | '/projects/$id/items/$itemId'
+    | '/projects/$id/settings/members'
+    | '/projects/$id/settings/roles'
     | '/projects/$id/settings/templates'
     | '/projects/$id/settings/workflow'
     | '/projects/$id/sprints/$sprintId'
   id:
     | '__root__'
     | '/'
+    | '/join'
     | '/login'
     | '/register'
     | '/projects/'
@@ -158,6 +194,8 @@ export interface FileRouteTypes {
     | '/projects/$id/settings/'
     | '/projects/$id/sprints/'
     | '/projects/$id/items/$itemId/'
+    | '/projects/$id/settings/members/'
+    | '/projects/$id/settings/roles/'
     | '/projects/$id/settings/templates/'
     | '/projects/$id/settings/workflow/'
     | '/projects/$id/sprints/$sprintId/'
@@ -165,6 +203,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
@@ -172,6 +211,8 @@ export interface RootRouteChildren {
   ProjectsIdSettingsIndexRoute: typeof ProjectsIdSettingsIndexRoute
   ProjectsIdSprintsIndexRoute: typeof ProjectsIdSprintsIndexRoute
   ProjectsIdItemsItemIdIndexRoute: typeof ProjectsIdItemsItemIdIndexRoute
+  ProjectsIdSettingsMembersIndexRoute: typeof ProjectsIdSettingsMembersIndexRoute
+  ProjectsIdSettingsRolesIndexRoute: typeof ProjectsIdSettingsRolesIndexRoute
   ProjectsIdSettingsTemplatesIndexRoute: typeof ProjectsIdSettingsTemplatesIndexRoute
   ProjectsIdSettingsWorkflowIndexRoute: typeof ProjectsIdSettingsWorkflowIndexRoute
   ProjectsIdSprintsSprintIdIndexRoute: typeof ProjectsIdSprintsSprintIdIndexRoute
@@ -191,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -249,6 +297,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIdSettingsTemplatesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$id/settings/roles/': {
+      id: '/projects/$id/settings/roles/'
+      path: '/projects/$id/settings/roles'
+      fullPath: '/projects/$id/settings/roles/'
+      preLoaderRoute: typeof ProjectsIdSettingsRolesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$id/settings/members/': {
+      id: '/projects/$id/settings/members/'
+      path: '/projects/$id/settings/members'
+      fullPath: '/projects/$id/settings/members/'
+      preLoaderRoute: typeof ProjectsIdSettingsMembersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$id/items/$itemId/': {
       id: '/projects/$id/items/$itemId/'
       path: '/projects/$id/items/$itemId'
@@ -261,6 +323,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
@@ -268,6 +331,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIdSettingsIndexRoute: ProjectsIdSettingsIndexRoute,
   ProjectsIdSprintsIndexRoute: ProjectsIdSprintsIndexRoute,
   ProjectsIdItemsItemIdIndexRoute: ProjectsIdItemsItemIdIndexRoute,
+  ProjectsIdSettingsMembersIndexRoute: ProjectsIdSettingsMembersIndexRoute,
+  ProjectsIdSettingsRolesIndexRoute: ProjectsIdSettingsRolesIndexRoute,
   ProjectsIdSettingsTemplatesIndexRoute: ProjectsIdSettingsTemplatesIndexRoute,
   ProjectsIdSettingsWorkflowIndexRoute: ProjectsIdSettingsWorkflowIndexRoute,
   ProjectsIdSprintsSprintIdIndexRoute: ProjectsIdSprintsSprintIdIndexRoute,

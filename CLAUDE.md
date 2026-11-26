@@ -155,7 +155,7 @@ Three-layer segmentation:
   projects, items, item fields, sprints, templates, workflow. Routes/components talk to the BE only
   through this layer. Auth state is in `src\contexts\auth-context.tsx`.
 
-Still missing on the FE: project member/role management UI (`plan.md`, Step 3).
+Members, roles and invitation keys: `settings/members`, `settings/roles`, `/join` (done, plan Step 3). Still missing: e-mail verification / password reset (Step 5).
 
 Styling uses Tailwind v4 + Radix UI primitives.
 
