@@ -119,6 +119,8 @@ class BuildInitializer(WebApplicationBuilder builder)
     builder.Services.AddSingleton(TimeProvider.System);
     builder.Services.AddSingleton<IAccessCache, AccessCache>();
     builder.Services.AddScoped<IProjectAccess, ProjectAccess>();
+    builder.Services.AddSingleton<IJoinAttemptLimiter, JoinAttemptLimiter>();
+    builder.Services.AddHttpContextAccessor();
   }
 
   private void ConfigureHandlersAndEndpoints()

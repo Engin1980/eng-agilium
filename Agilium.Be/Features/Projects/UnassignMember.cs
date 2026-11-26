@@ -56,13 +56,13 @@ public class Handler(AppDbContext dbContext, IAccessCache accessCache)
       dbContext.Memberships.Remove(membership);
 
       await dbContext.SaveChangesAsync(cancellationToken);
+      await MembershipRules.EnsureProjectStaysManageableAsync(dbContext, projectId, cancellationToken);
 
       await tx.CommitAsync(cancellationToken);
     }
 
     // after the commit, so a concurrent request cannot cache the old state again
     accessCache.InvalidateProject(projectId);
-
 
     return new EmptyResult();
   }

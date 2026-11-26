@@ -19,6 +19,7 @@ public enum ErrorKeys
   COMMAND_VALIDATION_EXCEPTION,
   PARAMETERS_VALIDATION_EXCEPTION,
   SERVICE_UNREACHABLE,
+  TOO_MANY_REQUESTS,
 }
 
 public class ExtendedProblemDetails : ProblemDetails
@@ -116,6 +117,13 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         enfe.Message,
         ErrorKeys.ENTITY_NOT_FOUND,
         [enfe.EntityType.Name, enfe.Identifier]
+      ),
+      TooManyRequestsException tmre => Create(
+        StatusCodes.Status429TooManyRequests,
+        "Too Many Requests",
+        "https://datatracker.ietf.org/doc/html/rfc6585#section-4",
+        tmre.Message,
+        ErrorKeys.TOO_MANY_REQUESTS
       ),
       TurnstileVerificationFailedException tvfe => Create(
         StatusCodes.Status403Forbidden,

@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
   public DbSet<Project> Projects { get; set; } = null!;
   public DbSet<Role> Roles { get; set; } = null!;
   public DbSet<Membership> Memberships { get; set; } = null!;
+  public DbSet<ProjectInvitation> ProjectInvitations { get; set; } = null!;
   public DbSet<Item> Items { get; set; } = null!;
   public DbSet<Sprint> Sprints { get; set; } = null!;
   public DbSet<SprintItem> SprintItems { get; set; } = null!;
@@ -81,6 +82,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         .WithMany(u => u.Memberships)
         .HasForeignKey(e => e.UserId)
         .OnDelete(DeleteBehavior.Restrict);
+      entity.HasIndex(e => new { e.ProjectId, e.UserId }).IsUnique();
+    });
+
+    modelBuilder.Entity<ProjectInvitation>(entity =>
+    {
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.KeyHash).IsRequired().HasMaxLength(64);
+      entity.Property(e => e.KeyPrefix).IsRequired().HasMaxLength(16);
+      entity.HasIndex(e => e.KeyHash).IsUnique();
+      entity.HasOne(e => e.Project).WithMany().HasForeignKey(e => e.ProjectId).OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.CreatedBy).WithMany().HasForeignKey(e => e.CreatedById).OnDelete(DeleteBehavior.Restrict);
     });
 
     modelBuilder.Entity<Item>(entity =>
