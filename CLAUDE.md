@@ -43,7 +43,7 @@ startup and are not editable; each project gets a copy at creation and only the 
   reset the data with Respawn between tests. Helpers: `Infrastructure\TestApi` (register/login/create project,
   item, sprint), `ApiTestBase` (clean DB per test). `Program` configuration is overridden with `UseSetting`
   because it is read while the host is being built.
-- `scripts	est-all.ps1` / `scripts	est-all.sh` — run every check (BE tests, FE install/lint/build/tests).
+- `scripts\test-all.ps1` / `scripts\test-all.sh` — run every check (BE tests, FE install/lint/build/tests).
 - `.github\workflows\ci.yml` — the same checks on GitHub, manually triggered only (`workflow_dispatch`).
 
 ## Commands
@@ -60,8 +60,8 @@ startup and are not editable; each project gets a copy at creation and only the 
 
 ### Tests
 - `dotnet test Agilium.Be.Tests` — backend tests (first run pulls the SQL Server image).
-- `npm test` in `Agilium.Fe` — Vitest + Testing Library + MSW (`src	est`: setup, MSW `server`, `renderWithProviders`).
-- `scripts	est-all.ps1` — everything; must be green before a step is considered done.
+- `npm test` in `Agilium.Fe` — Vitest + Testing Library + MSW (`src\test`: setup, MSW `server`, `renderWithProviders`).
+- `scripts\test-all.ps1` — everything; must be green before a step is considered done.
 
 ### Frontend (Agilium.Fe)
 - `npm run dev` — Vite dev server.
