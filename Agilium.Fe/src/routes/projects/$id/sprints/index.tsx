@@ -1,3 +1,4 @@
+import { useProjectPermissions } from "../../../../services/projects-queries";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import * as React from "react";
 import { ApiError } from "../../../../services/http-client";
@@ -53,6 +54,7 @@ function SprintsPage() {
   const { data, isLoading, error } = useSprints(projectId);
   const updateSprint = useUpdateSprint(projectId);
   const deleteSprint = useDeleteSprint(projectId);
+  const { canManageSprints } = useProjectPermissions(projectId);
 
   return (
     <div className="p-6">
@@ -61,7 +63,7 @@ function SprintsPage() {
       </Link>
       <h1 className="mt-4 text-2xl font-semibold">Sprinty</h1>
 
-      <CreateSprintForm projectId={projectId} />
+      {canManageSprints && <CreateSprintForm projectId={projectId} />}
 
       {(updateSprint.error || deleteSprint.error) && (
         <p role="alert" className="mt-3 text-sm text-red-600">
@@ -92,7 +94,7 @@ function SprintsPage() {
             <select
               aria-label={`Stav sprintu ${sprint.title}`}
               value={sprint.state}
-              disabled={updateSprint.isPending}
+              disabled={updateSprint.isPending || !canManageSprints}
               onChange={(e) =>
                 updateSprint.mutate({
                   id: sprint.id,
@@ -110,7 +112,7 @@ function SprintsPage() {
                 </option>
               ))}
             </select>
-            <button
+            {canManageSprints && (<button
               type="button"
               disabled={deleteSprint.isPending}
               onClick={() => {
@@ -119,7 +121,7 @@ function SprintsPage() {
               className="text-sm text-red-600 hover:underline"
             >
               Smazat
-            </button>
+            </button>)}
           </li>
         ))}
       </ul>

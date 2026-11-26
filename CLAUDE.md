@@ -94,7 +94,7 @@ follows a fixed shape, in this order:
 5. `Endpoint` — inherits `GenericOkEndpoint<...>` (200, includes `EmptyResult` → 204), or
    `GenericCreatedEndpoint<...>` (201 + `IdResult`), or `GenericEndpoint<...>` for custom behavior via
    overriding `ProcessRequestAsync`. Declares `Method`, `BaseRoute` (enum in `GenericEndpoint.cs`),
-   `EndpointRoute`, `RequiredRoles` (leave empty unless told otherwise), and an `[EndpointSummary(...)]`.
+   `EndpointRoute`, `Policy` (an `EndpointPolicy`: `Anonymous`, `LoggedIn`, `Project(ProjectPermission.X)` or `ProjectOwner`; there is no default — decide for every endpoint), and an `[EndpointSummary(...)]`.
    HTTP verb convention: Read=GET, Create=POST, Update=PATCH, Delete=DELETE. `PUT` is allowed only for
    replacing a whole collection/definition in one call (a project's template, workflow, an item's field
    values); partial updates always use PATCH.
@@ -123,8 +123,12 @@ BadRequest / account locked or deactivated 400. The specific exception types are
 
 **Auth:** JWT bearer with claim `sub` = user id, `role` = role assignments (`P...`-prefixed strings parsed
 via `IRoleAssignment.FromRoleString`); `LoggedUser` is populated per-request in `GenericEndpoint` and
-available in handlers via `this.LoggedUser`. Role-based authorization (`RequiredRoles` /
-`GenericEndpoint.ValidateRequiredRoles`) is currently unimplemented/commented out — see `plan.md` (Step 2).
+available in handlers via `this.LoggedUser` (identity only, no role claims in the token). The endpoint enforces login (401)
+and an active account; the handler enforces the project part with `Access.EnsureCanAsync(projectId, ProjectPermission.X, ct)` /
+`Access.EnsureOwnerAsync(projectId, ct)` (`IProjectAccess`, permissions read from the DB through the server-side
+`IAccessCache`; non-member → 404, member without the right → 403). Take the project id from the loaded entity, not from the
+request, and call it before any change. Code that changes memberships/roles/accounts must call
+`IAccessCache.InvalidateProject/InvalidateUser` after commit. `EndpointMatrixTests` walks all endpoints by reflection.
 
 **EF Core query style:** when chaining multiple query methods, put a trailing `//` after the first line:
 ```csharp

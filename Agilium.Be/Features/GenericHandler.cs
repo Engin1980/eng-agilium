@@ -1,92 +1,38 @@
-using System.Diagnostics.CodeAnalysis;
-using Eng.Agilium.Be.Model.Db;
+using Eng.Agilium.Be.Services;
 
 namespace Eng.Agilium.Be.Features;
 
-public record LoggedUser(int AppUserId, string Email, bool IsSuperAdmin, IRoleAssignment[] RoleAssignments);
+/// <summary>The authenticated caller (identity only - what the caller may do is decided by <see cref="IProjectAccess"/>).</summary>
+public record LoggedUser(int AppUserId, string Email);
 
 public interface IHandler
 {
-  public void SetUpLoggedUser(LoggedUser? loggedUser);
+  /// <summary>Called by the endpoint before <c>HandleAsync</c>.</summary>
+  public void SetUpContext(LoggedUser? loggedUser, IProjectAccess access);
 }
 
 public abstract class GenericHandler<TCommand, TParameters, TResult> : IHandler
 {
+  private IProjectAccess? access;
+
   protected LoggedUser? LoggedUser { get; private set; }
+
+  /// <summary>
+  /// Authorization of the current request: call <c>Access.EnsureCanAsync(projectId, ...)</c> as soon as the
+  /// project of the addressed entity is known (never take the project id from a different source than the entity).
+  /// </summary>
+  protected IProjectAccess Access =>
+    access ?? throw new InvalidOperationException("The handler was not set up by an endpoint (no access context).");
+
   public abstract Task<TResult> HandleAsync(
     TCommand request,
     TParameters parameters,
     CancellationToken cancellationToken
   );
 
-  public void SetUpLoggedUser(LoggedUser? loggedUser) => this.LoggedUser = loggedUser;
+  public void SetUpContext(LoggedUser? loggedUser, IProjectAccess access)
+  {
+    LoggedUser = loggedUser;
+    this.access = access;
+  }
 }
-
-// public class AuthValContext()
-// {
-//   internal LoggedUser LoggedUser { get; init; } = null!;
-//   internal List<IdAndRole> Combinations { get; } = [];
-
-//   internal void Evaluate()
-//   {
-//     if (Combinations.Count == 0)
-//       return;
-
-//     foreach (var combination in Combinations)
-//     {
-//       var hasId = combination.Ids.Length == 0 || combination.Ids.Contains(LoggedUser.AppUserId);
-//       var hasRole =
-//         combination.RoleNames.Length == 0 || combination.RoleNames.Any(r => LoggedUser.RoleNames.Contains(r));
-//       if (hasId && hasRole)
-//         return;
-//     }
-
-//     throw new AuthorizationFailedException();
-//   }
-// }
-
-// public record IdAndRole(int[] Ids, string[] RoleNames);
-
-// public class Authorizer(LoggedUser loggedUser)
-// {
-//   private readonly AuthValContext ctx = new AuthValContext() { LoggedUser = loggedUser };
-
-//   public IdSelected HavingId(int id) => new(ctx, [id]);
-
-//   public IdSelected HavingIds(IEnumerable<int> ids) => new(ctx, ids.ToArray());
-
-//   public IdSelected HavingAnyId() => new(ctx, []);
-
-//   public void Evaluate() => ctx.Evaluate();
-// }
-
-// public class IdSelected(AuthValContext ctx, int[] ids)
-// {
-//   private readonly AuthValContext ctx = ctx;
-//   private readonly int[] ids = ids;
-
-//   public IdRoleSelected WithRole(string role) => new(ctx, ids, [role]);
-
-//   public IdRoleSelected WithRole(params string[] roles) => new(ctx, ids, roles.ToArray());
-
-//   public IdRoleSelected WithAnyRole() => new(ctx, ids, []);
-// }
-
-// public class IdRoleSelected
-// {
-//   private readonly AuthValContext ctx;
-
-//   public IdRoleSelected(AuthValContext ctx, int[] ids, string[] roles)
-//   {
-//     this.ctx = ctx;
-//     this.ctx.Combinations.Add(new(ids, roles));
-//   }
-
-//   public IdSelected HavingId(int id) => new(ctx, [id]);
-
-//   public IdSelected HavingIds(IEnumerable<int> ids) => new(ctx, ids.ToArray());
-
-//   public IdSelected HavingAnyId() => new(ctx, []);
-
-//   public void Validate() => ctx.Evaluate();
-// }

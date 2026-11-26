@@ -44,7 +44,7 @@ public class EndPoint(AppSettingsService appSettingsService) : GenericEndpoint<E
 
   public override string EndpointRoute => "/refresh";
 
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 
   protected override async Task<IResult> ProcessRequestAsync(
     EmptyCommand command,
@@ -64,14 +64,11 @@ public class EndPoint(AppSettingsService appSettingsService) : GenericEndpoint<E
       cancellationToken
     );
 
-    string[] roles = appUser.Memberships.Select(m => ((IRoleAssignment)m.Role).ToRoleString()).ToArray();
-
     var jwtToken = Utils.GenerateJwtToken(
       appUser.Id,
       appUser.Email,
       appUser.Name,
       appUser.Surname,
-      roles,
       appSettingsService.AppSettings.Security.Jwt.Key,
       appSettingsService.AppSettings.Security.Jwt.Issuer,
       appSettingsService.AppSettings.Security.Tokens.AccessTokenExpirationMinutes

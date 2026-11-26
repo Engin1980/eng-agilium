@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, IdPa
       await dbContext.Sprints.FirstOrDefaultAsync(s => s.Id == parameters.Id, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Sprint), parameters.Id);
 
+    await Access.EnsureCanAsync(sprint.ProjectId, ProjectPermission.ManageSprints, cancellationToken);
+
     if (await dbContext.SprintItems.AnyAsync(si => si.SprintId == sprint.Id, cancellationToken))
       throw new BadRequestException("Sprint still has assigned items - unassign them first");
 
@@ -34,5 +37,5 @@ public class Endpoint : GenericOkEndpoint<EmptyCommand, IdParameters, Handler, E
   public override HttpMethod Method => HttpMethod.Delete;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "sprints/{id}";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ManageSprints);
 }

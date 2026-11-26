@@ -12,9 +12,28 @@ export type Project = {
 
 export type ListProjectsResult = { projects: Project[] };
 
-export function listProjects(memberId?: number): Promise<ListProjectsResult> {
-  const query = memberId !== undefined ? `?memberId=${memberId}` : "";
-  return apiRequest<ListProjectsResult>(`/projects${query}`);
+export function listProjects(): Promise<ListProjectsResult> {
+  return apiRequest<ListProjectsResult>("/projects");
+}
+
+export type ProjectPermissions = {
+  canViewProject: boolean;
+  canManageProject: boolean;
+  canViewMembers: boolean;
+  canManageMembers: boolean;
+  canManageSprints: boolean;
+  canEditItems: boolean;
+  isOwner: boolean;
+};
+
+export type ProjectDetail = Project & {
+  roleId: number;
+  roleTitle: string;
+  permissions: ProjectPermissions;
+};
+
+export function getProject(id: number): Promise<ProjectDetail> {
+  return apiRequest<ProjectDetail>(`/projects/${id}`);
 }
 
 export type CreateProjectCommand = { title: string; description: string };

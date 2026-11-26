@@ -78,7 +78,7 @@ Each endpoint must consist of the following components (in this order):
      - `EndpointRoute`
 
    (If uncertain, provide a reasonable guess and add a TODO remark to review it later.)
-   - Leave **RequiredRoles empty** unless specified otherwise.
+   - Declare `Policy` (`EndpointPolicy.Anonymous` / `LoggedIn` / `Project(ProjectPermission.X)` / `ProjectOwner`) and, for project policies, call `Access.EnsureCanAsync(...)` in the handler right after the entity (and its project id) is loaded.
 
 6. **Endpoint summary**
    - Add the attribute:

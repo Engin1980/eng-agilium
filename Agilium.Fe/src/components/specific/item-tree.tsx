@@ -11,6 +11,7 @@ import {
   useUpdateItemParent,
 } from "../../services/items-queries";
 import { ApiError } from "../../services/http-client";
+import { useProjectPermissions } from "../../services/projects-queries";
 
 const TYPE_LABELS: Record<ItemType, string> = {
   [ItemType.Feature]: "Feature",
@@ -40,6 +41,7 @@ function flatten(nodes: ItemNode[]): ItemNode[] {
 export function ItemTree({ projectId }: { projectId: number }) {
   const { data, isLoading, error } = useProjectItems(projectId);
   const createItem = useCreateItem(projectId);
+  const { canEditItems } = useProjectPermissions(projectId);
   const [addingFeature, setAddingFeature] = React.useState(false);
 
   if (isLoading) return <p className="text-gray-500">Načítání položek…</p>;
@@ -57,12 +59,14 @@ export function ItemTree({ projectId }: { projectId: number }) {
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Položky</h2>
-        <button
-          onClick={() => setAddingFeature(true)}
-          className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          + Feature
-        </button>
+        {canEditItems && (
+          <button
+            onClick={() => setAddingFeature(true)}
+            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            + Feature
+          </button>
+        )}
       </div>
 
       {addingFeature && (
@@ -106,6 +110,7 @@ function ItemNodeView({
   const updateParent = useUpdateItemParent(projectId);
   const updateAssignee = useUpdateItemAssignee(projectId);
   const deleteItem = useDeleteItem(projectId);
+  const { canEditItems } = useProjectPermissions(projectId);
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(node.title);
@@ -185,7 +190,7 @@ function ItemNodeView({
           {node.assignee ? `${node.assignee.name} ${node.assignee.surname}` : "Nepřiřazeno"}
         </span>
 
-        {!node.isGeneric && !isEditing && (
+        {canEditItems && !node.isGeneric && !isEditing && (
           <>
             <button className="text-sm text-blue-600 hover:underline" onClick={() => setIsEditing(true)}>
               Přejmenovat
@@ -203,7 +208,7 @@ function ItemNodeView({
           </>
         )}
 
-        {reparentTargets.length > 0 && !node.isGeneric && (
+        {canEditItems && reparentTargets.length > 0 && !node.isGeneric && (
           <select
             className="rounded border border-gray-300 px-2 py-1 text-sm"
             value={node.parentId ?? ""}
@@ -219,7 +224,7 @@ function ItemNodeView({
           </select>
         )}
 
-        <span className="flex items-center gap-1">
+        {canEditItems && (<span className="flex items-center gap-1">
           <input
             className="w-16 rounded border border-gray-300 px-2 py-1 text-sm"
             placeholder="ID uživatele"
@@ -238,9 +243,9 @@ function ItemNodeView({
           >
             Přiřadit
           </button>
-        </span>
+        </span>)}
 
-        {childTypes.map((t) => (
+        {canEditItems && childTypes.map((t) => (
           <button
             key={t}
             className="text-sm text-emerald-700 hover:underline"

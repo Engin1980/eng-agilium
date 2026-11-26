@@ -20,5 +20,5 @@ public class Endpoint : GenericOkEndpoint<EmptyCommand, EmptyParameters, Handler
 
   public override string EndpointRoute => "ping";
 
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 }

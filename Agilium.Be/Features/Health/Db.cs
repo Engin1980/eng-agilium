@@ -42,5 +42,5 @@ public class EndPoint : GenericOkEndpoint<EmptyCommand, EmptyParameters, Handler
 
   public override string EndpointRoute => "/db";
 
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 }

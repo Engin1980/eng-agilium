@@ -83,7 +83,7 @@ Hotové je přihlášení a registrace, seznam projektů, detail projektu se str
 
 Podrobný stav je v `plan.md` / `task-stories.md`; hlavní otevřené body:
 
-* **Autorizace** - `RequiredRoles` / `ValidateRequiredRoles` v `GenericEndpoint` zatím nevynucuje oprávnění (`Role`, `Membership`, `IRoleAssignment` existují).
+* **Autorizace** - Oprávnění vynucuje `EndpointPolicy` (přihlášení v endpointu) + `IProjectAccess` (v handleru, data z DB přes `IAccessCache`); viz `roles.md`.
 * **Členové a role projektu** - BE výpis členů a CRUD vlastních rolí (`Features\Roles\*`), FE UI pro správu členů (nad existujícími `AssignMember`/`UnassignMember`).
 * **Účty** - reset hesla a aktivace/deaktivace účtu; konkrétní podoba není specifikována.
 * **Smazání projektu** - potvrdit se zadavatelem, zda je potřeba (existuje `UpdateStatus`).

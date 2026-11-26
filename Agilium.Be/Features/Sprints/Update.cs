@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Exceptions.Validation;
 using Eng.Agilium.Be.Model.Db;
@@ -26,6 +27,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
       await dbContext.Sprints.FirstOrDefaultAsync(s => s.Id == parameters.Id, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Sprint), parameters.Id);
 
+    await Access.EnsureCanAsync(sprint.ProjectId, ProjectPermission.ManageSprints, cancellationToken);
+
     var title = command.Title.Trim();
     SprintRules.EnsureValidDates(command.StartDateTime, command.EndDateTime);
     await SprintRules.EnsureUniqueTitleAsync(dbContext, sprint.ProjectId, title, sprint.Id, cancellationToken);
@@ -47,5 +50,5 @@ public class Endpoint : GenericOkEndpoint<Command, IdParameters, Handler, EmptyR
   public override HttpMethod Method => HttpMethod.Patch;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "sprints/{id}";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ManageSprints);
 }

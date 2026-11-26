@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Features.Templates;
 using Eng.Agilium.Be.Model.Db;
@@ -26,6 +27,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, IdPa
     var item =
       await dbContext.Items.FirstOrDefaultAsync(i => i.Id == parameters.Id, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Item), parameters.Id);
+
+    await Access.EnsureCanAsync(item.ProjectId, ProjectPermission.ViewProject, cancellationToken);
 
     var template =
       await dbContext.Templates //
@@ -79,5 +82,5 @@ public class Endpoint : GenericOkEndpoint<EmptyCommand, IdParameters, Handler, R
   public override HttpMethod Method => HttpMethod.Get;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "items/{id}/fields";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ViewProject);
 }

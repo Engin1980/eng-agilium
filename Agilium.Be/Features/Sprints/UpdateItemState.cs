@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, Parameter
         .FirstOrDefaultAsync(si => si.SprintId == parameters.Id && si.ItemId == parameters.ItemId, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(SprintItem), parameters.ItemId);
 
+    await Access.EnsureCanAsync(sprintItem.Sprint.ProjectId, ProjectPermission.EditItems, cancellationToken);
+
     var stateExists = await dbContext.WorkflowStates.AnyAsync(
       w => w.Id == command.WorkflowStateId && w.ProjectId == sprintItem.Sprint.ProjectId,
       cancellationToken
@@ -46,5 +49,5 @@ public class Endpoint : GenericOkEndpoint<Command, Parameters, Handler, EmptyRes
   public override HttpMethod Method => HttpMethod.Patch;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "sprints/{id}/items/{itemId}/state";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.EditItems);
 }

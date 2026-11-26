@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Crypto.Modes;
 
 namespace Eng.Agilium.Be.Services;
 
@@ -17,8 +16,6 @@ public class TokenService(AppDbContext dbContext, AppSettingsService appSettings
     var token =
       await dbContext
         .Tokens.Include(q => q.AppUser)
-          .ThenInclude(q => q.Memberships)
-            .ThenInclude(m => m.Role)
         .FirstOrDefaultAsync(t => t.Value == tokenHash && t.Type == tokenType)
       ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenNotFound, null);
     if (token.Expiration < DateTime.UtcNow)

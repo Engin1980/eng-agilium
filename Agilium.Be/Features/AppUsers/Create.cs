@@ -50,5 +50,5 @@ public class Endpoint : GenericCreatedEndpoint<Command, EmptyParameters, Handler
   public override HttpMethod Method => HttpMethod.Post;
   public override BaseRoute BaseRoute => BaseRoute.Auth; // TODO: confirm correct base route for user management
   public override string EndpointRoute => "users";
-  public override string[] RequiredRoles => Array.Empty<string>();
+  public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 }

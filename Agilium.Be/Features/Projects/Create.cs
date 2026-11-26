@@ -103,29 +103,57 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
 
   private void AddOwnerMembership(Project project)
   {
-    System.Diagnostics.Debug.Assert(LoggedUser != null);
+    var userId = LoggedUser?.AppUserId ?? throw new InvalidOperationException("Login is required.");
 
     Membership mi = new Membership
     {
       Project = project,
-      UserId = LoggedUser.AppUserId,
-      Role = project.Roles.First(r => r.Title == "Owner"),
+      UserId = userId,
+      Role = project.Roles.First(r => r.SystemKind == RoleSystemKind.Owner),
     };
     project.Memberships.Add(mi);
   }
 
-  private void AddProjectRoles(Project project)
+  private static void AddProjectRoles(Project project)
   {
+    // see .docs/development/roles.md
     project.Roles.Add(
       new Role
       {
         Project = project,
         Title = "Owner",
-        CanManageMembers = true,
-        CanManageProject = true,
-        CanManageSprints = true,
-        CanViewMembers = true,
+        SystemKind = RoleSystemKind.Owner,
         CanViewProject = true,
+        CanViewMembers = true,
+        CanEditItems = true,
+        CanManageSprints = true,
+        CanManageProject = true,
+        CanManageMembers = true,
+      }
+    );
+    project.Roles.Add(
+      new Role
+      {
+        Project = project,
+        Title = "Manager",
+        SystemKind = RoleSystemKind.Manager,
+        CanViewProject = true,
+        CanViewMembers = true,
+        CanEditItems = true,
+        CanManageSprints = true,
+        CanManageProject = true,
+        CanManageMembers = true,
+      }
+    );
+    project.Roles.Add(
+      new Role
+      {
+        Project = project,
+        Title = "Member",
+        SystemKind = RoleSystemKind.Member,
+        CanViewProject = true,
+        CanViewMembers = true,
+        CanEditItems = true,
       }
     );
     project.Roles.Add(
@@ -133,11 +161,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
       {
         Project = project,
         Title = "Guest",
-        CanManageMembers = false,
-        CanManageProject = false,
-        CanManageSprints = false,
-        CanViewMembers = true,
+        SystemKind = RoleSystemKind.Guest,
         CanViewProject = true,
+        CanViewMembers = true,
       }
     );
   }
@@ -149,5 +175,5 @@ public class Endpoint : GenericCreatedEndpoint<Command, EmptyParameters, Handler
   public override HttpMethod Method => HttpMethod.Post;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.LoggedIn;
 }

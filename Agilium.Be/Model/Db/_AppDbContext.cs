@@ -63,6 +63,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         .WithMany(p => p.Roles)
         .HasForeignKey(e => e.ProjectId)
         .OnDelete(DeleteBehavior.Restrict);
+      entity.HasIndex(e => new { e.ProjectId, e.Title }).IsUnique();
     });
 
     modelBuilder.Entity<Membership>(entity =>

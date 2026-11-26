@@ -18,7 +18,7 @@ namespace Eng.Agilium.Be.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("Czech_CI_AS")
-                .HasAnnotation("ProductVersion", "8.0.31")
+                .HasAnnotation("ProductVersion", "8.0.34")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -202,6 +202,9 @@ namespace Eng.Agilium.Be.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("CanEditItems")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("CanManageMembers")
                         .HasColumnType("bit");
 
@@ -220,6 +223,9 @@ namespace Eng.Agilium.Be.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
+                    b.Property<int>("SystemKind")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -227,7 +233,8 @@ namespace Eng.Agilium.Be.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId", "Title")
+                        .IsUnique();
 
                     b.ToTable("Roles");
                 });

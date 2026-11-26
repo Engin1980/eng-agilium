@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
     CancellationToken cancellationToken
   )
   {
-    await dbContext.Projects.EnsureExistsAsync(parameters.Id, cancellationToken);
+    await Access.EnsureCanAsync(parameters.Id, ProjectPermission.ManageProject, cancellationToken);
     Validate(command.States);
 
     using var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -138,5 +139,5 @@ public class Endpoint : GenericOkEndpoint<Command, IdParameters, Handler, Result
   public override HttpMethod Method => HttpMethod.Put;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "{id}/workflow";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ManageProject);
 }

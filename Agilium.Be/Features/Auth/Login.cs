@@ -30,8 +30,6 @@ public class Handler(AppDbContext dbContext, TokenService tokenService, AppSetti
     var appUser =
       await dbContext
         .AppUsers // tracked on purpose: the failed-login counter is updated below
-        .Include(q => q.Memberships)
-          .ThenInclude(m => m.Role)
         .FirstOrDefaultAsync(u => u.Email == email, cancellationToken: cancellationToken)
       ?? throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.EmailNotFound, null);
 
@@ -80,7 +78,7 @@ public class EndPoint(AppSettingsService appSettingsService, TurnstileService tu
 
   public override string EndpointRoute => "/login/admin";
 
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 
   protected override async Task<IResult> ProcessRequestAsync(
     Command command,
@@ -101,14 +99,11 @@ public class EndPoint(AppSettingsService appSettingsService, TurnstileService tu
 
     var (refreshToken, appUser) = await handler.HandleAsync(command, parameters, cancellationToken);
 
-    string[] roles = appUser.Memberships.Select(m => ((IRoleAssignment)m.Role).ToRoleString()).ToArray();
-
     var jwtToken = Utils.GenerateJwtToken(
       appUser.Id,
       appUser.Email,
       appUser.Name,
       appUser.Surname,
-      roles,
       appSettings.Security.Jwt.Key,
       appSettings.Security.Jwt.Issuer,
       appSettings.Security.Tokens.AccessTokenExpirationMinutes

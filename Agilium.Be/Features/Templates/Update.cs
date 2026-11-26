@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using System.Text.RegularExpressions;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Exceptions.Validation;
@@ -35,7 +36,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, Parameter
     CancellationToken cancellationToken
   )
   {
-    await dbContext.Projects.EnsureExistsAsync(parameters.Id, cancellationToken);
+    await Access.EnsureCanAsync(parameters.Id, ProjectPermission.ManageProject, cancellationToken);
 
     var template =
       await dbContext.Templates //
@@ -194,5 +195,5 @@ public class Endpoint : GenericOkEndpoint<Command, Parameters, Handler, Result>
   public override HttpMethod Method => HttpMethod.Put;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "{id}/templates/{itemType}";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ManageProject);
 }

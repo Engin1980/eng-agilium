@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
     var sprint =
       await dbContext.Sprints.AsNoTracking().FirstOrDefaultAsync(s => s.Id == parameters.Id, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Sprint), parameters.Id);
+
+    await Access.EnsureCanAsync(sprint.ProjectId, ProjectPermission.EditItems, cancellationToken);
 
     if (sprint.State == SprintState.Completed)
       throw new BadRequestException("Items cannot be assigned to a completed sprint");
@@ -75,5 +78,5 @@ public class Endpoint : GenericOkEndpoint<Command, IdParameters, Handler, EmptyR
   public override HttpMethod Method => HttpMethod.Post;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "sprints/{id}/items";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.EditItems);
 }

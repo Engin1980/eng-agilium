@@ -1,57 +1,33 @@
-using System.Text;
-
 namespace Eng.Agilium.Be.Model.Db;
 
-public interface IRoleAssignment
+/// <summary>
+/// System roles every project gets on creation. They cannot be deleted or renamed, and the project-wide
+/// "owner only" rights (renaming and deleting the project, appointing owners) belong to <see cref="Owner"/>
+/// by kind, not by a flag. See .docs/development/roles.md.
+/// </summary>
+public enum RoleSystemKind
 {
-  public int ProjectId { get; set; }
-  public bool CanViewProject { get; set; }
-  public bool CanManageProject { get; set; }
-  public bool CanViewMembers { get; set; }
-  public bool CanManageMembers { get; set; }
-  public bool CanManageSprints { get; set; }
-
-  public string ToRoleString()
-  {
-    StringBuilder ret = new();
-    ret.Append('P').Append(ProjectId).Append(':');
-    ret.Append(CanViewProject ? "1" : "0");
-    ret.Append(CanManageProject ? "1" : "0");
-    ret.Append(CanViewMembers ? "1" : "0");
-    ret.Append(CanManageMembers ? "1" : "0");
-    ret.Append(CanManageSprints ? "1" : "0");
-    return ret.ToString();
-  }
-
-  public static IRoleAssignment FromRoleString(string roleString)
-  {
-    string[] parts = roleString.Split(':');
-    if (parts.Length != 2 || !parts[0].StartsWith("P"))
-      throw new ArgumentException("Invalid role string format.");
-    int projectId = int.Parse(parts[0].Substring(1));
-    string permissions = parts[1];
-    if (permissions.Length != 5)
-      throw new ArgumentException("Invalid permissions format.");
-    return new RoleAsignment
-    {
-      ProjectId = projectId,
-      CanViewProject = permissions[0] == '1',
-      CanManageProject = permissions[1] == '1',
-      CanViewMembers = permissions[2] == '1',
-      CanManageMembers = permissions[3] == '1',
-      CanManageSprints = permissions[4] == '1',
-    };
-  }
+  /// <summary>A custom role created in the project.</summary>
+  None = 0,
+  Owner = 1,
+  /// <summary>Everything the owner can do except renaming/deleting the project and managing owners.</summary>
+  Manager = 2,
+  /// <summary>Works with items and the kanban board, cannot manage sprints or the project.</summary>
+  Member = 3,
+  Guest = 4,
 }
 
-public class RoleAsignment : IRoleAssignment
+/// <summary>The per-project permission flags of a role.</summary>
+public interface IRoleAssignment
 {
-  public int ProjectId { get; set; }
   public bool CanViewProject { get; set; }
   public bool CanManageProject { get; set; }
   public bool CanViewMembers { get; set; }
   public bool CanManageMembers { get; set; }
   public bool CanManageSprints { get; set; }
+
+  /// <summary>Create/edit/delete items, change assignee/parent/field values, assign items to sprints and move cards.</summary>
+  public bool CanEditItems { get; set; }
 }
 
 public class Role : IRoleAssignment
@@ -60,10 +36,12 @@ public class Role : IRoleAssignment
   public string Title { get; set; } = string.Empty;
   public int ProjectId { get; set; }
   public Project Project { get; set; } = null!;
+  public RoleSystemKind SystemKind { get; set; }
 
   public bool CanViewProject { get; set; }
   public bool CanManageProject { get; set; }
   public bool CanViewMembers { get; set; }
   public bool CanManageMembers { get; set; }
   public bool CanManageSprints { get; set; }
+  public bool CanEditItems { get; set; }
 }

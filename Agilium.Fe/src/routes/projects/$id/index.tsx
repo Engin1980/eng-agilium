@@ -38,7 +38,9 @@ function ProjectDetail() {
 
       {isLoading && <p className="mt-4 text-gray-500">Načítání…</p>}
       {!isLoading && !project && (
-        <p className="mt-4 text-gray-500">Projekt nenalezen.</p>
+        <p className="mt-4 text-gray-500">
+          Projekt nenalezen nebo k němu nemáte přístup.
+        </p>
       )}
 
       {project && (
@@ -65,13 +67,15 @@ function ProjectDetail() {
             >
               Sprinty a kanban →
             </Link>
-            <Link
-              to="/projects/$id/settings"
-              params={{ id }}
-              className="inline-block text-sm text-blue-600 hover:underline"
-            >
-              Nastavení projektu →
-            </Link>
+            {project.permissions.canManageProject && (
+              <Link
+                to="/projects/$id/settings"
+                params={{ id }}
+                className="inline-block text-sm text-blue-600 hover:underline"
+              >
+                Nastavení projektu →
+              </Link>
+            )}
           </main>
 
           <div className="mt-6">

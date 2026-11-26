@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Exceptions.Validation;
 using Eng.Agilium.Be.Model.Db;
@@ -22,6 +23,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
     CancellationToken cancellationToken
   )
   {
+    await Access.EnsureCanAsync(command.ProjectId, ProjectPermission.EditItems, cancellationToken);
+
     var project =
       await dbContext.Projects.FirstOrDefaultAsync(p => p.Id == command.ProjectId, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Project), command.ProjectId);
@@ -136,5 +139,5 @@ public class Endpoint : GenericCreatedEndpoint<Command, EmptyParameters, Handler
   public override HttpMethod Method => HttpMethod.Post;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "items";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.EditItems);
 }

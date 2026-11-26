@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +28,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, IdPa
     CancellationToken cancellationToken
   )
   {
-    await dbContext.Projects.EnsureExistsAsync(parameters.Id, cancellationToken);
+    await Access.EnsureCanAsync(parameters.Id, ProjectPermission.ViewProject, cancellationToken);
 
     var items = await dbContext
       .Items //
@@ -95,5 +96,5 @@ public class Endpoint : GenericOkEndpoint<EmptyCommand, IdParameters, Handler, R
   public override HttpMethod Method => HttpMethod.Get;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "{id}/items";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ViewProject);
 }

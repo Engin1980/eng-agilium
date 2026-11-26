@@ -44,7 +44,7 @@ public static class DevSeed
     await db.SaveChangesAsync(cancellationToken);
 
     var projects = sp.GetRequiredService<ProjectsCreate.Handler>();
-    projects.SetUpLoggedUser(new LoggedUser(user.Id, user.Email, false, []));
+    projects.SetUpContext(new LoggedUser(user.Id, user.Email), AllowAllProjectAccess.Instance);
     var projectId = (
       await projects.HandleAsync(
         new ProjectsCreate.Command(DemoProjectTitle, "Sample data created by SEED_DEMO_DATA."),
@@ -54,6 +54,7 @@ public static class DevSeed
     ).Id;
 
     var items = sp.GetRequiredService<ItemsCreate.Handler>();
+    items.SetUpContext(null, AllowAllProjectAccess.Instance);
     async Task<int> Item(string title, ItemType type, int? parentId = null) =>
       (
         await items.HandleAsync(
@@ -71,6 +72,7 @@ public static class DevSeed
     await Item("Write the project handbook", ItemType.Task); // lands in the generic containers
 
     var sprints = sp.GetRequiredService<SprintsCreate.Handler>();
+    sprints.SetUpContext(null, AllowAllProjectAccess.Instance);
     var sprintId = (
       await sprints.HandleAsync(
         new SprintsCreate.Command(projectId, "Sprint 1", DateTime.UtcNow.Date, DateTime.UtcNow.Date.AddDays(14)),
@@ -80,6 +82,7 @@ public static class DevSeed
     ).Id;
 
     var assign = sp.GetRequiredService<SprintsAssignItem.Handler>();
+    assign.SetUpContext(null, AllowAllProjectAccess.Instance);
     foreach (var taskId in new[] { task1, task2 })
       await assign.HandleAsync(new SprintsAssignItem.Command(taskId), new IdParameters(sprintId), cancellationToken);
   }

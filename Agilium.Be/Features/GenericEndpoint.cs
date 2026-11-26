@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Eng.Agilium.Be.Exceptions;
-using Eng.Agilium.Be.Model.Db;
+using Eng.Agilium.Be.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eng.Agilium.Be.Features;
@@ -66,12 +66,11 @@ public abstract class GenericEndpoint<TCommand, TParameters, THandler> : IEndpoi
   public abstract HttpMethod Method { get; }
   public abstract BaseRoute BaseRoute { get; }
   public abstract string EndpointRoute { get; }
-  public abstract string[] RequiredRoles { get; }
+  /// <summary>What the endpoint demands from the caller (see <see cref="EndpointPolicy"/>); there is no default on purpose.</summary>
+  public abstract EndpointPolicy Policy { get; }
   public string FullRoute => $"{BaseRoute.ToRouteString().TrimEnd('/')}/{EndpointRoute.TrimStart('/')}";
 
-  protected LoggedUser? LoggedUser { get; private set; }
-
-  private Task<IResult> InvokeProcessRequestAsync(
+  private async Task<IResult> InvokeProcessRequestAsync(
     TCommand command,
     TParameters parameters,
     HttpContext httpContext,
@@ -79,25 +78,25 @@ public abstract class GenericEndpoint<TCommand, TParameters, THandler> : IEndpoi
     CancellationToken cancellationToken
   )
   {
+    // authentication first, so an anonymous caller gets 401 whatever the request body looks like
+    var access = httpContext.RequestServices.GetRequiredService<IProjectAccess>();
+    // NOTE: one endpoint instance serves all requests, so per-request state must stay in locals
+    var loggedUser = GetLoggedUser(httpContext);
+    if (Policy.RequiresAuthentication)
+    {
+      if (loggedUser == null)
+        throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.TokenNotProvided, null);
+      access.Bind(loggedUser);
+      await access.EnsureActiveUserAsync(cancellationToken);
+    }
+    else
+      access.Bind(loggedUser);
+    handler.SetUpContext(loggedUser, access);
+
     ValidateObject(command, typeof(TCommand), ValidatedObject.Command);
     ValidateObject(parameters, typeof(TParameters), ValidatedObject.Parameters);
-    SetUpLoggedUser(httpContext, handler);
-    //ValidateRequiredRoles();
-    var result = ProcessRequestAsync(command, parameters, httpContext, handler, cancellationToken);
-    return result;
+    return await ProcessRequestAsync(command, parameters, httpContext, handler, cancellationToken);
   }
-
-  // private void ValidateRequiredRoles()
-  // {
-  //   if (RequiredRoles.Length > 0)
-  //   {
-  //     if (LoggedUser == null)
-  //       throw new AuthorizationFailedException();
-
-  //     if (!RequiredRoles.Any(q => q == LoggedUser.RoleName))
-  //       throw new AuthorizationFailedException();
-  //   }
-  // }
 
   private static void ValidateObject(object? obj, Type objType, ValidatedObject objectType)
   {
@@ -128,27 +127,12 @@ public abstract class GenericEndpoint<TCommand, TParameters, THandler> : IEndpoi
     }
   }
 
-  private void SetUpLoggedUser(HttpContext httpContext, THandler handler)
+  private static LoggedUser? GetLoggedUser(HttpContext httpContext)
   {
     var user = httpContext.User;
-    if (user.Identity is not null && user.Identity.IsAuthenticated)
-    {
-      var idClaim = user.FindFirst("sub")?.Value;
-      var email = user.FindFirst("email")?.Value ?? "";
-      var roleNames = user.FindAll("role").Select(c => c.Value).ToArray();
-      bool isSuperAdmin = roleNames.Contains("SuperAdmin");
-
-      var roleAssignments = roleNames
-        .Where(q => q.StartsWith('P'))
-        .Select(q => IRoleAssignment.FromRoleString(q))
-        .ToArray();
-
-      if (!int.TryParse(idClaim, out var appUserId))
-        appUserId = 0;
-
-      LoggedUser = new LoggedUser(appUserId, email, isSuperAdmin, roleAssignments);
-      handler.SetUpLoggedUser(this.LoggedUser);
-    }
+    if (user.Identity is not null && user.Identity.IsAuthenticated && int.TryParse(user.FindFirst("sub")?.Value, out var id))
+      return new LoggedUser(id, user.FindFirst("email")?.Value ?? "");
+    return null;
   }
 
   protected abstract Task<IResult> ProcessRequestAsync(

@@ -114,6 +114,11 @@ class BuildInitializer(WebApplicationBuilder builder)
     // builder.Services.AddTransient<SmartEmailService>();
 
     builder.Services.AddTransient<TokenService>();
+
+    // authorization: permissions are read from the database through a server-side cache (see AccessCache)
+    builder.Services.AddSingleton(TimeProvider.System);
+    builder.Services.AddSingleton<IAccessCache, AccessCache>();
+    builder.Services.AddScoped<IProjectAccess, ProjectAccess>();
   }
 
   private void ConfigureHandlersAndEndpoints()
@@ -172,7 +177,6 @@ class BuildInitializer(WebApplicationBuilder builder)
           ValidIssuer = jwtIssuer,
           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
           NameClaimType = "sub",
-          RoleClaimType = "role",
         };
       });
 

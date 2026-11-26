@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Exceptions.Validation;
 using Eng.Agilium.Be.Model.Db;
@@ -20,6 +21,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
     CancellationToken cancellationToken
   )
   {
+    // renaming the project is reserved for the owner (see .docs/development/roles.md)
+    await Access.EnsureOwnerAsync(parameters.Id, cancellationToken);
+
     if (dbContext.Projects.Any(p => p.Title == command.Title && p.Id != parameters.Id))
       throw new EntityAlreadyExistsException(typeof(Project), command.Title);
 
@@ -42,5 +46,5 @@ public class Endpoint : GenericOkEndpoint<Command, IdParameters, Handler, EmptyR
   public override HttpMethod Method => HttpMethod.Patch;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "{id}";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.ProjectOwner;
 }

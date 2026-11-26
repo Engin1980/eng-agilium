@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
     var item =
       await dbContext.Items.FirstOrDefaultAsync(i => i.Id == parameters.Id, cancellationToken)
       ?? throw new EntityNotFoundException(typeof(Item), parameters.Id);
+
+    await Access.EnsureCanAsync(item.ProjectId, ProjectPermission.EditItems, cancellationToken);
 
     if (item.IsGeneric)
       throw new BadRequestException("Generic container items cannot be moved");
@@ -91,5 +94,5 @@ public class Endpoint : GenericOkEndpoint<Command, IdParameters, Handler, EmptyR
   public override HttpMethod Method => HttpMethod.Patch;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "items/{id}/parent";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.EditItems);
 }

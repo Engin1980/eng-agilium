@@ -29,5 +29,5 @@ public class Endpoint : GenericOkEndpoint<EmptyCommand, EmptyParameters, Handler
   public override HttpMethod Method => HttpMethod.Get;
   public override BaseRoute BaseRoute => BaseRoute.Items;
   public override string EndpointRoute => "type-options";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.LoggedIn;
 }

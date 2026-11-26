@@ -1,3 +1,4 @@
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Exceptions.Validation;
 using Eng.Agilium.Be.Model.Db;
 
@@ -20,7 +21,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, EmptyPara
     CancellationToken cancellationToken
   )
   {
-    await dbContext.Projects.EnsureExistsAsync(command.ProjectId, cancellationToken);
+    await Access.EnsureCanAsync(command.ProjectId, ProjectPermission.ManageSprints, cancellationToken);
 
     var title = command.Title.Trim();
     SprintRules.EnsureValidDates(command.StartDateTime, command.EndDateTime);
@@ -48,5 +49,5 @@ public class Endpoint : GenericCreatedEndpoint<Command, EmptyParameters, Handler
   public override HttpMethod Method => HttpMethod.Post;
   public override BaseRoute BaseRoute => BaseRoute.Projects;
   public override string EndpointRoute => "sprints";
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Project(ProjectPermission.ManageSprints);
 }

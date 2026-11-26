@@ -30,7 +30,7 @@ public class EndPoint : GenericEndpoint<Command, EmptyParameters, Handler>
 
   public override string EndpointRoute => "/logout";
 
-  public override string[] RequiredRoles => [];
+  public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 
   protected override async Task<IResult> ProcessRequestAsync(
     Command command,
