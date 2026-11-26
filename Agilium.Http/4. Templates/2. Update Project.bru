@@ -1,7 +1,7 @@
 meta {
-  name: 4. Update Project
+  name: 2. Update Project
   type: http
-  seq: 4
+  seq: 2
 }
 
 put {
@@ -15,24 +15,27 @@ headers {
 }
 
 body:json {
-  {
-    "columnCount": 4,
-    "items": [
-      { "id": {{taskField_description}}, "key": "description", "title": "Description", "type": 3, "validatingRegex": null, "orderIndex": 1, "columnStart": 1, "columnSpan": 3, "rowStart": 1, "rowSpan": 1 },
-      { "id": {{taskField_comments}}, "key": "comments", "title": "Comments", "type": 8, "validatingRegex": null, "orderIndex": 2, "columnStart": 1, "columnSpan": 3, "rowStart": 2, "rowSpan": 1 },
-      { "id": {{taskField_priority}}, "key": "priority", "title": "Priority", "type": 4, "validatingRegex": null, "orderIndex": 3, "columnStart": 4, "columnSpan": 1, "rowStart": 1, "rowSpan": 1 },
-      { "id": null, "key": "blocked", "title": "Blocked?", "type": 10, "validatingRegex": null, "orderIndex": 5, "columnStart": 4, "columnSpan": 1, "rowStart": 3, "rowSpan": 1 }
-    ]
-  }
+  { "tables": {{templateTablesJson}} }
+}
+
+script:pre-request {
+  // Build a full-replace body from the tree captured by "1. Get Project":
+  // keep everything, add a new Boolean attribute "blocked" (no id = create) to the first section and
+  // drop the last attribute of the last section (missing = delete, together with its ItemFieldValues).
+  const tables = JSON.parse(bru.getVar("taskTemplateTree"));
+  const sections = tables.flatMap((t) => t.columns.flatMap((c) => c.sections));
+  sections[0].items.push({ id: null, key: "blocked", title: "Blocked?", type: 5, validatingRegex: null });
+  const withItems = sections.filter((s) => s.items.length > 0 && s !== sections[0]);
+  if (withItems.length > 0) withItems[withItems.length - 1].items.pop();
+  bru.setVar("templateTablesJson", JSON.stringify(tables));
 }
 
 docs {
-  Run "3. Get Project" first. This replaces the Task template of {{projectId}}: keeps
-  description/comments/priority, adds a new "blocked" Checkbox field, and - because "complexity" and
-  "time-expected"/"time-spent" are left out - deletes those fields (and, if Items/9 already ran, their
-  now-orphaned ItemFieldValue rows).
+  Run "1. Get Project" first. The whole template tree is replaced in one call: elements with an id are
+  updated, elements without an id are created, elements missing from the body are deleted (an attribute
+  is deleted together with its ItemFieldValue rows - the response returns "deletedFieldValues").
+  The order of the lists is the order of the elements.
 
-  Try setting columnStart: 10 on a field with columnCount: 4 to see the grid-bounds validation reject
-  it ("... extends past the template's 4 columns"), or two fields with the same "key" to see the
-  duplicate-key check.
+  Things to try on purpose: a column with "width": 0, a table with no columns, or two attributes with
+  the same "key" (all rejected). A width sum other than 12 is NOT rejected - it is only expected.
 }

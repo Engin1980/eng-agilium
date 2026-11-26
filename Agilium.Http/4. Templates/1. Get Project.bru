@@ -1,7 +1,7 @@
 meta {
-  name: 3. Get Project
+  name: 1. Get Project
   type: http
-  seq: 3
+  seq: 1
 }
 
 get {
@@ -10,15 +10,20 @@ get {
   auth: none
 }
 
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
 script:post-response {
   if (res.status === 200) {
-    for (const field of res.body.items) {
-      bru.setVar(`taskField_${field.key}`, field.id);
-    }
+    // keep the whole tree (tables > columns > sections > items) for "2. Update Project"
+    bru.setVar("taskTemplateTree", JSON.stringify(res.body.tables));
   }
 }
 
 docs {
-  ItemType 1 = Task. Captures each field's id (taskField_description etc.) - used by
-  "4. Update Project" and by Items/9. Set Field Value On Task.
+  Returns the Task template (item type 1) of {{projectId}} as a tree: tables -> columns (width) ->
+  sections (title) -> attributes (id, key, title, type 1-7, validatingRegex), each list ordered by its
+  OrderIndex. Run "Projects/1. Create" first. Global templates are not editable and have no endpoint -
+  each project owns a copy created from them.
 }

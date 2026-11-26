@@ -12,12 +12,13 @@ get {
 
 script:post-response {
   if (res.status === 200) {
-    const descriptionField = res.body.fields.find((f) => f.key === "description");
+    const fields = res.body.tables.flatMap((t) => t.columns.flatMap((c) => c.sections.flatMap((s) => s.items)));
+    const descriptionField = fields.find((f) => f.key === "description");
     if (descriptionField) bru.setVar("taskDescriptionFieldId", descriptionField.templateItemId);
   }
 }
 
 docs {
-  Returns the task's template fields merged with its (currently empty) values, and captures the
+  Returns the task's template tree (tables > columns > sections > attributes) merged with its (currently empty) values, and captures the
   "description" field's id into {{taskDescriptionFieldId}} for the next request.
 }

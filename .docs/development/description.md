@@ -1,4 +1,4 @@
-# Program descripiton
+# Program description
 
 ## Funkcionalita 
 
@@ -41,11 +41,11 @@ Základní popis:
 Následující body upřesňují výše uvedené user stories (odpovědi na otevřené otázky):
 
 * **Generická feature / generická user-story** - na projekt existuje nejvýše jedna generická feature (kontejner pro user-story bez konkrétní feature) a nejvýše jedna generická user-story (kontejner pro tasky/bugy bez konkrétní user-story). Vznikají **líně** (lazy) - až ve chvíli, kdy je poprvé potřeba (vznikne první osiřelá user-story/task), ne automaticky při založení projektu. V UI jsou **viditelné** (uživatel je uvidí jako běžnou položku, např. "Bez feature" / "Bez user-story"), ale nejde je přejmenovat ani smazat - slouží jen jako pevný "koš" pro nezatříděné položky.
-* **Typy položek** - hierarchie je Feature → User-story → Task/Bug. Typ `Epic` se ruší/slučuje do `Feature` - v systému, pojmenování i v kódu (enum `ItemType`) se používá výhradně "Feature" (žádná zvláštní úroveň nad feature, slovo "Epic" se má odstranit úplně). Aktuálně je `Epic` v `ItemType` enumu pořád vedená jako samostatná hodnota vedle `Feature` - je potřeba ji z enumu odstranit (vč. EF migrace).
-* **Rozvržení polí šablony** - aktuální a závazné zadání je v `layout-templates.md`; **nahrazuje** dřívější rozhodnutí o pozicování polí pomocí CSS grid (`grid-column`/`grid-row`). Šablona je tvořena jednou nebo víc **tabulkami** pod sebou; každá tabulka má libovolný počet sloupců se zadanou šířkou (int), kde se součet šířek sloupců v rámci jedné tabulky předpokládá 12 (obdoba bootstrap gridu), ale není vynucen (min. šířka sloupce je 1, tabulka má aspoň 1 sloupec; prázdné tabulky a sekce jsou povolené; každá úroveň má `OrderIndex`). Do sloupců se vkládají **sekce** (titulek + příslušný sloupec; v jednom sloupci může být víc sekcí pod sebou; v budoucnu půjde sekce v UI vizuálně oddělit tučným titulkem a sbalit, aby nebyly vidět její atributy). Do sekcí se vkládají **atributy** (titulek + hodnota, zobrazené přes celou šířku sloupce sekce). Cílové entity: `Template` → `TemplateTable` → `TemplateColumn` (`Width`) → `TemplateSection` (`Title`) → `TemplateItem` (atribut); aktuální DB model (CSS grid pozice přímo na `TemplateItem`, `Template.ColumnCount`) tomu neodpovídá a je potřeba ho přepracovat (Story 3X). Atribut je vždy v sekci (titulek sekce smí být prázdný). **Globální** šablony (`Template.ProjectId IS NULL`) jsou dané systémem a v UI se needitují; editují se jen projektové kopie.
-* **Datové typy položek šablony** - dle `layout-templates.md` (aktuální a závazné zadání, **nahrazuje** předchozí řádek) může "hodnotový" atribut nabývat pouze z uzavřeného výčtu pěti typů: víceřádkový text, jednořádkový text, celé číslo, desetinné číslo, true/false. Vedle těchto pěti typů existují ještě dva speciální typy atributu: `Comments` - komplexní prvek, který slouží k zobrazení/zadávání komentářů (diskuze) k položce, a `LabelOnly` - čistě textový popisek/poznámka bez jakéhokoliv vstupu. Současný `TemplateItemType` (`InlineText`, `NextlineText`, `NextlineTextArea`, `InlineInt`, `NextlineInt`, `InlineDouble`, `NNextlineDouble`, `Comments`, `Untemplated`, `Checkbox`, `LabelOnly`) je potřeba zúžit/přemapovat na těchto 7 hodnot: `SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`, `Comments`, `LabelOnly`. Rozlišení Inline/Nextline odpadá (titulek atributu se zobrazuje samostatně a hodnota přes celou šířku sloupce sekce), `Checkbox` se slučuje do `Boolean`, `Untemplated` se slučuje do `LabelOnly`. `Comments` bude mít speciální komponentu pro práci s komentáři (zatím se ukládá jako prostý text), `LabelOnly` se používá jen pro popisek bez hodnoty.
-* **Terminologie stavů** - "ACTIVE" a "InProgress" jsou totéž; v systému (kód, enum `WorkflowStateType`) se má používat výhradně `Active`, `InProgress` se má přejmenovat.
-* **Datumy sprintu** - sprint má pouze jeden pár datumů, `StartDateTime`/`EndDateTime` ("od-do" z user stories). Aktuální model `Sprint` navíc obsahuje `ExpectedStartDateTime`/`ExpectedEndDateTime` (plánované vs. skutečné datumy) - tato pole se mají z modelu odstranit (vč. EF migrace), plán/skutečnost se nerozlišuje.
+* **Typy položek** - hierarchie je Feature → User-story → Task/Bug. Typ `Epic` se ruší/slučuje do `Feature` - v systému, pojmenování i v kódu (enum `ItemType`) se používá výhradně "Feature" (žádná zvláštní úroveň nad feature, slovo "Epic" se má odstranit úplně). `Epic` už je z enumu `ItemType` odstraněn (vč. EF migrace).
+* **Rozvržení polí šablony** - aktuální a závazné zadání je v `layout-templates.md`; **nahrazuje** dřívější rozhodnutí o pozicování polí pomocí CSS grid (`grid-column`/`grid-row`). Šablona je tvořena jednou nebo víc **tabulkami** pod sebou; každá tabulka má libovolný počet sloupců se zadanou šířkou (int), kde se součet šířek sloupců v rámci jedné tabulky předpokládá 12 (obdoba bootstrap gridu), ale není vynucen (min. šířka sloupce je 1, tabulka má aspoň 1 sloupec; prázdné tabulky a sekce jsou povolené; každá úroveň má `OrderIndex`). Do sloupců se vkládají **sekce** (titulek + příslušný sloupec; v jednom sloupci může být víc sekcí pod sebou; v budoucnu půjde sekce v UI vizuálně oddělit tučným titulkem a sbalit, aby nebyly vidět její atributy). Do sekcí se vkládají **atributy** (titulek + hodnota, zobrazené přes celou šířku sloupce sekce). Cílové entity: `Template` → `TemplateTable` → `TemplateColumn` (`Width`) → `TemplateSection` (`Title`) → `TemplateItem` (atribut); DB model tomuto tvaru odpovídá (Story 3X, CSS grid z dřívější varianty je pryč). Atribut je vždy v sekci (titulek sekce smí být prázdný). **Globální** šablony (`Template.ProjectId IS NULL`) jsou dané systémem a v UI se needitují; editují se jen projektové kopie.
+* **Datové typy položek šablony** - dle `layout-templates.md` (aktuální a závazné zadání, **nahrazuje** předchozí řádek) může "hodnotový" atribut nabývat pouze z uzavřeného výčtu pěti typů: víceřádkový text, jednořádkový text, celé číslo, desetinné číslo, true/false. Vedle těchto pěti typů existují ještě dva speciální typy atributu: `Comments` - komplexní prvek, který slouží k zobrazení/zadávání komentářů (diskuze) k položce, a `LabelOnly` - čistě textový popisek/poznámka bez jakéhokoliv vstupu. `TemplateItemType` má přesně těchto 7 hodnot: `SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`, `Comments`, `LabelOnly`. Rozlišení Inline/Nextline odpadlo (titulek atributu se zobrazuje samostatně a hodnota přes celou šířku sloupce sekce), `Checkbox` je sloučen do `Boolean`, `Untemplated` do `LabelOnly`. `Comments` bude mít speciální komponentu pro práci s komentáři (zatím se ukládá jako prostý text), `LabelOnly` se používá jen pro popisek bez hodnoty.
+* **Terminologie stavů** - "ACTIVE" a "InProgress" jsou totéž; v systému (kód, enum `WorkflowStateType`) se používá výhradně `Active` (přejmenování z `InProgress` je hotové).
+* **Datumy sprintu** - sprint má pouze jeden pár datumů, `StartDateTime`/`EndDateTime` ("od-do" z user stories). Dřívější pole `ExpectedStartDateTime`/`ExpectedEndDateTime` byla z modelu odstraněna (vč. EF migrace), plán/skutečnost se nerozlišuje.
 
 ## Architektura
 
@@ -63,37 +63,30 @@ Backend je aplikace v .NET (ASP.NET Core minimal API). Endpointy jsou organizova
 * Handlery i endpointy se do DI registrují automaticky reflexí nad sestavením (viz `Program.cs`), stačí tedy dodržet výše popsanou strukturu a nový endpoint se sám "zapojí".
 * Validace vstupů se dělá vlastními atributy z `Exceptions\Validation` (ne standardními .NET DataAnnotations), chybové stavy se hlásí vyhazováním typových výjimek z `Exceptions` (`EntityNotFoundException`, `BadRequestException`, `ValidationException` atd.), které zpracovává `GlobalExceptionHandler`.
 
-Modelové třídy jsou v `Model`, entity mapované do databáze jsou v `Model\Db` (např. `Project`, `Item`, `Sprint`, `SprintItem`, `Template`/`TemplateColumn`/`TemplateItem`, `Role`, `Membership`, `WorkflowState`).
+Modelové třídy jsou v `Model`, entity mapované do databáze jsou v `Model\Db` (např. `Project`, `Item`, `Sprint`, `SprintItem`, `Template`/`TemplateTable`/`TemplateColumn`/`TemplateSection`/`TemplateItem`, `ItemFieldValue`, `Role`, `Membership`, `WorkflowState`).
+
+### Nasazení / lokální běh
+
+`Agilium.Db\docker-compose.yml` spouští jen SQL Server; kořenový `docker-compose.yml` (s `Dockerfile` v `Agilium.Be` a `Agilium.Fe`) spouští celý stack (`db`, `be`, `fe`). `Agilium.Http` je Bruno kolekce pro ruční testování BE API.
 
 ### Frontend
 
-Frontend je React + TypeScript (Vite) aplikace. Zamýšlená (cílová) architektura je třívrstvá segmentace:
+Frontend je React + TypeScript (Vite) aplikace s třívrstvou segmentací:
 
 * **routes** (`src\routes`) - stránky napojené na file-based routing přes TanStack Router; obsahují layout stránky a napojení na data (přes TanStack Query) a komponenty.
-* **components** (`src\components`) - `global` obsahuje znovupoužitelné obecné prvky (dialogy, formulářové prvky, loadery apod.), `specific` je určen pro komponenty vázané na konkrétní doménovou funkcionalitu (např. kanban karta, detail feature/user-story/tasku, editor šablony).
-* **services** - vrstva volání backendového API (fetch/HTTP klient) a mapování na TanStack Query hooky, přes kterou by routes/components měly komunikovat s BE. Tato vrstva zatím v repozitáři neexistuje a je potřeba ji doplnit (viz sekce "Co má AI ještě dodělat" níže).
+* **components** (`src\components`) - `global` obsahuje znovupoužitelné obecné prvky (dialogy, formulářové prvky, loadery apod.), `specific` je určen pro komponenty vázané na konkrétní doménovou funkcionalitu (strom položek, detail položky dle šablony, layout a editor šablony, kanban sprintu, editor workflow).
+* **services** (`src\services`) - vrstva volání backendového API (`http-client.ts` + `*-api.ts` a TanStack Query hooky `*-queries.ts` per doména), přes kterou routes/components komunikují s BE.
 
-Aktuální stav frontendu je zatím převážně scaffold/prototyp: routy pracují s mockovanými daty přímo v komponentě (např. `routes\projects\index.tsx`), bez reálného napojení na BE endpointy.
+Hotové je přihlášení a registrace, seznam projektů, detail projektu se stromem položek, detail položky dle šablony, pohled přes sprinty s kanbanem a nastavení projektu (editor šablon, editor workflow).
 
-## Co má AI ještě dodělat
+## Co ještě zbývá
 
-Následující body popisují známé mezery mezi zadáním/DB modelem a aktuální implementací; slouží jako backlog pro další práci AI na projektu.
+Podrobný stav je v `plan.md` / `task-stories.md`; hlavní otevřené body:
 
-### Backend
-
-* **Sprint endpointy** - v `Model\Db` existují entity `Sprint` a `SprintItem`, ale ve `Features` pro ně zatím neexistuje žádná složka/endpointy. Je potřeba doplnit minimálně:
-  * CRUD nad sprinty v rámci projektu (vytvoření, úprava, výpis sprintů projektu, případně smazání/zrušení).
-  * přiřazení/odebrání položky (tasku) na/ze sprintu (`SprintItem`) - podle zadání se feature/user-story na sprint "objevuje" automaticky, pokud na něj má přiřazený alespoň jeden svůj task, takže půjde spíš o endpoint pracující nad tasky.
-  * endpoint pro načtení kanban dat konkrétního sprintu (položky rozřazené dle stavu/`WorkflowState`).
-* **Odvozování stavu feature/user-story** - v modelu (`Item`) zatím není vidět implementace pravidla "stav rodiče = odvozeno ze stavů dětí" popsaného výše v sekci Funkcionalita; je potřeba doplnit logiku (buď při čtení/promítnutí do DTO, nebo jako výpočet při načítání stromu feature → user-story → task).
-* **Šablony položek** - entity šablon v DB (CSS grid varianta ze Story 3) neodpovídají rozložení popsanému v `layout-templates.md` (tabulky → sloupce o šířce → sekce → atributy) - model, endpointy a FE je potřeba přepracovat (Story 3X) a následně doplnit UI pro editaci projektových šablon v nastavení projektu (Story 3Y). Hodnoty atributů se ukládají do `ItemFieldValue`.
-* **Autentizace/autorizace** - JWT infrastruktura a role/oprávnění (`Role`, `Membership`, `IRoleAssignment`) v BE existují, ale konkrétní požadavky na registraci/správu uživatelů, reset hesla apod. nejsou definitivně specifikované - bude upřesněno.
-
-### Frontend
-
-* **Napojení na reálné API** - založit `services` vrstvu (HTTP klient + TanStack Query hooky) a nahradit mock data v routách (např. `routes\projects\index.tsx`) reálnými voláními na BE endpointy.
-* **Pohled přes sprinty** - chybí stránka/routa se seznamem sprintů projektu a kanban view pro konkrétní sprint (sloupce dle `WorkflowState`, karty = tasky/bugy).
-* **Detail položky (feature/user-story/task) dle šablony** - komponenta, která na základě šablony projektu (`Template`/`TemplateTable`/`TemplateColumn`/`TemplateSection`/`TemplateItem`) dynamicky vyrenderuje editovatelný formulář pro danou položku; editace samotné šablony se dělá v nastavení projektu (jen projektové šablony, globální se needitují).
-* **Správa členství a rolí v projektu** - UI nad již existujícími BE endpointy `Features\Projects\AssignMember.cs` / `UnassignMember.cs` (přidání/odebrání uživatele z projektu, přiřazení role).
-* **Přihlášení/autentizace na FE** - zatím jen jako TODO, dokud nebude upřesněno finální řešení autentizace.
-* **`components\specific`** - složka je zatím prázdná; postupně do ní doplňovat doménové komponenty vzniklé při implementaci výše uvedených bodů.
+* **Autorizace** - `RequiredRoles` / `ValidateRequiredRoles` v `GenericEndpoint` zatím nevynucuje oprávnění (`Role`, `Membership`, `IRoleAssignment` existují).
+* **Členové a role projektu** - BE výpis členů a CRUD vlastních rolí (`Features\Roles\*`), FE UI pro správu členů (nad existujícími `AssignMember`/`UnassignMember`).
+* **Účty** - reset hesla a aktivace/deaktivace účtu; konkrétní podoba není specifikována.
+* **Smazání projektu** - potvrdit se zadavatelem, zda je potřeba (existuje `UpdateStatus`).
+* **`Comments`** - speciální komponenta (diskuze), zatím prostý text.
+* **Testy** - žádný testovací projekt zatím neexistuje.
+* **Bezpečnost/konfigurace** - viz `plan.md`, Krok 1 (commitnuté SMTP údaje, konfigurace kontejneru mimo lokální vývoj).

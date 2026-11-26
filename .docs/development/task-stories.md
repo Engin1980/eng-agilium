@@ -1,11 +1,11 @@
 # Task stories
 
-Přeorganizovaná verze `tasks.md` — místo rozpadu podle vrstvy (BE/FE/DB) jde o pořadí podle toho, jak
+Přeorganizovaná verze (již smazaného) `tasks.md` — místo rozpadu podle vrstvy (BE/FE/DB) jde o pořadí podle toho, jak
 by šla funkcionalita postupně dodávat a používat z pohledu uživatele: nejdřív založit projekt, pak do
 něj přidávat obsah (features/user-story/tasky), pak šablony a detail položky, pak sprinty a kanban,
 pak správu členů, a nakonec napříč tím vším autorizaci. U každé story je BE/DB/FE rozpad, protože bez
 alespoň minimálního BE/FE není story reálně použitelná. Podrobný technický rozpad (konkrétní routy,
-`Command`/`Result` tvary, soubory) zůstává v `tasks.md` — tady je hlavně pořadí a vazby mezi kroky.
+`Command`/`Result` tvary, soubory) je v `plan.md` — tady je hlavně pořadí a vazby mezi kroky.
 
 Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimplementovat.
 
@@ -21,6 +21,7 @@ Legenda: `[x]` hotovo (zkontrolovat/otestovat), `[ ]` chybí / je potřeba doimp
       ostatní vývojáře.
 - [x] `Agilium.Db\.gitignore` — obsahuje `.env`, takže se reálné heslo negituje (ověřeno —
       `.env` není v `git ls-files`, `.env.example`/`docker-compose.yml`/`.gitignore` ano).
+- [x] Kořenový `docker-compose.yml` (`db`, `be`, `fe`) + kořenový `.env.example` — celý stack v kontejnerech.
 
 ## Story 0 — Úklid modelu před dalším rozvojem
 
@@ -75,7 +76,7 @@ Základní vstupní bod do aplikace — bez projektu nejde dělat nic dalšího.
       `useCreateProject` (vč. zobrazení chyby z API a invalidace seznamu po úspěchu).
 - [x] FE: routa detailu projektu (`routes\projects\$id\index.tsx`) — zobrazuje název, stav a popis
       projektu (načteno přes `useProject`, zatím bez samostatného BE `GET /projects/{id}` endpointu —
-      ten nebyl v `tasks.md` požadován, detail se dohledává z existujícího seznamu).
+      ten nebyl v původním `tasks.md` požadován, detail se dohledává z existujícího seznamu).
 
 ## Story 2 — Uživatel v projektu buduje strom Feature → User-story → Task/Bug
 
@@ -182,7 +183,7 @@ endpointy a renderování. Globální šablony se **needitují** (jsou dané sys
       zahodí, šablony vznikají jen kopírováním z globálních).
 - [x] BE: `DefaultTemplates.cs` (globální šablony) a `Projects\Create.cs` (kopie celého stromu do projektu)
       v novém tvaru.
-- [x] BE: přepsat `Templates\Get.cs`/`Update.cs` na stromovou strukturu (viz `tasks.md`, "Backend — šablony");
+- [x] BE: přepsat `Templates\Get.cs`/`Update.cs` na stromovou strukturu (viz původní `tasks.md`, "Backend — šablony");
       validace sdílená v `TemplateGridValidation` přejmenovat/přepsat (≥ 1 sloupec, šířka ≥ 1, unikátní
       `Key`, platný typ; součet 12 se nevynucuje).
 - [x] BE: odstranit editaci globální šablony (`GetGlobal.cs`, `UpdateGlobal.cs`, `BaseRoute.Templates`).
@@ -384,7 +385,7 @@ lidech.
 - [x] BE: odebrání členství vč. kontroly, že uživatel nemá přiřazené položky (`Features\Projects\UnassignMember.cs`).
 - [ ] BE: výpis členů projektu (`Features\Projects\ListMembers.cs`) — dnes dostupné jen nepřímo přes
       `ListItems` (assignee).
-- [ ] BE: CRUD vlastních rolí projektu nad rámec Owner/Guest (`Features\Projects\Roles\*.cs`).
+- [ ] BE: CRUD vlastních rolí projektu nad rámec Owner/Guest (`Features\Roles\*.cs`).
 - [ ] FE: UI pro seznam členů, přidání/změnu role, odebrání člena (nad `AssignMember`/`UnassignMember`
       a novými endpointy).
 
@@ -412,7 +413,10 @@ naslepo.
 
 - [ ] Automatizované testy (unit/integration) — v repozitáři zatím žádný testovací projekt neexistuje;
       má smysl začít zakládat průběžně s výše uvedenými story, ne až na konci.
-- [ ] `Agilium.Db` obsahuje jen `docker-compose.yml` — zkontrolovat, zda není potřeba doplnit seed data
-      / inicializační skripty (užitečné hlavně pro Story 1-2, ať je s čím testovat).
-- [ ] `src\components\specific` — postupně doplňovat doménové komponenty vzniklé při Story 2-5 (kanban
-      karta, formulář položky dle šablony, editor šablony, správa členů).
+- [x] Kořenový `docker-compose.yml` spouští celý stack (`db`, `be`, `fe`; `Dockerfile` v `Agilium.Be` a
+      `Agilium.Fe`) a `Agilium.Http` je Bruno kolekce pro ruční testování API.
+- [ ] Zkontrolovat, zda není potřeba doplnit seed data / inicializační skripty (globální šablony se
+      seedují při startu BE; užitečné hlavně pro Story 1-2, ať je s čím testovat).
+- [ ] `src\components\specific` — doplnit zbývající doménovou komponentu pro správu členů (Story 5);
+      komponenty ze Story 2-4 (strom, detail dle šablony, editor šablony, kanban, editor workflow) existují.
+- [ ] Viz `plan.md`, Krok 1 — SMTP údaje a `.dockerignore` (původní nález z `task-todo.md`).
