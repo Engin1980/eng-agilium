@@ -29,8 +29,7 @@ public class Handler(AppDbContext dbContext, TokenService tokenService, AppSetti
     var password = request.Password;
     var appUser =
       await dbContext
-        .AppUsers //
-        .AsNoTracking()
+        .AppUsers // tracked on purpose: the failed-login counter is updated below
         .Include(q => q.Memberships)
           .ThenInclude(m => m.Role)
         .FirstOrDefaultAsync(u => u.Email == email, cancellationToken: cancellationToken)

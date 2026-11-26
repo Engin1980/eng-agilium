@@ -14,7 +14,7 @@ public class Handler(TokenService tokenService) : GenericHandler<Command, EmptyP
     CancellationToken cancellationToken
   )
   {
-    if (request.RefreshToken != null)
+    if (!string.IsNullOrEmpty(request.RefreshToken))
       await tokenService.RevokeRefreshTokenAsync(request.RefreshToken);
 
     return new EmptyResult();
@@ -40,7 +40,9 @@ public class EndPoint : GenericEndpoint<Command, EmptyParameters, Handler>
     CancellationToken cancellationToken
   )
   {
-    await handler.HandleAsync(command, parameters, cancellationToken);
+    // the refresh token lives in an httpOnly cookie (the FE cannot read it); the body is only a fallback
+    var refreshToken = httpContext.Request.Cookies["refreshToken"] ?? command?.RefreshToken ?? "";
+    await handler.HandleAsync(new Command(refreshToken), parameters, cancellationToken);
 
     Utils.AppendRefreshTokenCookie("", -1, httpContext);
 

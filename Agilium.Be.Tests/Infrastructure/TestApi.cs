@@ -14,6 +14,9 @@ public sealed record ApiResponse(HttpStatusCode Status, string Body, string? Err
     ?? throw new InvalidOperationException($"Cannot read '{Body}' as {typeof(T).Name}.");
 
   public JsonElement Json => JsonDocument.Parse(Body).RootElement;
+
+  /// <summary>The <c>id</c> of an <c>IdResult</c> body.</summary>
+  public int Id => Json.GetProperty("id").GetInt32();
 }
 
 /// <summary>Thin client over the in-memory API; one instance per (anonymous or logged-in) caller.</summary>
@@ -90,7 +93,7 @@ public sealed class TestApi
     var response = await Anonymous().Post("auth/users", new { email, name, surname, password });
     if (response.Code != 201)
       throw new InvalidOperationException($"Registration failed: {response.Code} {response.Body}");
-    return response.As<int>();
+    return response.Id;
   }
 
   public async Task<ApiResponse> LoginRawAsync(string email, string password = DefaultPassword) =>
@@ -112,6 +115,31 @@ public sealed class TestApi
     var response = await Post("projects", new { title = title ?? $"Project {Guid.NewGuid():N}", description });
     if (response.Code != 201)
       throw new InvalidOperationException($"Project creation failed: {response.Code} {response.Body}");
-    return response.As<int>();
+    return response.Id;
+  }
+
+  public async Task<int> CreateItemAsync(int projectId, string title, int type, int? parentId = null)
+  {
+    var response = await Post("projects/items", new { title, type, projectId, parentId });
+    if (response.Code != 201)
+      throw new InvalidOperationException($"Item creation failed: {response.Code} {response.Body}");
+    return response.Id;
+  }
+
+  public async Task<int> CreateSprintAsync(int projectId, string? title = null, DateTime? start = null, DateTime? end = null)
+  {
+    var response = await Post(
+      "projects/sprints",
+      new
+      {
+        projectId,
+        title = title ?? $"Sprint {Guid.NewGuid():N}",
+        startDateTime = start,
+        endDateTime = end,
+      }
+    );
+    if (response.Code != 201)
+      throw new InvalidOperationException($"Sprint creation failed: {response.Code} {response.Body}");
+    return response.Id;
   }
 }
