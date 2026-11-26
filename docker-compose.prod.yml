@@ -1,0 +1,56 @@
+# Generic production stack: db + be + fe (static build served by nginx). No reverse proxy / TLS / backups here -
+# put your own (Caddy, Nginx, a cloud load balancer...) in front of `be` and `fe`; the refresh-token cookie is
+# `Secure`, so the application must be reached over HTTPS.
+#
+# Usage: copy .env.prod.example to .env, fill it in, then `docker compose -f docker-compose.prod.yml up -d --build`.
+# Every required variable uses `:?`, so a missing value stops the start with a clear message.
+name: eng-agilium-prod
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${DB_PASSWORD:?DB_PASSWORD is required}"
+    volumes:
+      - eng_agilium_mssql_data:/var/opt/mssql
+    restart: unless-stopped
+    # no `ports:` - the database is reachable only from the be service
+
+  be:
+    build:
+      context: ./Agilium.Be
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=eng-agilium-db;User Id=sa;Password=${DB_PASSWORD:?DB_PASSWORD is required};TrustServerCertificate=True;"
+      AppSettings__UseSwagger: "false"
+      AppSettings__FrontendBaseUrl: "${FRONTEND_BASE_URL:?FRONTEND_BASE_URL is required}"
+      AppSettings__Security__Jwt__Key: "${JWT_KEY:?JWT_KEY is required}"
+      AppSettings__Security__Turnstile__Enabled: "true"
+      AppSettings__Security__Turnstile__SecretKey: "${TURNSTILE_SECRET_KEY:?TURNSTILE_SECRET_KEY is required}"
+      AppSettings__Email__Smtp__Host: "${SMTP_HOST:?SMTP_HOST is required}"
+      AppSettings__Email__Smtp__Port: "${SMTP_PORT:-587}"
+      AppSettings__Email__Smtp__Username: "${SMTP_USERNAME:?SMTP_USERNAME is required}"
+      AppSettings__Email__Smtp__Password: "${SMTP_PASSWORD:?SMTP_PASSWORD is required}"
+    ports:
+      - "${BE_PORT:-5049}:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  fe:
+    build:
+      context: ./Agilium.Fe
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: "${VITE_API_URL:?VITE_API_URL is required}"
+    ports:
+      - "${FE_PORT:-8080}:80"
+    depends_on:
+      - be
+    restart: unless-stopped
+
+volumes:
+  eng_agilium_mssql_data:

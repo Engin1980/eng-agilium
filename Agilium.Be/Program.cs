@@ -40,6 +40,11 @@ class BuildInitializer(WebApplicationBuilder builder)
     ConfigureLogging();
     ConfigureConfigurations();
     EnsureAppSettingsNotNull();
+    StartupConfigurationValidator.EnsureValid(
+      AppSettings!,
+      builder.Configuration.GetConnectionString("DefaultConnection"),
+      builder.Environment
+    );
     ConfigureCors();
     ConfigureDatabase();
     ConfigureServices();
@@ -238,6 +243,11 @@ class AppInitializer(WebApplication app, AppSettings appSettings)
 
     logger.LogInformation("Initializing database...");
     InitializeDatabase();
+    if (DevSeed.IsEnabled(app.Configuration, app.Environment))
+    {
+      logger.LogWarning("SEED_DEMO_DATA is on: creating demo data ({Email})", DevSeed.DemoEmail);
+      DevSeed.RunAsync(app.Services).GetAwaiter().GetResult();
+    }
 
     logger.LogInformation("Configuring middleware and endpoints...");
     app.UseExceptionHandler();

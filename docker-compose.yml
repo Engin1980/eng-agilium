@@ -22,10 +22,27 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Server=db,1433;Database=eng-agilium-db;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
+      AppSettings__FrontendBaseUrl: "http://localhost:${FE_PORT:-5173}"
+      AppSettings__Email__Smtp__Host: "${SMTP_HOST:-mailpit}"
+      AppSettings__Email__Smtp__Port: "${SMTP_PORT:-1025}"
+      AppSettings__Email__Smtp__Username: "${SMTP_USERNAME:-}"
+      AppSettings__Email__Smtp__Password: "${SMTP_PASSWORD:-}"
+      AppSettings__Email__DebugRecipient: "${SMTP_DEBUG_RECIPIENT:-}"
+      SEED_DEMO_DATA: "${SEED_DEMO_DATA:-false}"
     ports:
       - "${BE_PORT:-5049}:8080"
     depends_on:
       - db
+      - mailpit
+    restart: unless-stopped
+
+  # Local mail catcher: every e-mail the BE sends in development ends up here (http://localhost:8025).
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: eng-agilium-mailpit
+    ports:
+      - "${MAILPIT_WEB_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
     restart: unless-stopped
 
   fe:

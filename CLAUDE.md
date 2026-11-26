@@ -35,7 +35,15 @@ startup and are not editable; each project gets a copy at creation and only the 
   from `Agilium.Db`, using `.env` copied from `.env.example` for `DB_PASSWORD`).
 - Root `docker-compose.yml` (+ `Dockerfile` in `Agilium.Be` and `Agilium.Fe`, root `.env.example` with
   `DB_PASSWORD`, `DB_PORT`, `BE_PORT`, `FE_PORT`) — runs the whole stack (`db`, `be`, `fe`) in containers.
-  The `be` service uses `ASPNETCORE_ENVIRONMENT=Development`.
+  The `be` service uses `ASPNETCORE_ENVIRONMENT=Development`; a `mailpit` service catches e-mails (web UI on
+  port 8025); SMTP settings come from `.env` (`SMTP_*`), `SEED_DEMO_DATA=true` creates `demo@example.com` /
+  `Demo-1234!` with a demo project (`Services\DevSeed.cs`, Development only, idempotent).
+- `docker-compose.prod.yml` + `.env.prod.example` + `Agilium.Fe\Dockerfile.prod` — generic production stack
+  (`ASPNETCORE_ENVIRONMENT=Production`, every value from `.env`, DB port not published, FE built and served by
+  nginx). No reverse proxy/TLS/backups yet (deployment target unknown); the refresh cookie is `Secure`, so put
+  HTTPS in front. Outside Development/Testing the BE refuses to start with insecure defaults
+  (`Services\StartupConfigurationValidator.cs`: JWT key, Turnstile, SMTP, connection string).
+- `scripts\check-be-image.ps1` — builds the BE image and verifies no `appsettings.Development.json`/`.env` leaks into it.
 - `Agilium.Http` — Bruno collection for manual/regression testing of the BE API (see its `README.md`).
 
 - `Agilium.Be.Tests` — xUnit tests (unit + integration). Integration tests host the whole API in memory

@@ -424,3 +424,7 @@ naslepo.
 - [ ] `src\components\specific` — doplnit zbývající doménovou komponentu pro správu členů (Story 5);
       komponenty ze Story 2-4 (strom, detail dle šablony, editor šablony, kanban, editor workflow) existují.
 - [ ] Viz `plan.md`, Krok 1 — SMTP údaje a `.dockerignore` (původní nález z `task-todo.md`).
+- [x] Krok 1 (`plan.md`): `.dockerignore` (BE i FE), SMTP z `.env` + Mailpit, opravené životnosti tokenů
+      (access 15 min / refresh 7 dní, `RefreshTokenLength` 32), startup validace konfigurace,
+      `docker-compose.prod.yml` + `Dockerfile.prod`, `DevSeed` (`SEED_DEMO_DATA=true`). Zbývá na uživateli:
+      změnit heslo k SMTP účtu z lokálního `appsettings.Development.json`.
