@@ -34,6 +34,19 @@ public sealed class ApiFactory(SqlServerFixture sql) : WebApplicationFactory<Pro
     builder.UseSetting("AppSettings:Email:Smtp:Password", "test");
   }
 
+  /// <summary>Runs <paramref name="action"/> with a fresh <see cref="AppDbContext"/> (direct DB access for asserts/arrange).</summary>
+  public async Task WithDbAsync(Func<AppDbContext, Task> action)
+  {
+    using var scope = Services.CreateScope();
+    await action(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+  }
+
+  public async Task<T> WithDbAsync<T>(Func<AppDbContext, Task<T>> action)
+  {
+    using var scope = Services.CreateScope();
+    return await action(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+  }
+
   /// <summary>Wipes all data (except migration history) and re-seeds the global templates.</summary>
   public async Task ResetDatabaseAsync()
   {
