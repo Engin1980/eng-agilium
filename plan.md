@@ -161,7 +161,7 @@ Všechny sprint endpointy používají `BaseRoute.Projects` (samostatné `BaseRo
 - [x] 0.1 `Agilium.Be.Tests` (xUnit, Testcontainers, Respawn, `TestApi`, jednotkové testy)
 - [x] 0.2 FE Vitest + Testing Library + MSW
 - [x] 0.3 Zpětné pokrytí hotových funkcí (Auth, Projects, Items, Templates, FieldValues, Sprints, Workflow, Migrations)
-- [x] 0.4 `scripts	est-all.ps1` / `.sh`, ručně spouštěný `.github\workflows\ci.yml`
+- [x] 0.4 `scripts\test-all.ps1` / `.sh`, ručně spouštěný `.github\workflows\ci.yml`
 - [ ] FE testy: `template-layout`, `sprint-board`, `auth-context` (z výčtu v 0.2 zatím pokryto: `template-draft`, `http-client`, `attribute-input`, `workflow-editor`)
 
 
