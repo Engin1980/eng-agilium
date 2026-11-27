@@ -44,3 +44,14 @@ export function useCreateProject() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsKey }),
   });
 }
+
+export function useDeleteProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => projectsApi.deleteProject(id),
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: [...projectsKey, id] });
+      return queryClient.invalidateQueries({ queryKey: projectsKey });
+    },
+  });
+}

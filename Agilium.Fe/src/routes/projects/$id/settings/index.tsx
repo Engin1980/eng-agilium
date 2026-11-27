@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import * as React from "react";
 import { ItemType } from "../../../../services/items-api";
+import { DeleteProjectSection } from "../../../../components/specific/delete-project-section";
 import { useAuth } from "../../../../contexts/auth-context";
 
 export const Route = createFileRoute("/projects/$id/settings/")({
@@ -26,6 +27,7 @@ function RouteComponent() {
 
 function ProjectSettingsPage() {
   const { id } = useParams({ from: Route.id });
+  const navigate = useNavigate();
 
   return (
     <div className="p-6">
@@ -70,6 +72,8 @@ function ProjectSettingsPage() {
           <p className="text-sm text-gray-500">Systémové a vlastní role s oprávněními.</p>
         </li>
       </ul>
+
+      <DeleteProjectSection projectId={Number(id)} onDeleted={() => navigate({ to: "/projects" })} />
     </div>
   );
 }

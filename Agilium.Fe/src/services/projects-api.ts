@@ -41,3 +41,7 @@ export type CreateProjectCommand = { title: string; description: string };
 export function createProject(command: CreateProjectCommand): Promise<{ id: number }> {
   return apiRequest<{ id: number }>("/projects", { method: "POST", body: command });
 }
+
+export function deleteProject(id: number): Promise<void> {
+  return apiRequest<void>(`/projects/${id}`, { method: "DELETE" });
+}

@@ -383,10 +383,10 @@ lidech.
 
 - [x] BE: přiřazení/aktualizace role uživatele v projektu (`Features\Projects\AssignMember.cs`).
 - [x] BE: odebrání členství vč. kontroly, že uživatel nemá přiřazené položky (`Features\Projects\UnassignMember.cs`).
-- [ ] BE: výpis členů projektu (`Features\Projects\ListMembers.cs`) — dnes dostupné jen nepřímo přes
+- [x] BE: výpis členů projektu (`Features\Projects\ListMembers.cs`) — dnes dostupné jen nepřímo přes
       `ListItems` (assignee).
-- [ ] BE: CRUD vlastních rolí projektu nad rámec Owner/Guest (`Features\Roles\*.cs`).
-- [ ] FE: UI pro seznam členů, přidání/změnu role, odebrání člena (nad `AssignMember`/`UnassignMember`
+- [x] BE: CRUD vlastních rolí projektu nad rámec Owner/Guest (`Features\Roles\*.cs`).
+- [x] FE: UI pro seznam členů, přidání/změnu role, odebrání člena (nad `AssignMember`/`UnassignMember`
       a novými endpointy).
 
 ## Story 6 — Autentizace a autorizace napříč aplikací
@@ -401,7 +401,7 @@ naslepo.
 - [x] BE: self-service registrace — `Features\AppUsers\Create.cs` (`POST /api/v1/auth/users`) nevyžaduje
       autentizaci a od Story 1 přijímá heslo (viz bonus nález tamtéž), takže funkčně už je to veřejná
       registrace; reset hesla a aktivace/deaktivace účtu zůstávají otevřené (čeká na upřesnění zadání).
-- [ ] BE: dopracovat `ValidateRequiredRoles` (`Features\GenericEndpoint.cs`) a osadit endpointy nad
+- [x] BE: dopracovat `ValidateRequiredRoles` (`Features\GenericEndpoint.cs`) a osadit endpointy nad
       projektovými daty reálnými požadavky na oprávnění (`CanViewProject`, `CanManageProject`,
       `CanViewMembers`, `CanManageMembers`, `CanManageSprints`).
 - [x] FE: přihlašovací obrazovka (`src\routes\login.tsx`, ze Story 1) a nová registrační obrazovka
@@ -421,7 +421,7 @@ naslepo.
       `Agilium.Fe`) a `Agilium.Http` je Bruno kolekce pro ruční testování API.
 - [ ] Zkontrolovat, zda není potřeba doplnit seed data / inicializační skripty (globální šablony se
       seedují při startu BE; užitečné hlavně pro Story 1-2, ať je s čím testovat).
-- [ ] `src\components\specific` — doplnit zbývající doménovou komponentu pro správu členů (Story 5);
+- [x] `src\components\specific` — doplnit zbývající doménovou komponentu pro správu členů (Story 5);
       komponenty ze Story 2-4 (strom, detail dle šablony, editor šablony, kanban, editor workflow) existují.
 - [ ] Viz `plan.md`, Krok 1 — SMTP údaje a `.dockerignore` (původní nález z `task-todo.md`).
 - [x] Krok 1 (`plan.md`): `.dockerignore` (BE i FE), SMTP z `.env` + Mailpit, opravené životnosti tokenů
