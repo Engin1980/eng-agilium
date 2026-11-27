@@ -11,6 +11,22 @@ Implementaci dělá Claude. Pravidla práce platí z `CLAUDE.md` (Handler/Endpoi
 
 ---
 
+## Stav plnění (legenda: `[x]` hotovo, `[ ]` zbývá)
+
+| Krok | Stav |
+|---|---|
+| 0 Testovací infrastruktura | hotovo |
+| 1 Bezpečnost konfigurace | hotovo (zbývá rotace SMTP hesla — uživatel) |
+| 2 Autentizace a autorizace | hotovo (drobné FE dluhy) |
+| 3 Členové, role, pozvánky | hotovo (chybí FE testy `/join` a assignee) |
+| 4 Smazání projektu | hotovo |
+| 5 Správa účtu | hotovo |
+| 6 Comments | odloženo |
+| 7 UX dotažení | volitelné, nezahájeno |
+| 8 Bruno a dokumentace | částečně |
+
+---
+
 ## 1. Východisko — co je hotové a co jsem při kontrole našel
 
 ### 1.1 Hotovo (stručně; detail v `.docs/development/task-stories.md`)
@@ -140,6 +156,15 @@ Všechny sprint endpointy používají `BaseRoute.Projects` (samostatné `BaseRo
 
 ## Krok 0 — Testovací infrastruktura (BE + FE) a lokální spouštění
 
+**Stav: HOTOVO**
+
+- [x] 0.1 `Agilium.Be.Tests` (xUnit, Testcontainers, Respawn, `TestApi`, jednotkové testy)
+- [x] 0.2 FE Vitest + Testing Library + MSW
+- [x] 0.3 Zpětné pokrytí hotových funkcí (Auth, Projects, Items, Templates, FieldValues, Sprints, Workflow, Migrations)
+- [x] 0.4 `scripts	est-all.ps1` / `.sh`, ručně spouštěný `.github\workflows\ci.yml`
+- [ ] FE testy: `template-layout`, `sprint-board`, `auth-context` (z výčtu v 0.2 zatím pokryto: `template-draft`, `http-client`, `attribute-input`, `workflow-editor`)
+
+
 Dnes neexistuje žádný test. Bez nich nelze bezpečně dělat Krok 2 (autorizace zasahuje všechny endpointy).
 Prostředí, kde se pracuje, má Docker (28.5), Node 22 a .NET SDK 10 (projekt cílí na net8.0 — před prvním
 `dotnet test` ověřit `dotnet --list-runtimes`, případně doplnit runtime 8 nebo nastavit `RollForward`).
@@ -223,6 +248,18 @@ Docker (Testcontainers), `dotnet` i `npm`, takže testy skutečně spouštím a 
 
 ## Krok 1 — Bezpečnost konfigurace, kontejnery, drobné dluhy
 
+**Stav: HOTOVO, kromě úkolu pro uživatele**
+
+- [x] `.dockerignore` (BE i FE) + `scripts\check-be-image.ps1`
+- [ ] **Uživatel:** rotace hesla k SMTP účtu z lokálního `appsettings.Development.json`
+- [x] SMTP z `.env` (+ Mailpit v `docker-compose.yml`)
+- [x] Životnosti tokenů (access 15 min, refresh 7 dní)
+- [x] Startup validace konfigurace + testy
+- [x] `docker-compose.prod.yml`, `.env.prod.example`, `Dockerfile.prod`
+- [x] Dev seed (`SEED_DEMO_DATA`), včetně pozvánkového klíče `demo-invitation-key-1234`
+- [x] `MigrationsTests` (prázdná DB, drift modelu, backfill ověření e-mailu)
+
+
 (přeneseno z `task-todo.md` + nálezy 1.4 č. 3, 4, 9, 10)
 
 - **`.dockerignore`:** přidat do `Agilium.Be\.dockerignore` `appsettings.Development.json`,
@@ -256,6 +293,20 @@ idempotence.
 ---
 
 ## Krok 2 — Autentizace a autorizace napříč API
+
+**Stav: HOTOVO (BE i FE), zbývají dvě drobnosti**
+
+- [x] `EndpointPolicy` na každém endpointu + maticový test reflexí (`EndpointMatrixTests`)
+- [x] `IAccessCache` (verze, TTL 5 min, invalidace) a `IProjectAccess`
+- [x] Role pryč z JWT, `GlobalExceptionHandler` 401/403/404
+- [x] `Projects\Get`, `Projects\List` jen vlastní projekty, `memberId` zrušen
+- [x] FE `useProjectPermissions`, skrývání ovládacích prvků, `GET projects/{id}`
+- [x] BE testy autorizace (`AuthorizationTests`)
+- [ ] FE: sjednotit guard chráněných rout (`beforeLoad`) — zatím se opakuje v každé routě
+- [ ] FE: `http-client` — hláška u 403 „Nemáte oprávnění“ + zneplatnění query `project` (zatím jen bez opakování u 401/403/404)
+- [ ] FE testy `useProjectPermissions` a guardu rout
+- [ ] Bruno: Bearer + záporné autorizační případy (viz Krok 8)
+
 
 Největší riziko (nález 1.4 č. 1, 2). Dělat hned po Kroku 0.
 
@@ -384,6 +435,17 @@ případy, `CLAUDE.md` popisuje konvenci `RequiresAuthentication` + `IProjectAcc
 
 ## Krok 3 — Členové, role a pozvánkové klíče
 
+**Stav: HOTOVO, zbývají FE testy**
+
+- [x] Model: `Role.SystemKind`, `CanEditItems`, role Manager/Member, `ProjectInvitation`, migrace
+- [x] BE: `ListMembers`, `UpdateMemberRole`, `UnassignMember` (vč. odchodu sám), `Roles\*`, `Invitations\*`, `Join` (rate limit, souběh)
+- [x] BE testy (`MembersAndInvitationsTests`)
+- [x] FE: `members-editor`, `roles-editor`, `/join`, výběr assignee ze členů
+- [x] FE testy `members-editor` / `roles-editor` / pozvánky
+- [ ] FE testy: stránka `/join` (předvyplnění z `?key=`, uchování klíče přes login) a výběr assignee v `item-tree`
+- [ ] BE test migrace `SystemKind`/`CanEditItems`/role Member na existující data
+
+
 (přeneseno z `tasks.md`/`task-stories.md` Story 5; rozšířeno o pozvánky)
 
 ### 3.1 Model (jedna migrace společně s Krokem 2 nebo samostatná `Story5b_MembersInvitations`)
@@ -464,6 +526,13 @@ případy, `CLAUDE.md` popisuje konvenci `RequiresAuthentication` + `IProjectAcc
 
 ## Krok 4 — Smazání projektu
 
+**Stav: HOTOVO**
+
+- [x] `Projects\Delete` (jen Owner, tvrdé smazání v transakci, invalidace cache)
+- [x] BE testy (404/403, žádné osiřelé řádky, druhý projekt nedotčen, globální šablony zůstanou)
+- [x] FE sekce „Nebezpečná zóna“ + potvrzovací dialog s opsáním názvu + test
+
+
 (Detail projektu `GET projects/{id}` se dělá už v Kroku 2.)
 
 - `DELETE projects/{id}` — `Projects\Delete`: povoleno **jen členovi se systémovou rolí Owner**
@@ -483,6 +552,19 @@ případy, `CLAUDE.md` popisuje konvenci `RequiresAuthentication` + `IProjectAcc
 ---
 
 ## Krok 5 — Správa účtu: ověření e-mailu, reset hesla, změna hesla
+
+**Stav: HOTOVO**
+
+- [x] `IEmailSender` (MailKit) + `FakeEmailSender`, české šablony, Mailpit
+- [x] Migrace `Step5_EmailVerification` (`EmailVerifiedAt`, existující uživatelé ověřeni), `TokenType.EmailVerification`
+- [x] Registrace s ověřením (shodná odpověď pro existující e-mail), `EMAIL_NOT_VERIFIED` při loginu
+- [x] `auth/verify-email`, `auth/verify-email/resend`, `auth/password-reset/request|confirm`, `auth/password`
+- [x] BE testy (`AccountTests`)
+- [x] FE: registrace bez automatického loginu, `/verify-email`, `/forgot-password`, `/reset-password`, `/account`, znovuodeslání na loginu
+- [x] FE testy formulářů účtu
+- [ ] FE test: tok s uloženým pozvánkovým klíčem přes celé přihlášení (pokryto jen text odkazu v `VerifyEmailResult`)
+- [ ] Ověřit odeslání přes skutečný SMTP / Mailpit v běžícím stacku (testy používají jen `FakeEmailSender`)
+
 
 Bez role SuperAdmin a bez správy/deaktivace účtů přes API (`AppUser.IsActive` zůstává, mění se jen přímo v DB).
 
@@ -524,6 +606,11 @@ Bez role SuperAdmin a bez správy/deaktivace účtů přes API (`AppUser.IsActiv
 
 ## Krok 6 — Komponenta `Comments` — ODLOŽENO (TODO po upřesnění zadání)
 
+**Stav: ODLOŽENO**
+
+- [ ] Čeká na upřesnění zadání
+
+
 Rozhodnutí zadavatele: **zatím neimplementovat**; až se zadání upřesní, doplní se. Do té doby zůstává chování:
 typ `Comments` se ukládá jako prostý text do `ItemFieldValue.Value` a FE ho kreslí jako textarea.
 
@@ -537,6 +624,15 @@ otevřené: editace/mazání, řazení, notifikace, zmínky.
 
 ## Krok 7 — Dotažení UX a drobné FE mezery (volitelné)
 
+**Stav: NEZAHÁJENO (volitelné)**
+
+- [ ] Sbalitelné sekce v detailu položky
+- [ ] Drag & drop v editoru šablon
+- [ ] Mapování chyb BE na prvek editoru šablon
+- [ ] Optimistické zamykání šablony (`RowVersion`)
+- [ ] Přístupnost kanbanu
+
+
 - Sbalitelné sekce v detailu položky (v `.docs/development/layout-templates.md` označeno „v budoucnu“) — jen pokud se zadá.
 - Drag & drop v editoru šablon (dnes ↑/↓/„Přesunout do…“) — případné rozšíření, ne požadavek.
 - Mapování chyb BE na konkrétní prvek editoru šablon (cesta v problem-details) — dnes jen jedna hláška nad
@@ -547,6 +643,18 @@ otevřené: editace/mazání, řazení, notifikace, zmínky.
 ---
 
 ## Krok 8 — Bruno kolekce a dokumentace (průběžně po každém kroku)
+
+**Stav: ČÁSTEČNĚ**
+
+- [x] Bruno: `7. Members & Invitations`, `8. Account`, `Projects` Get/Update/Delete
+- [ ] Bruno: `5. Sprints` (create, list, update, assign, backlog, board, move, unassign, delete)
+- [ ] Bruno: `6. Workflow` (get, update, záporné případy)
+- [ ] Bruno: záporné autorizační případy (bez tokenu, Guest, nečlen → 404) a Bearer ve všech složkách
+- [x] `CLAUDE.md` průběžně aktualizován (Kroky 0–5)
+- [ ] `.docs/development/description.md` (autorizace, pozvánky, ověření e-mailu, smazání projektu; komentáře jako TODO)
+- [ ] `.docs/development/task-stories.md` — nové story pro Kroky 2–5 (zatím odškrtnuty jen starší položky)
+- [ ] `questions.md` smazat/ponechat podle potřeby
+
 
 - Doplnit `Agilium.Http\5. Sprints` (create, list, update, assign, backlog, board, move, unassign, delete),
   `6. Workflow` (get, update, záporné případy), `7. Members & Invitations` (po Kroku 3), `8. Account` (po
