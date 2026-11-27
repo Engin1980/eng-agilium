@@ -19,6 +19,7 @@ environment (`environments/Local.bru`) to match (default assumes the root `docke
   requests' `docs` blocks call out the validation errors worth trying on purpose (renaming/deleting a
   generic item, invalid parent/child type combinations, a field value that doesn't belong to the
   item's template, etc).
+- `Items/` also has the comments requests (list/add/edit/delete) of a `Comments` template element.
 - `Templates/` — a project's own template (`GET`/`PUT /api/v1/projects/{id}/templates/{itemType}`) as a
   tree tables → columns (width) → sections → attributes; `PUT` replaces the whole tree. Global default
   templates are seeded at startup and have no endpoints. `docs` blocks call out the validation worth

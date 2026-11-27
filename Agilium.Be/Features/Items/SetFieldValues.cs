@@ -80,6 +80,9 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
   /// accepting a comma decimal separator since that's what a Czech user will type).</summary>
   private static string? NormalizeAndValidate(TemplateItem templateItem, string? rawValue)
   {
+    if (templateItem.Type == TemplateItemType.Comments)
+      throw new BadRequestException($"Field '{templateItem.Key}' holds comments; write them through the comments endpoints");
+
     if (templateItem.Type == TemplateItemType.LabelOnly)
     {
       if (!string.IsNullOrEmpty(rawValue))
@@ -109,7 +112,7 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, IdParamet
         break;
 
       default:
-        break; // free-text types: SingleLineText, MultiLineText, Comments
+        break; // free-text types: SingleLineText, MultiLineText
     }
 
     if (!string.IsNullOrEmpty(templateItem.ValidatingRegex) && !Regex.IsMatch(rawValue, templateItem.ValidatingRegex))

@@ -41,6 +41,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<EmptyCommand, IdPa
       .ToListAsync(cancellationToken);
     dbContext.ItemFieldValues.RemoveRange(fieldValues);
 
+    dbContext.ItemComments.RemoveRange(dbContext.ItemComments.Where(c => subtreeIds.Contains(c.ItemId)));
+
     dbContext.Items.RemoveRange(subtree);
 
     await dbContext.SaveChangesAsync(cancellationToken);

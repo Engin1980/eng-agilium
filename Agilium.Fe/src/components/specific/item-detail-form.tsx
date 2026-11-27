@@ -1,11 +1,15 @@
 import * as React from "react";
 import { AttributeInput } from "./attribute-input";
+import { CommentsField } from "./comments-field";
+import { TemplateItemType } from "../../services/templates-api";
+import { useProjectPermissions } from "../../services/projects-queries";
 import { TemplateLayout } from "./template-layout";
 import { useItemFields, useSetItemFields } from "../../services/item-fields-queries";
 import { ApiError } from "../../services/http-client";
 
 /** Renders the item's template-driven fields (tables → columns → sections → attributes) and saves edited values in one PUT. */
-export function ItemDetailForm({ itemId }: { itemId: number }) {
+export function ItemDetailForm({ itemId, projectId }: { itemId: number; projectId: number }) {
+  const { canEditItems } = useProjectPermissions(projectId);
   const { data, isLoading, error } = useItemFields(itemId);
   const setFields = useSetItemFields(itemId);
 
@@ -19,7 +23,7 @@ export function ItemDetailForm({ itemId }: { itemId: number }) {
         Object.fromEntries(
           data.tables.flatMap((table) =>
             table.columns.flatMap((column) =>
-              column.sections.flatMap((section) => section.items.map((f) => [f.templateItemId, f.value])),
+              column.sections.flatMap((section) => section.items.filter((f) => f.type !== TemplateItemType.Comments).map((f) => [f.templateItemId, f.value])),
             ),
           ),
         ),
@@ -57,14 +61,24 @@ export function ItemDetailForm({ itemId }: { itemId: number }) {
       <TemplateLayout
         tables={data.tables}
         getAttributeKey={(field) => field.templateItemId}
-        renderAttribute={(field) => (
-          <AttributeInput
-            title={field.title}
-            type={field.type}
-            value={values[field.templateItemId] ?? null}
-            onChange={(v) => setValues((prev) => ({ ...prev, [field.templateItemId]: v }))}
-          />
-        )}
+        renderAttribute={(field) =>
+          field.type === TemplateItemType.Comments ? (
+            // comments are a list saved immediately through their own endpoints, not part of the form's PUT
+            <CommentsField
+              itemId={itemId}
+              templateItemId={field.templateItemId}
+              title={field.title}
+              canWrite={canEditItems}
+            />
+          ) : (
+            <AttributeInput
+              title={field.title}
+              type={field.type}
+              value={values[field.templateItemId] ?? null}
+              onChange={(v) => setValues((prev) => ({ ...prev, [field.templateItemId]: v }))}
+            />
+          )
+        }
       />
 
       <div className="mt-4 flex items-center gap-3">

@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
   public DbSet<TemplateSection> TemplateSections { get; set; } = null!;
   public DbSet<TemplateItem> TemplateItems { get; set; } = null!;
   public DbSet<ItemFieldValue> ItemFieldValues { get; set; } = null!;
+  public DbSet<ItemComment> ItemComments { get; set; } = null!;
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -242,6 +243,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         .HasForeignKey(e => e.TemplateItemId)
         .OnDelete(DeleteBehavior.Restrict);
       entity.HasIndex(e => new { e.ItemId, e.TemplateItemId }).IsUnique();
+    });
+
+    modelBuilder.Entity<ItemComment>(entity =>
+    {
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.Text).IsRequired().HasMaxLength(ItemComment.MaxTextLength);
+      entity.HasOne(e => e.Item).WithMany().HasForeignKey(e => e.ItemId).OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.TemplateItem).WithMany().HasForeignKey(e => e.TemplateItemId).OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.Author).WithMany().HasForeignKey(e => e.AuthorId).OnDelete(DeleteBehavior.Restrict);
+      entity.HasIndex(e => new { e.ItemId, e.TemplateItemId });
     });
 
     base.OnModelCreating(modelBuilder);

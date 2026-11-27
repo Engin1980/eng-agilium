@@ -49,7 +49,7 @@ function RouteComponent() {
           </header>
 
           <main className="mt-6">
-            <ItemDetailForm itemId={item.id} />
+            <ItemDetailForm itemId={item.id} projectId={projectId} />
           </main>
         </>
       )}

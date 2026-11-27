@@ -49,7 +49,7 @@ export function AttributeInput({
 function renderControl(type: TemplateItemType, value: string | null, set: (raw: string) => void, disabled: boolean) {
   switch (type) {
     case TemplateItemType.MultiLineText:
-    case TemplateItemType.Comments: // plain text for now, a dedicated comments component comes later
+    case TemplateItemType.Comments: // preview in the template editor only; items use CommentsField
       return (
         <textarea
           className={inputClassName}

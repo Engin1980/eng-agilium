@@ -120,6 +120,8 @@ public class Handler(AppDbContext dbContext) : GenericHandler<Command, Parameter
         .ToListAsync(cancellationToken);
       deletedValues = values.Count;
       dbContext.ItemFieldValues.RemoveRange(values);
+      // comments of a removed Comments element go with it
+      dbContext.ItemComments.RemoveRange(dbContext.ItemComments.Where(c => removedItemIds.Contains(c.TemplateItemId)));
     }
 
     // Removed elements are removed explicitly (EF orders the deletes by dependency); anything that was

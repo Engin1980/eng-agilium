@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Eng.Agilium.Be.Model.Db;
 using Eng.Agilium.Be.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -173,5 +173,25 @@ public class TemplatesTests(ApiFixture fixture) : ApiTestBase(fixture)
     Columns(tables[0])[1]["width"] = 3;
 
     (await user.Put($"projects/{project}/templates/{Task}", new { tables })).Code.ShouldBe(200);
+  }
+
+  [Fact]
+  public async Task Update_RemovingACommentsElement_DeletesItsComments()
+  {
+    var (user, project) = await ArrangeAsync();
+    var task = await user.CreateItemAsync(project, "T", Task);
+    var element = await Factory.WithDbAsync(db => db.TemplateItems
+      .Where(i => i.Type == TemplateItemType.Comments && i.Section.Column.Table.Template.ProjectId == project && i.Section.Column.Table.Template.Type == ItemType.Task)
+      .Select(i => i.Id).SingleAsync());
+    (await user.Post($"projects/items/{task}/comments", new { templateItemId = element, text = "hello" })).Code.ShouldBe(201);
+
+    var tables = ToCommandTables((await user.Get($"projects/{project}/templates/{Task}")).Json);
+    foreach (var column in tables.SelectMany(Columns))
+      foreach (var section in Sections(column))
+        Items(section).RemoveAll(i => (int)i["type"]! == (int)TemplateItemType.Comments);
+
+    (await user.Put($"projects/{project}/templates/{Task}", new { tables })).Code.ShouldBe(200);
+
+    (await Factory.WithDbAsync(db => db.ItemComments.CountAsync(c => c.ItemId == task))).ShouldBe(0);
   }
 }

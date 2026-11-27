@@ -58,7 +58,7 @@ public class FieldValuesTests(ApiFixture fixture) : ApiTestBase(fixture)
   [InlineData(TemplateItemType.Boolean, "maybe", false)]
   [InlineData(TemplateItemType.SingleLineText, "hello", true)]
   [InlineData(TemplateItemType.MultiLineText, "a\nb", true)]
-  [InlineData(TemplateItemType.Comments, "plain text", true)]
+  [InlineData(TemplateItemType.Comments, "plain text", false)] // comments go through their own endpoints
   [InlineData(TemplateItemType.LabelOnly, "anything", false)]
   public async Task Set_ValidatesTheValueByAttributeType(TemplateItemType type, string value, bool valid)
   {

@@ -1,0 +1,19 @@
+meta {
+  name: 15. Delete Comment
+  type: http
+  seq: 15
+}
+
+delete {
+  url: {{baseUrl}}/projects/items/comments/{{commentId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  The author, or a member with ManageProject (owner, manager).
+}

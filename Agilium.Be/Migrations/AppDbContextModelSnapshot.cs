@@ -112,6 +112,45 @@ namespace Eng.Agilium.Be.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("Eng.Agilium.Be.Model.Db.ItemComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TemplateItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("TemplateItemId");
+
+                    b.HasIndex("ItemId", "TemplateItemId");
+
+                    b.ToTable("ItemComments");
+                });
+
             modelBuilder.Entity("Eng.Agilium.Be.Model.Db.ItemFieldValue", b =>
                 {
                     b.Property<int>("Id")
@@ -581,6 +620,33 @@ namespace Eng.Agilium.Be.Migrations
                     b.Navigation("Assignee");
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Eng.Agilium.Be.Model.Db.ItemComment", b =>
+                {
+                    b.HasOne("Eng.Agilium.Be.Model.Db.AppUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Eng.Agilium.Be.Model.Db.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Eng.Agilium.Be.Model.Db.TemplateItem", "TemplateItem")
+                        .WithMany()
+                        .HasForeignKey("TemplateItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("TemplateItem");
                 });
 
             modelBuilder.Entity("Eng.Agilium.Be.Model.Db.ItemFieldValue", b =>

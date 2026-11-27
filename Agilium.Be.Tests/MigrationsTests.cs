@@ -65,4 +65,36 @@ public class MigrationsTests : IAsyncLifetime
     var verifiedAt = await db.AppUsers.Where(u => u.Email == "old@example.com").Select(u => u.EmailVerifiedAt).SingleAsync();
     verifiedAt.ShouldNotBeNull();
   }
+
+  [Fact]
+  public async Task Migration_TurnsOldCommentsTextsIntoFirstComments()
+  {
+    await using var db = NewContext();
+    var migrator = db.GetService<IMigrator>();
+    await migrator.MigrateAsync("20261127125308_Step5_EmailVerification");
+    // an owner, a project with a task whose Comments element holds a text, one whose text is blank, and a Description value
+    await db.Database.ExecuteSqlRawAsync(@"
+INSERT INTO AppUsers (Email, Name, Surname, PasswordHash, IsActive, FailedLoginAttemptsCount) VALUES ('o@example.com', 'O', 'W', 'x', 1, 0);
+INSERT INTO Projects (Title, Description, State) VALUES ('P', '', 1);
+INSERT INTO Roles (ProjectId, Title, SystemKind, CanViewProject, CanManageProject, CanViewMembers, CanManageMembers, CanManageSprints, CanEditItems) VALUES (1, 'Owner', 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO Memberships (ProjectId, UserId, RoleId) VALUES (1, 1, 1);
+INSERT INTO Items (ProjectId, Title, Type, IsGeneric) VALUES (1, 'T1', 1, 0), (1, 'T2', 1, 0);
+INSERT INTO Templates (ProjectId, Type) VALUES (1, 1);
+INSERT INTO TemplateTables (TemplateId, OrderIndex) VALUES (1, 1);
+INSERT INTO TemplateColumns (TemplateTableId, Width, OrderIndex) VALUES (1, 12, 1);
+INSERT INTO TemplateSections (TemplateColumnId, Title, OrderIndex) VALUES (1, 'S', 1);
+INSERT INTO TemplateItems (TemplateSectionId, [Key], Title, OrderIndex, [Type]) VALUES (1, 'comments', 'Comments', 1, 6), (1, 'description', 'Description', 2, 2);
+INSERT INTO ItemFieldValues (ItemId, TemplateItemId, [Value]) VALUES (1, 1, 'old **text**'), (2, 1, '  '), (1, 2, 'keep me');
+");
+
+    await migrator.MigrateAsync();
+
+    var comments = await db.ItemComments.Select(c => new { c.ItemId, c.TemplateItemId, c.AuthorId, c.Text }).ToListAsync();
+    comments.Count.ShouldBe(1);
+    comments[0].ItemId.ShouldBe(1);
+    comments[0].AuthorId.ShouldBe(1);
+    comments[0].Text.ShouldBe("old **text**");
+    var remaining = await db.ItemFieldValues.Select(v => v.Value).ToListAsync();
+    remaining.ShouldBe(["keep me"]);
+  }
 }

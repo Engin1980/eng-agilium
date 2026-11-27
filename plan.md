@@ -21,7 +21,7 @@ Implementaci dělá Claude. Pravidla práce platí z `CLAUDE.md` (Handler/Endpoi
 | 3 Členové, role, pozvánky | hotovo (chybí FE testy `/join` a assignee) |
 | 4 Smazání projektu | hotovo |
 | 5 Správa účtu | hotovo |
-| 6 Comments | odloženo |
+| 6 Comments (Markdown) | hotovo |
 | 7 UX dotažení | volitelné, nezahájeno |
 | 8 Bruno a dokumentace | částečně |
 
@@ -131,7 +131,7 @@ Všechny sprint endpointy používají `BaseRoute.Projects` (samostatné `BaseRo
 | Přidání člena | **Pozvánkový klíč**: vygeneruje se, rozdá členům; po registraci se uživatel k projektu připojí zadáním klíče. Klíč má limit počtu použití a datum platnosti. Vyhledávání uživatelů (lookup) se **neděje**. Klíč nese roli (ne Owner); výchozí platnost **7 dní**, výchozí počet použití **10**; detaily Krok 3.2. |
 | Smazání a přejmenování projektu | Smazání (tvrdé, kaskádou) i úprava názvu/popisu (`Projects\Update`) smí **jen Owner**. Nová systémová role **Manager** má všechny příznaky jako Owner, ale projekt nesmí přejmenovat ani smazat. Přidělit roli Owner, měnit či odebrat Ownera smí jen Owner. Systémové role: Owner, Manager, Member, Guest. |
 | Účty | Ověření e-mailu po registraci **ano**; reset hesla a změna hesla ano; **SuperAdmin ne** (žádná role, žádná správa/deaktivace účtů přes API); SMTP údaje v `.env`. |
-| Komentáře (`Comments`) | Zatím neimplementovat — TODO po upřesnění zadání (Krok 6). |
+| Komentáře (`Comments`) | Implementovat (Krok 6): komentáře v Markdownu jako samostatná entita; číst smí `ViewProject`, psát `EditItems`, upravit jen autor, smazat autor nebo `ManageProject`; existující texty se migrují na první komentář (autor Owner). |
 | E2E a CI | E2E ne. Testy se pouští lokálně (skript); GitHub workflow jen ručně spouštěný (Krok 0.4). |
 | Nasazení a data | `docker-compose.prod.yml`, startup validace konfigurace, volitelný dev seed (`SEED_DEMO_DATA=true`). Cíl nasazení zatím neznámý → obecný `docker-compose.prod.yml` bez reverzní proxy; doplnit až bude cíl znám. |
 
@@ -162,7 +162,7 @@ Všechny sprint endpointy používají `BaseRoute.Projects` (samostatné `BaseRo
 - [x] 0.2 FE Vitest + Testing Library + MSW
 - [x] 0.3 Zpětné pokrytí hotových funkcí (Auth, Projects, Items, Templates, FieldValues, Sprints, Workflow, Migrations)
 - [x] 0.4 `scripts\test-all.ps1` / `.sh`, ručně spouštěný `.github\workflows\ci.yml`
-- [ ] FE testy: `template-layout`, `sprint-board`, `auth-context` (z výčtu v 0.2 zatím pokryto: `template-draft`, `http-client`, `attribute-input`, `workflow-editor`)
+- [x] FE testy: `template-layout`, `sprint-board`, `auth-context` (z výčtu v 0.2 zatím pokryto: `template-draft`, `http-client`, `attribute-input`, `workflow-editor`)
 
 
 Dnes neexistuje žádný test. Bez nich nelze bezpečně dělat Krok 2 (autorizace zasahuje všechny endpointy).
@@ -304,7 +304,7 @@ idempotence.
 - [x] BE testy autorizace (`AuthorizationTests`)
 - [ ] FE: sjednotit guard chráněných rout (`beforeLoad`) — zatím se opakuje v každé routě
 - [ ] FE: `http-client` — hláška u 403 „Nemáte oprávnění“ + zneplatnění query `project` (zatím jen bez opakování u 401/403/404)
-- [ ] FE testy `useProjectPermissions` a guardu rout
+- [x] FE testy `useProjectPermissions` a guardu rout
 - [ ] Bruno: Bearer + záporné autorizační případy (viz Krok 8)
 
 
@@ -442,7 +442,7 @@ případy, `CLAUDE.md` popisuje konvenci `RequiresAuthentication` + `IProjectAcc
 - [x] BE testy (`MembersAndInvitationsTests`)
 - [x] FE: `members-editor`, `roles-editor`, `/join`, výběr assignee ze členů
 - [x] FE testy `members-editor` / `roles-editor` / pozvánky
-- [ ] FE testy: stránka `/join` (předvyplnění z `?key=`, uchování klíče přes login) a výběr assignee v `item-tree`
+- [x] FE testy: stránka `/join` (předvyplnění z `?key=`, uchování klíče přes login) a výběr assignee v `item-tree`
 - [ ] BE test migrace `SystemKind`/`CanEditItems`/role Member na existující data
 
 
@@ -604,21 +604,45 @@ Bez role SuperAdmin a bez správy/deaktivace účtů přes API (`AppUser.IsActiv
 
 ---
 
-## Krok 6 — Komponenta `Comments` — ODLOŽENO (TODO po upřesnění zadání)
+## Krok 6 — Komentáře (`Comments`) v Markdownu
 
-**Stav: ODLOŽENO**
+Rozhodnutí zadavatele: položka šablony typu `Comments` se stane seznamem komentářů psaných v Markdownu. Nejjednodušší
+začlenění: samostatná entita, šablony a jejich editor zůstávají beze změny (`Comments` už je jedním ze 7 typů).
 
-- [ ] Čeká na upřesnění zadání
+**Stav: HOTOVO**
 
+- **Model (migrace `Step6_Comments`):** `ItemComment` (`Id`, `ItemId`, `TemplateItemId`, `AuthorId`, `Text` ≤ 4000,
+  `CreatedAt`, `EditedAt?`; FK všude `Restrict`). `TemplateItemId` určuje prvek šablony, tedy vlákno (šablona může mít
+  víc prvků typu `Comments`). Migrace převede existující neprázdné hodnoty `ItemFieldValue` typu `Comments` na první
+  komentář (autor = Owner projektu, čas = čas migrace) a původní hodnoty smaže.
+- **Endpointy (`Features\Comments\`):**
+  - `GET projects/items/{id}/comments?templateItemId=` — `ViewProject`; od nejstaršího; v odpovědi `AuthorName`,
+    `CanEdit` (jsem autor), `CanDelete` (autor nebo `ManageProject`).
+  - `POST projects/items/{id}/comments` — `EditItems`; `TemplateItemId` musí patřit k šabloně položky a být typu
+    `Comments`; text neprázdný, ≤ 4000.
+  - `PATCH projects/items/comments/{id}` — jen autor (a stále člen s `EditItems`); nastaví `EditedAt`.
+  - `DELETE projects/items/comments/{id}` — autor, nebo člen s `ManageProject` (Owner, Manager).
+- **Kaskády:** komentáře se mažou při `Items\Delete`, při odebrání atributu v `Templates\Update` a při `Projects\Delete`.
+  `Items\SetFieldValues` hodnotu typu `Comments` odmítne (400) — píše se jen přes nové endpointy.
+- **FE:** `comments-api.ts`, `comments-queries.ts`, `components\specific\comments-field.tsx` (seznam, formulář s
+  přepínačem Náhled, úprava a smazání vlastních); `item-detail-form.tsx` pro typ `Comments` použije tuto komponentu a
+  hodnoty komentářů nevkládá do `PUT …/fields`. Markdown vykresluje `react-markdown` (+ `remark-gfm`), bez syrového HTML.
+- **Mimo rozsah:** notifikace, zmínky, odpovědi ve vláknech, přílohy, stránkování, živé aktualizace.
+- **Testy:** BE — práva pro každou roli (Guest čte, Member píše, cizí komentář nelze upravit, `ManageProject` smaže cizí),
+  validace (prázdný/dlouhý text, cizí/ne-`Comments` `TemplateItemId`), `SetFieldValues` odmítá `Comments`, kaskády
+  (položka, atribut šablony, projekt), migrace existujících hodnot. FE — seznam, odeslání, náhled Markdownu bez
+  vykonání HTML, skrytí úprav/smazání podle `CanEdit`/`CanDelete`.
 
-Rozhodnutí zadavatele: **zatím neimplementovat**; až se zadání upřesní, doplní se. Do té doby zůstává chování:
-typ `Comments` se ukládá jako prostý text do `ItemFieldValue.Value` a FE ho kreslí jako textarea.
+Checklist:
 
-Podklad pro budoucí upřesnění (původní návrh, nezávazný): samostatná entita `ItemComment` (`ItemId`,
-`TemplateItemId`, `AuthorId`, `Text`, `CreatedAt`, `EditedAt?`), endpointy `GET/POST
-projects/items/{id}/comments`, `PATCH/DELETE projects/items/comments/{commentId}` (autor nebo `ManageProject`),
-oprávnění `ViewProject`/`EditItems`, migrace stávajícího textu na první komentář, FE `comments-field.tsx`;
-otevřené: editace/mazání, řazení, notifikace, zmínky.
+- [x] Model + migrace `Step6_Comments` (včetně převodu existujících hodnot)
+- [x] BE endpointy `Comments\List/Create/Update/Delete`
+- [x] Kaskády (položka, atribut šablony, projekt) a zákaz `Comments` v `SetFieldValues`
+- [x] BE testy
+- [x] FE `comments-field` + napojení v detailu položky
+- [x] FE testy
+- [x] Bruno (`3. Items`), `CLAUDE.md`
+- [x] `description.md`
 
 ---
 
@@ -685,14 +709,14 @@ otevřené: editace/mazání, řazení, notifikace, zmínky.
 | Root compose běží jako `Development` (Turnstile vypnutý, dev konfigurace v kontejneru) | Krok 1 (`docker-compose.prod.yml`, validace konfigurace) |
 | `POST …/templates/{itemType}/reset` | nerealizováno (zadavatel nestál o něj) |
 | Mapování BE chyb šablony na prvek, `RowVersion` šablony | Krok 7 (volitelné) |
-| `Comments` jako samostatný prvek | Krok 6 — ODLOŽENO (TODO po upřesnění) |
+| `Comments` jako samostatný prvek | Krok 6 (samostatná entita, Markdown) |
 | Stav položek mimo sprint | uzavřeno: nezobrazuje se (1.3) |
 | Globální šablony — editace | uzavřeno: needitují se, seed při startu |
 | `BaseRoute.Sprints` | uzavřeno: nevzniklo, používá se `BaseRoute.Projects` |
 
 ## 10. Doporučené pořadí a závislosti
 
-`0 → 1 → 2 → 3 → 4 → 5 → (7 volitelně)`, `6` odloženo, `8` průběžně po každém kroku. Krok 2 nesmí začít před
+`0 → 1 → 2 → 3 → 4 → 5 → 6 → (7 volitelně)`, `8` průběžně po každém kroku. Krok 2 nesmí začít před
 Krokem 0 (maticový test je pojistka). Krok 3 závisí na Kroku 2 (`IProjectAccess`, `CanEditItems`) a join na Kroku 5
 (ověřený účet) jen volně — do doby Kroku 5 stačí přihlášený uživatel. Krok 4 závisí na Kroku 3 (`SystemKind`,
 tabulka `ProjectInvitation` při mazání). Krok 5 mění `register.tsx` a `Login`, proto se `TestApi` z Kroku 0 od

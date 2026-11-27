@@ -23,6 +23,7 @@ public class Handler(AppDbContext dbContext, IAccessCache accessCache)
     {
       // the model uses DeleteBehavior.Restrict, so the rows are removed explicitly, from leaves to the root
       // (the template tree Template -> Table -> Column -> Section -> Item cascades in the database)
+      await dbContext.ItemComments.Where(c => c.Item.ProjectId == projectId).ExecuteDeleteAsync(cancellationToken);
       await dbContext.ItemFieldValues.Where(v => v.Item.ProjectId == projectId).ExecuteDeleteAsync(cancellationToken);
       await dbContext.SprintItems.Where(s => s.Sprint.ProjectId == projectId).ExecuteDeleteAsync(cancellationToken);
       await dbContext.Items.Where(i => i.ProjectId == projectId).ExecuteDeleteAsync(cancellationToken);

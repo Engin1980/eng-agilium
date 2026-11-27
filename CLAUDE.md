@@ -23,8 +23,8 @@ User-Story, Task, Bug). Entities: `Template` → `TemplateTable` → `TemplateCo
 `TemplateSection` → `TemplateItem` (attribute), each level with `OrderIndex`. Tables are stacked; widths of
 one table's columns are expected to sum to 12 (bootstrap-style, not enforced; min width 1); a section's
 title may be empty; an attribute spans the full column width. `TemplateItemType` is a closed set of 7:
-`SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`, `Comments` (plain text for now),
-`LabelOnly`. Values live in `ItemFieldValue`. Global templates (`Template.ProjectId IS NULL`) are seeded at
+`SingleLineText`, `MultiLineText`, `Integer`, `Decimal`, `Boolean`, `Comments` (a list of Markdown comments, see below),
+`LabelOnly`. Values live in `ItemFieldValue`, except `Comments`: those live in `ItemComment` (one thread per `Comments` element and item; endpoints `Features/Comments`, `projects/items/{id}/comments`, `projects/items/comments/{id}`; read = `ViewProject`, write = `EditItems`, edit only by the author, delete by the author or `ManageProject`; the FE renders Markdown with `react-markdown`, never raw HTML). Global templates (`Template.ProjectId IS NULL`) are seeded at
 startup and are not editable; each project gets a copy at creation and only the project copies are edited.
 
 ## Solution layout

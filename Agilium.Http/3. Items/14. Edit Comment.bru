@@ -1,0 +1,25 @@
+meta {
+  name: 14. Edit Comment
+  type: http
+  seq: 14
+}
+
+patch {
+  url: {{baseUrl}}/projects/items/comments/{{commentId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "text": "Edited"
+  }
+}
+
+docs {
+  Only the author (403 otherwise).
+}

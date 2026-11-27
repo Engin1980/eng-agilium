@@ -1,0 +1,33 @@
+meta {
+  name: 13. Add Comment
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/projects/items/{{taskId}}/comments
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "templateItemId": {{commentsTemplateItemId}},
+    "text": "Hello **Markdown**
+  
+  - one
+  - two"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) { bru.setVar("commentId", res.body.id); }
+}
+
+docs {
+  Needs EditItems. Text is Markdown, 1-4000 characters. 400 when the element is not a Comments element of the item template.
+}

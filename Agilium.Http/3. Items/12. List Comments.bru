@@ -1,0 +1,23 @@
+meta {
+  name: 12. List Comments
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/projects/items/{{taskId}}/comments?templateItemId={{commentsTemplateItemId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.comments.length) { bru.setVar("commentId", res.body.comments[0].id); }
+}
+
+docs {
+  Comments of one Comments element (oldest first). {{commentsTemplateItemId}}: id of the Comments attribute from Items/8. Get Field Values (type 6). Omit templateItemId to get all comments of the item.
+}
