@@ -42,6 +42,43 @@ public class TokenService(AppDbContext dbContext, AppSettingsService appSettings
     );
   }
 
+  public const int EmailVerificationValidityHours = 24;
+
+  public async Task<string> CreateEmailVerificationAsync(AppUser appUser)
+  {
+    return await CreateAsync(
+      appUser.Id,
+      TokenType.EmailVerification,
+      tokensSettings.PasswordResetTokenLength,
+      TimeSpan.FromHours(EmailVerificationValidityHours),
+      true
+    );
+  }
+
+  /// <summary>
+  /// Finds a single-use token (e-mail verification / password reset) of the given type; null when it is unknown,
+  /// expired or of another type. The result is tracked, the caller deletes it after use.
+  /// </summary>
+  public async Task<Token?> FindValidAsync(string tokenValue, TokenType tokenType, CancellationToken cancellationToken = default)
+  {
+    if (string.IsNullOrWhiteSpace(tokenValue))
+      return null;
+    string tokenHash = CalculateHash(tokenValue);
+    var token = await dbContext
+      .Tokens.Include(t => t.AppUser)
+      .FirstOrDefaultAsync(t => t.Value == tokenHash && t.Type == tokenType, cancellationToken);
+    return token is null || token.Expiration < DateTime.UtcNow ? null : token;
+  }
+
+  /// <summary>Signs the user out everywhere, optionally keeping the session identified by <paramref name="exceptRefreshToken"/>.</summary>
+  public async Task RevokeRefreshTokensAsync(int appUserId, string? exceptRefreshToken = null)
+  {
+    var keepHash = string.IsNullOrEmpty(exceptRefreshToken) ? null : CalculateHash(exceptRefreshToken);
+    await dbContext
+      .Tokens.Where(t => t.AppUserId == appUserId && t.Type == TokenType.Refresh && t.Value != keepHash)
+      .ExecuteDeleteAsync();
+  }
+
   public async Task<string> CreateRefreshAsync(AppUser appUser)
   {
     return await CreateAsync(

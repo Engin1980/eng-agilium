@@ -1,0 +1,21 @@
+meta {
+  name: 2. Resend Verification
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/verify-email/resend
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{email}}"
+  }
+}
+
+docs {
+  Always 204 (does not reveal whether the account exists); at most one e-mail per minute per account.
+}

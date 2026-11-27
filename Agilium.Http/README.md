@@ -25,5 +25,9 @@ environment (`environments/Local.bru`) to match (default assumes the root `docke
   trying on purpose (column width ≥ 1, table needs a column, unique attribute keys; width sum 12 is
   not enforced).
 
+- `7. Members & Invitations/` — members, custom roles, invitation keys and joining (log in as a second user for `Join`).
+- `8. Account/` — e-mail verification, password reset and change; the tokens come from Mailpit (http://localhost:8025) and go into `{{verifyToken}}` / `{{resetToken}}`.
+- `2. Projects/` also has `Get`, `Update` (owner only) and `Delete` (owner only).
+
 Not covered yet by the collection: sprints/kanban (`Features\Sprints`) and project workflow
-(`Features\Workflow`) endpoints, project member assignment.
+(`Features\Workflow`) endpoints.

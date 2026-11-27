@@ -36,6 +36,9 @@ namespace Eng.Agilium.Be.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<DateTime?>("EmailVerifiedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("FailedLoginAttemptsCount")
                         .HasColumnType("int");
 

@@ -46,6 +46,10 @@ public class Handler(AppDbContext dbContext, TokenService tokenService, AppSetti
       throw new AuthenticationFailedException(AuthenticationFailedException.FailureReason.CredentialsInvalid, appUser);
     }
 
+    // checked only after the password matched, so the state of an account is not visible to strangers
+    if (appUser.EmailVerifiedAt is null)
+      throw new EmailNotVerifiedException();
+
     appUser.FailedLoginAttemptsCount = 0;
     await dbContext.SaveChangesAsync(cancellationToken);
 

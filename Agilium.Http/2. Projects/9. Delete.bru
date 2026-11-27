@@ -1,0 +1,19 @@
+meta {
+  name: 9. Delete
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  Owner only; permanently deletes the project with everything in it (204). Run last - the other requests need {{projectId}}.
+}

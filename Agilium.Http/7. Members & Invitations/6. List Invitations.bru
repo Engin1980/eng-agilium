@@ -1,0 +1,19 @@
+meta {
+  name: 6. List Invitations
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/projects/{{projectId}}/invitations
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  Shows only the key prefix and the status (active / expired / exhausted / revoked).
+}

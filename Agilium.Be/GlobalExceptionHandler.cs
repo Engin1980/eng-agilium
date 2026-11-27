@@ -14,6 +14,8 @@ public enum ErrorKeys
   AUTHORIZATION_FAILED,
   ACCOUNT_LOCKED,
   ACCOUNT_DEACTIVATED,
+  EMAIL_NOT_VERIFIED,
+  INVALID_TOKEN,
   INVALID_STATE_OPERATION,
   GENERIC_BAD_REQUEST,
   COMMAND_VALIDATION_EXCEPTION,
@@ -74,6 +76,20 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         TYPE_400,
         ade.Message,
         ErrorKeys.ACCOUNT_DEACTIVATED
+      ),
+      EmailNotVerifiedException env => Create(
+        StatusCodes.Status400BadRequest,
+        "Bad Request",
+        TYPE_400,
+        env.Message,
+        ErrorKeys.EMAIL_NOT_VERIFIED
+      ),
+      InvalidTokenException ite => Create(
+        StatusCodes.Status400BadRequest,
+        "Bad Request",
+        TYPE_400,
+        ite.Message,
+        ErrorKeys.INVALID_TOKEN
       ),
       AccountLockedException ale => Create(
         StatusCodes.Status400BadRequest,

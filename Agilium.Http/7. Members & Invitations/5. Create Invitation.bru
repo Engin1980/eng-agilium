@@ -1,0 +1,33 @@
+meta {
+  name: 5. Create Invitation
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/projects/{{projectId}}/invitations
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "roleId": {{memberRoleId}},
+    "maxUses": 10
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("invitationKey", res.body.key);
+    bru.setVar("invitationId", res.body.id);
+  }
+}
+
+docs {
+  The key is shown only in this response (the DB holds just a hash). Defaults: 7 days, 10 uses; max 90 days / 1000 uses; the Owner role cannot be invited. The key is stored in {{invitationKey}}.
+}

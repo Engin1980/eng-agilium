@@ -1,0 +1,15 @@
+meta {
+  name: 9. Revoke Invitation
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/projects/invitations/{{invitationId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}

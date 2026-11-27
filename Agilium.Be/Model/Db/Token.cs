@@ -14,4 +14,5 @@ public enum TokenType
 {
   PasswordReset = 1,
   Refresh = 2,
+  EmailVerification = 3,
 }

@@ -1,9 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
 import { CommonForm } from "../components/global/forms/area/common-form";
 import { TextInputBlock } from "../components/global/forms/controls/text-input-block";
 import { SubmitInput } from "../components/global/forms/controls/button-input";
-import { useAuth } from "../contexts/auth-context";
+import { CardPage } from "../components/global/card-page";
+import { CheckYourEmail } from "../components/specific/account-forms";
 import { ApiError } from "../services/http-client";
 import * as authApi from "../services/auth-api";
 
@@ -12,8 +13,7 @@ export const Route = createFileRoute("/register")({
 });
 
 function RouteComponent() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [registeredEmail, setRegisteredEmail] = React.useState<string | null>(null);
   const [email, setEmail] = React.useState("");
   const [name, setName] = React.useState("");
   const [surname, setSurname] = React.useState("");
@@ -34,18 +34,21 @@ function RouteComponent() {
     setIsSubmitting(true);
     try {
       await authApi.register(email, name, surname, password);
-      await login(email, password);
-      if (sessionStorage.getItem("agilium.pendingJoinKey")) {
-        await navigate({ to: "/join" });
-        return;
-      }
-      await navigate({ to: "/projects" });
+      // the account must be confirmed by e-mail first, so there is no automatic login
+      setRegisteredEmail(email);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Registrace se nezdařila.");
     } finally {
       setIsSubmitting(false);
     }
   }
+
+  if (registeredEmail)
+    return (
+      <CardPage title="Zkontrolujte e-mail">
+        <CheckYourEmail email={registeredEmail} />
+      </CardPage>
+    );
 
   return (
     <CommonForm title="Registrace" onSubmit={handleSubmit}>

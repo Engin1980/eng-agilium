@@ -1,0 +1,23 @@
+meta {
+  name: 4. Get
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200) { bru.setVar("ownRoleTitle", res.body.roleTitle); }
+}
+
+docs {
+  Project detail with the caller's permissions (isOwner, canEditItems, ...). 404 for a non-member.
+}

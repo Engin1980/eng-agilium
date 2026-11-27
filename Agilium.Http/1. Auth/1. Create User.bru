@@ -20,6 +20,8 @@ body:json {
 }
 
 docs {
-  Creates a login-capable app user. Fails with ENTITY_ALREADY_EXISTS (409-ish 400) if the email is
-  already taken - that's expected on repeated runs, just move on to Login.
+  Registers a user and sends a verification e-mail (the answer is always 204, also when the e-mail is
+  already registered - no account enumeration). The account cannot log in until the e-mail is
+  confirmed: open Mailpit (http://localhost:8025), copy the token from the link in the message and
+  put it into the {{verifyToken}} variable, then run Account/1. Verify E-mail.
 }

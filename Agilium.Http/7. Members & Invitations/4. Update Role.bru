@@ -1,0 +1,31 @@
+meta {
+  name: 4. Update Role
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/projects/roles/{{customRoleId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Reviewer renamed {{runtimeTitleSuffix}}",
+    "canViewProject": true,
+    "canManageProject": false,
+    "canViewMembers": true,
+    "canManageMembers": false,
+    "canManageSprints": false,
+    "canEditItems": true
+  }
+}
+
+docs {
+  System roles cannot be changed (400).
+}

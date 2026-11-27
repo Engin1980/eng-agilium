@@ -1,0 +1,26 @@
+meta {
+  name: 2. List Roles
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/projects/{{projectId}}/roles
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200) {
+    const member = res.body.roles.find(r => r.systemKind === 3);
+    if (member) bru.setVar("memberRoleId", member.id);
+  }
+}
+
+docs {
+  System roles (Owner, Manager, Member, Guest) are read-only. Stores the Member role id in {{memberRoleId}}.
+}

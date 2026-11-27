@@ -1,0 +1,25 @@
+meta {
+  name: 7. Join
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/projects/join
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "key": "{{invitationKey}}"
+  }
+}
+
+docs {
+  Log in as ANOTHER user first (Auth/2. Login with a different {{email}}). Any invalid key gives the same 400; 409 when already a member; 429 after 10 failed attempts a minute.
+}

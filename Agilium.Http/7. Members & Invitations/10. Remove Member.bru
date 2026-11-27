@@ -1,0 +1,19 @@
+meta {
+  name: 10. Remove Member
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/projects/membership/{{membershipId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  Owner/Manager removes a member; a member may remove their own membership (leave). 400 when the user is assigned to items.
+}

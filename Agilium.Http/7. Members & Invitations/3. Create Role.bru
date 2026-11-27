@@ -1,0 +1,39 @@
+meta {
+  name: 3. Create Role
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/projects/{{projectId}}/roles
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Reviewer {{runtimeTitleSuffix}}",
+    "canViewProject": true,
+    "canManageProject": false,
+    "canViewMembers": true,
+    "canManageMembers": false,
+    "canManageSprints": false,
+    "canEditItems": false
+  }
+}
+
+script:pre-request {
+  bru.setVar("runtimeTitleSuffix", Date.now());
+}
+
+script:post-response {
+  if (res.status === 201) { bru.setVar("customRoleId", res.body.id); }
+}
+
+docs {
+  Needs canManageMembers. Custom role names are unique per project.
+}

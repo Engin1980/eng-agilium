@@ -25,8 +25,8 @@ export function register(
   name: string,
   surname: string,
   password: string,
-): Promise<{ id: number }> {
-  return apiRequest<{ id: number }>("/auth/users", {
+): Promise<void> {
+  return apiRequest<void>("/auth/users", {
     method: "POST",
     skipAuth: true,
     body: { email, name, surname, password },
@@ -43,4 +43,32 @@ export function logout(): Promise<void> {
     skipAuth: true,
     body: { refreshToken: "" },
   });
+}
+
+export function verifyEmail(token: string): Promise<void> {
+  return apiRequest<void>("/auth/verify-email", { method: "POST", skipAuth: true, body: { token } });
+}
+
+export function resendVerification(email: string): Promise<void> {
+  return apiRequest<void>("/auth/verify-email/resend", { method: "POST", skipAuth: true, body: { email } });
+}
+
+export function requestPasswordReset(email: string): Promise<void> {
+  return apiRequest<void>("/auth/password-reset/request", {
+    method: "POST",
+    skipAuth: true,
+    body: { email, turnstileToken: "" },
+  });
+}
+
+export function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  return apiRequest<void>("/auth/password-reset/confirm", {
+    method: "POST",
+    skipAuth: true,
+    body: { token, newPassword },
+  });
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  return apiRequest<void>("/auth/password", { method: "POST", body: { currentPassword, newPassword } });
 }

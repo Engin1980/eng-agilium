@@ -1,4 +1,4 @@
-using Eng.Agilium.Be.Model.Db;
+﻿using Eng.Agilium.Be.Model.Db;
 using Eng.Agilium.Be.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -48,5 +48,21 @@ public class MigrationsTests : IAsyncLifetime
     );
 
     differences.ShouldBeEmpty("a model change is missing a migration: " + string.Join(", ", differences.Select(d => d.GetType().Name)));
+  }
+
+  [Fact]
+  public async Task Migration_MarksExistingUsersAsEmailVerified()
+  {
+    await using var db = NewContext();
+    var migrator = db.GetService<IMigrator>();
+    await migrator.MigrateAsync("20261126213152_Step3_Invitations");
+    await db.Database.ExecuteSqlRawAsync(
+      "INSERT INTO AppUsers (Email, Name, Surname, PasswordHash, IsActive, FailedLoginAttemptsCount) VALUES ('old@example.com', 'O', 'U', 'x', 1, 0)"
+    );
+
+    await migrator.MigrateAsync();
+
+    var verifiedAt = await db.AppUsers.Where(u => u.Email == "old@example.com").Select(u => u.EmailVerifiedAt).SingleAsync();
+    verifiedAt.ShouldNotBeNull();
   }
 }

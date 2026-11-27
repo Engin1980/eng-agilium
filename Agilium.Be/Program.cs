@@ -110,8 +110,9 @@ class BuildInitializer(WebApplicationBuilder builder)
     // app services
     builder.Services.AddSingleton<AppSettingsService>();
     builder.Services.AddTransient<TurnstileService>();
-    // builder.Services.AddTransient<SmtpService>();
-    // builder.Services.AddTransient<SmartEmailService>();
+    builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+    builder.Services.AddTransient<AccountMailer>();
+    builder.Services.AddSingleton<IActionLimiter, ActionLimiter>();
 
     builder.Services.AddTransient<TokenService>();
 

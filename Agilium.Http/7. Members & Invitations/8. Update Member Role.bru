@@ -1,0 +1,25 @@
+meta {
+  name: 8. Update Member Role
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{baseUrl}}/projects/members/{{membershipId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "roleId": {{memberRoleId}}
+  }
+}
+
+docs {
+  Needs canManageMembers. Owners are appointed/changed only by an Owner; the project always keeps one Owner and one member who can manage members.
+}

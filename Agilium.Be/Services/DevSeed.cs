@@ -1,4 +1,5 @@
 using Eng.Agilium.Be.Features;
+using InvitationKeys = Eng.Agilium.Be.Features.Invitations.Create.InvitationKeys;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.EntityFrameworkCore;
 using ItemsCreate = Eng.Agilium.Be.Features.Items.Create;
@@ -18,6 +19,8 @@ public static class DevSeed
   public const string DemoEmail = "demo@example.com";
   public const string DemoPassword = "Demo-1234!";
   public const string DemoProjectTitle = "Demo project";
+  /// <summary>Joins the demo project as a Member (Development only; the key is public on purpose).</summary>
+  public const string DemoInvitationKey = "demo-invitation-key-1234";
 
   public static bool IsEnabled(IConfiguration configuration, IHostEnvironment environment) =>
     environment.IsDevelopment()
@@ -39,6 +42,7 @@ public static class DevSeed
       Surname = "User",
       PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoPassword),
       IsActive = true,
+      EmailVerifiedAt = DateTime.UtcNow,
     };
     db.AppUsers.Add(user);
     await db.SaveChangesAsync(cancellationToken);
@@ -85,5 +89,25 @@ public static class DevSeed
     assign.SetUpContext(null, AllowAllProjectAccess.Instance);
     foreach (var taskId in new[] { task1, task2 })
       await assign.HandleAsync(new SprintsAssignItem.Command(taskId), new IdParameters(sprintId), cancellationToken);
+
+    // a well-known invitation key so that joining a project can be tried at once (development only)
+    var memberRoleId = await db
+      .Roles.Where(r => r.ProjectId == projectId && r.SystemKind == RoleSystemKind.Member)
+      .Select(r => r.Id)
+      .SingleAsync(cancellationToken);
+    db.ProjectInvitations.Add(
+      new ProjectInvitation
+      {
+        ProjectId = projectId,
+        RoleId = memberRoleId,
+        KeyHash = InvitationKeys.Hash(DemoInvitationKey),
+        KeyPrefix = DemoInvitationKey[..InvitationKeys.PrefixLength],
+        ExpiresAt = DateTime.UtcNow.AddDays(ProjectInvitation.MaxValidityDays),
+        MaxUses = ProjectInvitation.MaxMaxUses,
+        CreatedById = user.Id,
+        CreatedAt = DateTime.UtcNow,
+      }
+    );
+    await db.SaveChangesAsync(cancellationToken);
   }
 }

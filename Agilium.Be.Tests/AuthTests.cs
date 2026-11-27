@@ -26,12 +26,15 @@ public class AuthTests(ApiFixture fixture) : ApiTestBase(fixture)
   }
 
   [Fact]
-  public async Task Register_DuplicateEmail_Returns409()
+  public async Task Register_DuplicateEmail_LooksTheSameAsANewOne()
   {
-    (await Api.Post("auth/users", NewUser("dup@example.com"))).Code.ShouldBe(201);
-    var response = await Api.Post("auth/users", NewUser("DUP@example.com"));
-    response.Code.ShouldBe(409);
-    response.ErrorKey.ShouldBe("ENTITY_ALREADY_EXISTS");
+    var first = await Api.Post("auth/users", NewUser("dup@example.com"));
+    var second = await Api.Post("auth/users", NewUser("DUP@example.com"));
+
+    first.Code.ShouldBe(204);
+    second.Code.ShouldBe(204);
+    second.Body.ShouldBe(first.Body);
+    (await Factory.WithDbAsync(db => db.AppUsers.CountAsync(u => u.Email == "dup@example.com"))).ShouldBe(1);
   }
 
   [Fact]

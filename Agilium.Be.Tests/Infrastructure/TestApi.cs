@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eng.Agilium.Be.Tests.Infrastructure;
 
@@ -82,7 +83,7 @@ public sealed class TestApi
       .SetCookies.Select(c => c.Split(';')[0])
       .FirstOrDefault(c => c.StartsWith("refreshToken=", StringComparison.Ordinal) && c.Length > "refreshToken=".Length);
 
-  /// <summary>Registers a user (and, once the e-mail verification exists, verifies it) without logging in.</summary>
+  /// <summary>Registers a user and verifies the e-mail address through the real flow (the token comes from the fake mailbox), without logging in.</summary>
   public async Task<int> RegisterAsync(
     string email,
     string password = DefaultPassword,
@@ -91,9 +92,13 @@ public sealed class TestApi
   )
   {
     var response = await Anonymous().Post("auth/users", new { email, name, surname, password });
-    if (response.Code != 201)
+    if (response.Code != 204)
       throw new InvalidOperationException($"Registration failed: {response.Code} {response.Body}");
-    return response.Id;
+    var mail = factory.Emails.To(email).Last();
+    var verify = await Anonymous().Post("auth/verify-email", new { token = FakeEmailSender.TokenOf(mail) });
+    if (verify.Code != 204)
+      throw new InvalidOperationException($"E-mail verification failed: {verify.Code} {verify.Body}");
+    return await factory.WithDbAsync(db => db.AppUsers.Where(u => u.Email == email.ToLower()).Select(u => u.Id).SingleAsync());
   }
 
   public async Task<ApiResponse> LoginRawAsync(string email, string password = DefaultPassword) =>

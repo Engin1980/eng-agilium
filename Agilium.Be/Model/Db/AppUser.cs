@@ -8,6 +8,8 @@ public class AppUser
   public string Surname { get; set; } = string.Empty;
   public string PasswordHash { get; set; } = string.Empty;
   public bool IsActive { get; set; }
+  /// <summary>Null until the owner of the mailbox confirms the e-mail address; such an account cannot log in.</summary>
+  public DateTime? EmailVerifiedAt { get; set; }
   public DateTime? IsLockedUntil { get; set; }
   public int FailedLoginAttemptsCount { get; set; }
   public DateTime? LastSuccessfulLogin { get; set; }

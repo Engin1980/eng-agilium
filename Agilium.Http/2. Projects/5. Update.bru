@@ -1,0 +1,26 @@
+meta {
+  name: 5. Update
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/projects/{{projectId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Bruno Demo Project {{runtimeTitleSuffix}} (renamed)",
+    "description": "Renamed from Bruno"
+  }
+}
+
+docs {
+  Owner only (Manager gets 403).
+}

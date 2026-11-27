@@ -1,6 +1,8 @@
 ﻿using Eng.Agilium.Be.Exceptions;
 using Eng.Agilium.Be.Exceptions.Validation;
 using Eng.Agilium.Be.Model.Db;
+using Eng.Agilium.Be.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eng.Agilium.Be.Features.AppUsers;
 
@@ -11,13 +13,9 @@ public record Command(
   [property: XRegex(".{8,}", false, XValidationErrorKey.INVALID_PASSWORD_FORMAT)] string Password
 );
 
-public class Handler : GenericHandler<Command, EmptyParameters, IdResult>
+public class Handler(AppDbContext dbContext, AccountMailer mailer) : GenericHandler<Command, EmptyParameters, EmptyResult>
 {
-  private readonly AppDbContext dbContext;
-
-  public Handler(AppDbContext dbContext) => this.dbContext = dbContext;
-
-  public override async Task<IdResult> HandleAsync(
+  public override async Task<EmptyResult> HandleAsync(
     Command command,
     EmptyParameters parameters,
     CancellationToken cancellationToken
@@ -25,8 +23,14 @@ public class Handler : GenericHandler<Command, EmptyParameters, IdResult>
   {
     var email = command.Email.Trim().ToLowerInvariant();
 
-    if (dbContext.AppUsers.Any(u => u.Email == email))
-      throw new EntityAlreadyExistsException(typeof(AppUser), email);
+    // The answer is the same whether or not the e-mail is already registered (no account enumeration);
+    // an existing owner of the address just gets a notice by e-mail.
+    var existing = await dbContext.AppUsers.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    if (existing is not null)
+    {
+      await mailer.SendAccountExistsAsync(existing, cancellationToken);
+      return new EmptyResult();
+    }
 
     var user = new AppUser
     {
@@ -35,20 +39,30 @@ public class Handler : GenericHandler<Command, EmptyParameters, IdResult>
       Surname = command.Surname,
       PasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Password),
       IsActive = true,
+      EmailVerifiedAt = null,
     };
 
     dbContext.AppUsers.Add(user);
-    await dbContext.SaveChangesAsync(cancellationToken);
+    try
+    {
+      await dbContext.SaveChangesAsync(cancellationToken);
+    }
+    catch (DbUpdateException)
+    {
+      // a concurrent registration of the same address won the unique index
+      return new EmptyResult();
+    }
 
-    return new IdResult(user.Id);
+    await mailer.SendVerificationAsync(user, cancellationToken);
+    return new EmptyResult();
   }
 }
 
-[EndpointSummary("Creates a new application user and returns its id")]
-public class Endpoint : GenericCreatedEndpoint<Command, EmptyParameters, Handler, IdResult>
+[EndpointSummary("Registers a new user and sends an e-mail with a verification link (the answer never reveals whether the e-mail exists)")]
+public class Endpoint : GenericOkEndpoint<Command, EmptyParameters, Handler, EmptyResult>
 {
   public override HttpMethod Method => HttpMethod.Post;
-  public override BaseRoute BaseRoute => BaseRoute.Auth; // TODO: confirm correct base route for user management
+  public override BaseRoute BaseRoute => BaseRoute.Auth;
   public override string EndpointRoute => "users";
   public override EndpointPolicy Policy => EndpointPolicy.Anonymous;
 }

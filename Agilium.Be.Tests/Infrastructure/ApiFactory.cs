@@ -1,9 +1,12 @@
 using Eng.Agilium.Be.Features.Templates;
+using Eng.Agilium.Be.Services;
 using Eng.Agilium.Be.Model.Db;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Respawn;
 
 namespace Eng.Agilium.Be.Tests.Infrastructure;
@@ -20,6 +23,9 @@ public sealed class ApiFactory(SqlServerFixture sql) : WebApplicationFactory<Pro
 
   public SqlServerFixture Sql { get; } = sql;
 
+  /// <summary>Every e-mail the API "sends" ends up here.</summary>
+  public FakeEmailSender Emails { get; } = new();
+
   protected override void ConfigureWebHost(IWebHostBuilder builder)
   {
     builder.UseEnvironment("Testing");
@@ -32,6 +38,7 @@ public sealed class ApiFactory(SqlServerFixture sql) : WebApplicationFactory<Pro
     builder.UseSetting("AppSettings:Email:Smtp:Host", "localhost");
     builder.UseSetting("AppSettings:Email:Smtp:Username", "test");
     builder.UseSetting("AppSettings:Email:Smtp:Password", "test");
+    builder.ConfigureTestServices(services => services.Replace(ServiceDescriptor.Singleton<IEmailSender>(Emails)));
   }
 
   /// <summary>Runs <paramref name="action"/> with a fresh <see cref="AppDbContext"/> (direct DB access for asserts/arrange).</summary>
@@ -58,6 +65,7 @@ public sealed class ApiFactory(SqlServerFixture sql) : WebApplicationFactory<Pro
       new RespawnerOptions { TablesToIgnore = [new Respawn.Graph.Table("__EFMigrationsHistory")] }
     );
     await respawner.ResetAsync(conn);
+    Emails.Clear();
 
     using var scope = Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

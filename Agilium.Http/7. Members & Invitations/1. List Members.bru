@@ -1,0 +1,23 @@
+meta {
+  name: 1. List Members
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/projects/{{projectId}}/members
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.members.length) { bru.setVar("membershipId", res.body.members[res.body.members.length - 1].membershipId); }
+}
+
+docs {
+  Needs canViewMembers. Stores the last member's membershipId in {{membershipId}}.
+}

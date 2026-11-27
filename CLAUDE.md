@@ -155,7 +155,7 @@ Three-layer segmentation:
   projects, items, item fields, sprints, templates, workflow. Routes/components talk to the BE only
   through this layer. Auth state is in `src\contexts\auth-context.tsx`.
 
-Members, roles and invitation keys: `settings/members`, `settings/roles`, `/join` (done, plan Step 3). Still missing: e-mail verification / password reset (Step 5).
+Members, roles and invitation keys: `settings/members`, `settings/roles`, `/join` (done, plan Step 3). Account management (plan Step 5, done): registration sends a verification e-mail (`IEmailSender`, MailKit; Mailpit locally; `FakeEmailSender` in tests) and an unverified account cannot log in (`EMAIL_NOT_VERIFIED`); `auth/verify-email`, `auth/verify-email/resend`, `auth/password-reset/request|confirm`, `auth/password` (change); FE routes `/verify-email`, `/forgot-password`, `/reset-password`, `/account`. Registration, resend and reset answer identically whether or not the e-mail exists.
 
 Styling uses Tailwind v4 + Radix UI primitives.
 

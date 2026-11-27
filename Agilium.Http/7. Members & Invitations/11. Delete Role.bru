@@ -1,0 +1,19 @@
+meta {
+  name: 11. Delete Role
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{baseUrl}}/projects/roles/{{customRoleId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  400 while the role still has members; system roles cannot be deleted.
+}
