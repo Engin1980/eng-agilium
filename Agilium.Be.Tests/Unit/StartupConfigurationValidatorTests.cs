@@ -19,6 +19,7 @@ public class StartupConfigurationValidatorTests
     string jwtKey = "a-really-long-random-production-key-0123456789",
     bool turnstile = true,
     string turnstileKey = "real-turnstile-secret",
+    string turnstileSiteKey = "real-turnstile-site-key",
     string smtpHost = "smtp.example.com",
     string smtpUser = "user",
     int accessMinutes = 15,
@@ -41,7 +42,7 @@ public class StartupConfigurationValidatorTests
       Security = new SecuritySettings
       {
         Jwt = new JwtSettings { Key = jwtKey, Issuer = "issuer" },
-        Turnstile = new TurnstileSettings { Enabled = turnstile, SecretKey = turnstileKey },
+        Turnstile = new TurnstileSettings { Enabled = turnstile, SecretKey = turnstileKey, SiteKey = turnstileSiteKey },
         Password = new PasswordSettings { MaxFailedLoginAttempts = 5, LockoutDurationMinutes = 15 },
         RequestLimiter = new RequestLimiterSettings
         {
@@ -76,10 +77,29 @@ public class StartupConfigurationValidatorTests
       .ShouldContain(e => e.Contains("Jwt:Key"));
 
   [Fact]
-  public void DisabledTurnstile_IsRejected() =>
+  public void DisabledTurnstile_IsAccepted() =>
     StartupConfigurationValidator
-      .ValidateForProduction(ValidProduction(turnstile: false), GoodConnection)
-      .ShouldContain(e => e.Contains("Turnstile:Enabled"));
+      .ValidateForProduction(ValidProduction(turnstile: false, turnstileKey: ""), GoodConnection)
+      .ShouldBeEmpty();
+
+  [Theory]
+  [InlineData("", "site")]
+  [InlineData("(override)", "site")]
+  [InlineData("secret", "")]
+  public void EnabledTurnstileWithoutKeys_IsRejectedEverywhere(string secret, string site) =>
+    StartupConfigurationValidator
+      .ValidateAlways(ValidProduction(turnstileKey: secret, turnstileSiteKey: site))
+      .ShouldContain(e => e.Contains("Turnstile:Enabled is true"));
+
+  [Fact]
+  public void EnsureValid_InDevelopment_RejectsEnabledTurnstileWithoutKeys() =>
+    Should.Throw<InvalidOperationException>(() =>
+      StartupConfigurationValidator.EnsureValid(
+        ValidProduction(turnstileKey: "", turnstileSiteKey: ""),
+        null,
+        new FakeEnvironment("Development")
+      )
+    );
 
   [Fact]
   public void PlaceholderTurnstileSecret_IsRejected() =>
@@ -140,7 +160,6 @@ public class StartupConfigurationValidatorTests
     );
 
     ex.Message.ShouldContain("Jwt:Key");
-    ex.Message.ShouldContain("Turnstile:Enabled");
     ex.Message.ShouldContain("DefaultConnection");
   }
 }

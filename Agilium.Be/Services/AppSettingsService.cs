@@ -51,6 +51,9 @@ public class TurnstileSettings
 {
   public required bool Enabled { get; init; }
   public required string SecretKey { get; init; }
+
+  /// <summary>Public key of the FE widget; the BE does not use it, it only checks it is configured together with Enabled.</summary>
+  public string SiteKey { get; init; } = "";
 }
 
 public record PasswordSettings

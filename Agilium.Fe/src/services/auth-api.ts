@@ -12,11 +12,11 @@ export function decodeUserFromAccessToken(accessToken: string): LoggedInUser {
   return { email: payload.email, name: payload.name, surname: payload.surname };
 }
 
-export function login(email: string, password: string): Promise<string> {
+export function login(email: string, password: string, turnstileToken = ""): Promise<string> {
   return apiRequest<string>("/auth/login/admin", {
     method: "POST",
     skipAuth: true,
-    body: { email, password, rememberMe: true, turnstileToken: "" },
+    body: { email, password, rememberMe: true, turnstileToken },
   });
 }
 
@@ -53,11 +53,11 @@ export function resendVerification(email: string): Promise<void> {
   return apiRequest<void>("/auth/verify-email/resend", { method: "POST", skipAuth: true, body: { email } });
 }
 
-export function requestPasswordReset(email: string): Promise<void> {
+export function requestPasswordReset(email: string, turnstileToken = ""): Promise<void> {
   return apiRequest<void>("/auth/password-reset/request", {
     method: "POST",
     skipAuth: true,
-    body: { email, turnstileToken: "" },
+    body: { email, turnstileToken },
   });
 }
 

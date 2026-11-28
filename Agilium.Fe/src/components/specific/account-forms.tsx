@@ -3,6 +3,7 @@ import * as React from "react";
 import { ApiError } from "../../services/http-client";
 import { accountErrorText } from "../../services/account-errors";
 import * as authApi from "../../services/auth-api";
+import { turnstileEnabled, useTurnstile } from "../global/turnstile";
 
 function Field({
   label,
@@ -123,17 +124,19 @@ export function ForgotPasswordForm() {
   const [done, setDone] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
+  const turnstile = useTurnstile();
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
-      await authApi.requestPasswordReset(email);
+      await authApi.requestPasswordReset(email, turnstile.token);
       setDone(true);
     } catch (err) {
       setError(accountErrorText(err));
     } finally {
+      turnstile.reset();
       setBusy(false);
     }
   }
@@ -148,12 +151,17 @@ export function ForgotPasswordForm() {
   return (
     <form onSubmit={submit} className="space-y-4">
       <Field label="E-mail" type="email" value={email} onChange={setEmail} autoComplete="email" />
+      {turnstile.widget}
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}
         </p>
       )}
-      <button type="submit" disabled={busy || email.trim() === ""} className={primaryButton}>
+      <button
+        type="submit"
+        disabled={busy || email.trim() === "" || (turnstileEnabled && turnstile.token === "")}
+        className={primaryButton}
+      >
         Poslat odkaz
       </button>
     </form>

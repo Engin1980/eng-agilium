@@ -10,7 +10,7 @@ type AuthContextValue = {
   user: LoggedInUser | null;
   /** True while the initial silent-refresh (session restore) is in progress. */
   isRestoringSession: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, turnstileToken?: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [applyToken, clearSession]);
 
   const login = React.useCallback(
-    async (email: string, password: string) => {
-      const token = await authApi.login(email, password);
+    async (email: string, password: string, turnstileToken?: string) => {
+      const token = await authApi.login(email, password, turnstileToken);
       applyToken(token);
     },
     [applyToken],

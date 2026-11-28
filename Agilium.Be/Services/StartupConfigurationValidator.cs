@@ -32,6 +32,13 @@ public static class StartupConfigurationValidator
           + "(the session could not be renewed). Both values are in minutes."
       );
 
+    // Turnstile is optional, but an explicit ENABLED=true without keys is a misconfiguration everywhere.
+    var turnstile = settings.Security.Turnstile;
+    if (turnstile.Enabled && IsMissing(turnstile.SecretKey))
+      errors.Add("Security:Turnstile:Enabled is true but Security:Turnstile:SecretKey is not set (TURNSTILE_SECRET_KEY).");
+    if (turnstile.Enabled && IsMissing(turnstile.SiteKey))
+      errors.Add("Security:Turnstile:Enabled is true but Security:Turnstile:SiteKey is not set (TURNSTILE_SITE_KEY).");
+
     return errors;
   }
 
@@ -50,13 +57,12 @@ public static class StartupConfigurationValidator
     if (jwtKey.Contains(DefaultJwtKeyMarker, StringComparison.Ordinal))
       errors.Add("Security:Jwt:Key is still the default key from appsettings.json - tokens could be forged.");
 
-    if (!security.Turnstile.Enabled)
-      errors.Add("Security:Turnstile:Enabled must be true.");
+    // Missing keys while enabled are reported by ValidateAlways; here only the old committed placeholder.
     if (
-      IsMissing(security.Turnstile.SecretKey)
-      || security.Turnstile.SecretKey.Contains(DefaultTurnstileKeyMarker, StringComparison.Ordinal)
+      security.Turnstile.Enabled
+      && (security.Turnstile.SecretKey ?? "").Contains(DefaultTurnstileKeyMarker, StringComparison.Ordinal)
     )
-      errors.Add("Security:Turnstile:SecretKey is missing or still the placeholder from appsettings.json.");
+      errors.Add("Security:Turnstile:SecretKey is still the placeholder from appsettings.json.");
 
     if (security.EnableTestingEndpoints)
       errors.Add("Security:EnableTestingEndpoints must be false.");

@@ -34,7 +34,7 @@ startup and are not editable; each project gets a copy at creation and only the 
 - `Agilium.Db` — a `docker-compose.yml` that runs only SQL Server for local dev (`docker compose up`
   from `Agilium.Db`, using `.env` copied from `.env.example` for `DB_PASSWORD`).
 - Root `docker-compose.yml` (+ `Dockerfile` in `Agilium.Be` and `Agilium.Fe`, root `.env.example` with
-  `DB_PASSWORD`, `DB_PORT`, `BE_PORT`, `FE_PORT`) — runs the whole stack (`db`, `be`, `fe`) in containers.
+  `DB_PASSWORD`, `DB_NAME`, `DB_PORT`, `BE_PORT`, `FE_PORT`) — runs the whole stack (`db`, `be`, `fe`) in containers.
   The `be` service uses `ASPNETCORE_ENVIRONMENT=Development`; a `mailpit` service catches e-mails (web UI on
   port 8025); SMTP settings come from `.env` (`SMTP_*`), `SEED_DEMO_DATA=true` creates `demo@example.com` /
   `Demo-1234!` with a demo project (`Services\DevSeed.cs`, Development only, idempotent).

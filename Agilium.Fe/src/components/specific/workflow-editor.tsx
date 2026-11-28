@@ -174,21 +174,21 @@ function LoadedEditor({
             )}
             <button
               type="button"
-              aria-label={`Posunout sloupec ${index + 1} doleva`}
+              aria-label={`Posunout sloupec ${index + 1} nahoru`}
               disabled={index === 0}
               onClick={() => move(index, -1)}
               className="rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-30"
             >
-              ←
+              ↑
             </button>
             <button
               type="button"
-              aria-label={`Posunout sloupec ${index + 1} doprava`}
+              aria-label={`Posunout sloupec ${index + 1} dolů`}
               disabled={index === draft.length - 1}
               onClick={() => move(index, 1)}
               className="rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-30"
             >
-              →
+              ↓
             </button>
             <button
               type="button"

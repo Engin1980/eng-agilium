@@ -24,12 +24,13 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=eng-agilium-db;User Id=sa;Password=${DB_PASSWORD:?DB_PASSWORD is required};TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=${DB_NAME:-eng-agilium-db};User Id=sa;Password=${DB_PASSWORD:?DB_PASSWORD is required};TrustServerCertificate=True;"
       AppSettings__UseSwagger: "false"
       AppSettings__FrontendBaseUrl: "${FRONTEND_BASE_URL:?FRONTEND_BASE_URL is required}"
       AppSettings__Security__Jwt__Key: "${JWT_KEY:?JWT_KEY is required}"
-      AppSettings__Security__Turnstile__Enabled: "true"
-      AppSettings__Security__Turnstile__SecretKey: "${TURNSTILE_SECRET_KEY:?TURNSTILE_SECRET_KEY is required}"
+      AppSettings__Security__Turnstile__Enabled: "${TURNSTILE_ENABLED:-false}"
+      AppSettings__Security__Turnstile__SecretKey: "${TURNSTILE_SECRET_KEY:-}"
+      AppSettings__Security__Turnstile__SiteKey: "${TURNSTILE_SITE_KEY:-}"
       AppSettings__Email__Smtp__Host: "${SMTP_HOST:?SMTP_HOST is required}"
       AppSettings__Email__Smtp__Port: "${SMTP_PORT:-587}"
       AppSettings__Email__Smtp__Username: "${SMTP_USERNAME:?SMTP_USERNAME is required}"
@@ -46,6 +47,8 @@ services:
       dockerfile: Dockerfile.prod
       args:
         VITE_API_URL: "${VITE_API_URL:?VITE_API_URL is required}"
+        VITE_TURNSTILE_ENABLED: "${TURNSTILE_ENABLED:-false}"
+        VITE_TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
     ports:
       - "${FE_PORT:-8080}:80"
     depends_on:

@@ -155,7 +155,7 @@ class BuildInitializer(WebApplicationBuilder builder)
     EnsureAppSettingsNotNull();
 
     this.Logs.Add(
-      (LogLevel.Information, $"T-key: {AppSettings?.Security?.Turnstile?.SecretKey[^2..] ?? "-?-no-key-?-"}")
+      (LogLevel.Information, $"Turnstile: {(AppSettings?.Security?.Turnstile?.Enabled == true ? "enabled" : "disabled")}")
     );
     this.Logs.Add((LogLevel.Information, $"J-key: {AppSettings?.Security.Jwt.Key[^2..] ?? "-?-no-key-?-"}"));
 
@@ -205,8 +205,24 @@ class BuildInitializer(WebApplicationBuilder builder)
     builder.Host.UseSerilog();
   }
 
+  /// <summary>
+  /// `DB_NAME` (from the environment or `.env`) replaces the database name of the configured connection string,
+  /// so a local `dotnet run` uses the same database name as the compose stack.
+  /// </summary>
+  private void ApplyDatabaseNameOverride()
+  {
+    var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+    var conn = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(dbName) || string.IsNullOrWhiteSpace(conn) || conn == StartupConfigurationValidator.OverridePlaceholder)
+      return;
+
+    var csb = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(conn) { InitialCatalog = dbName.Trim() };
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = csb.ConnectionString;
+  }
+
   private void ConfigureConfigurations()
   {
+    ApplyDatabaseNameOverride();
     this.AppSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
     builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
   }

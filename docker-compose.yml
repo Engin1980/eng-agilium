@@ -21,13 +21,16 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=eng-agilium-db;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=${DB_NAME:-eng-agilium-db};User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
       AppSettings__FrontendBaseUrl: "http://localhost:${FE_PORT:-5173}"
       AppSettings__Email__Smtp__Host: "${SMTP_HOST:-mailpit}"
       AppSettings__Email__Smtp__Port: "${SMTP_PORT:-1025}"
       AppSettings__Email__Smtp__Username: "${SMTP_USERNAME:-}"
       AppSettings__Email__Smtp__Password: "${SMTP_PASSWORD:-}"
       AppSettings__Email__DebugRecipient: "${SMTP_DEBUG_RECIPIENT:-}"
+      AppSettings__Security__Turnstile__Enabled: "${TURNSTILE_ENABLED:-false}"
+      AppSettings__Security__Turnstile__SecretKey: "${TURNSTILE_SECRET_KEY:-}"
+      AppSettings__Security__Turnstile__SiteKey: "${TURNSTILE_SITE_KEY:-}"
       SEED_DEMO_DATA: "${SEED_DEMO_DATA:-false}"
     ports:
       - "${BE_PORT:-5049}:8080"
@@ -50,6 +53,12 @@ services:
       context: ./Agilium.Fe
       dockerfile: Dockerfile
     container_name: eng-agilium-fe
+    environment:
+      # The browser calls the BE through the port published on the host.
+      VITE_API_URL: "http://localhost:${BE_PORT:-5049}/api/v1"
+      # Explicit switch (the same TURNSTILE_ENABLED as on the BE); with true and no site key the FE fails loudly.
+      VITE_TURNSTILE_ENABLED: "${TURNSTILE_ENABLED:-false}"
+      VITE_TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
     ports:
       - "${FE_PORT:-5173}:5173"
     depends_on:

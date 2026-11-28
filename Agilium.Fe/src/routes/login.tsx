@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/auth-context";
 import { ApiError } from "../services/http-client";
 import { accountErrorText } from "../services/account-errors";
 import { resendVerification } from "../services/auth-api";
+import { useTurnstile } from "../components/global/turnstile";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -21,6 +22,7 @@ function RouteComponent() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [unverified, setUnverified] = React.useState(false);
   const [resent, setResent] = React.useState(false);
+  const turnstile = useTurnstile();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,7 +31,7 @@ function RouteComponent() {
     setResent(false);
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await login(email, password, turnstile.token);
       if (sessionStorage.getItem("agilium.pendingJoinKey")) {
         await navigate({ to: "/join" });
         return;
@@ -39,6 +41,7 @@ function RouteComponent() {
       setUnverified(err instanceof ApiError && err.errorKey === "EMAIL_NOT_VERIFIED");
       setError(err instanceof ApiError ? accountErrorText(err) : "Přihlášení se nezdařilo.");
     } finally {
+      turnstile.reset();
       setIsSubmitting(false);
     }
   }
@@ -68,6 +71,7 @@ function RouteComponent() {
         value={password}
         onChange={setPassword}
       />
+      {turnstile.widget}
       {error && <div role="alert" className="text-sm text-red-600">{error}</div>}
       {unverified && (
         <div className="text-sm">
